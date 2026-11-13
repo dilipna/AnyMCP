@@ -84,7 +84,7 @@ describe("sensitive fields", () => {
     expect(isSensitiveField({ type: "text", autocomplete: "cc-number" })).toBe(true);
     expect(isSensitiveField({ type: "text", name: "api_key" })).toBe(true);
     expect(isSensitiveField({ type: "text", label: "One-time code" })).toBe(true);
-    expect(isSensitiveField({ type: "text", mycpIgnore: true })).toBe(true);
+    expect(isSensitiveField({ type: "text", anymcpIgnore: true })).toBe(true);
     expect(isSensitiveField({ type: "hidden" })).toBe(true);
   });
   it("does not flag ordinary fields", () => {

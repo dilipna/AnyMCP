@@ -9,7 +9,7 @@
 
 import {
   BridgeToExtZ,
-  MYCP_VERSION,
+  ANYMCP_VERSION,
   PROTOCOL_VERSION,
   hmacSha256Hex,
   parseJsonMessage,
@@ -19,7 +19,7 @@ import {
   type ExtToBridge,
   type ResultEnvelope,
   type RunPhase,
-} from "mycp-protocol";
+} from "anymcp-protocol";
 import type { ConnState, ConnView, Pairing } from "../shared/types";
 import { getEnabledTools, getPairing, getSession, savePairing, setSession } from "./storage";
 
@@ -111,7 +111,7 @@ export class BridgeClient {
           clearTimeout(timer);
           resolve({ ok: false, error: "The bridge closed the connection." });
         };
-        this.sendRaw(ws, { type: "hello", protocol: PROTOCOL_VERSION, extensionId: chrome.runtime.id, extensionVersion: MYCP_VERSION, mode: "pair", pairingCode: code.replace(/\s+/g, "") });
+        this.sendRaw(ws, { type: "hello", protocol: PROTOCOL_VERSION, extensionId: chrome.runtime.id, extensionVersion: ANYMCP_VERSION, mode: "pair", pairingCode: code.replace(/\s+/g, "") });
       });
       if (!result.ok) {
         this.closeSocket();
@@ -213,7 +213,7 @@ export class BridgeClient {
     ws.onmessage = (ev) => void this.onMessage(ev.data, pairing);
     ws.onclose = () => this.onClosed();
     ws.onerror = () => undefined;
-    this.sendRaw(ws, { type: "hello", protocol: PROTOCOL_VERSION, extensionId: chrome.runtime.id, extensionVersion: MYCP_VERSION, mode: "auth" });
+    this.sendRaw(ws, { type: "hello", protocol: PROTOCOL_VERSION, extensionId: chrome.runtime.id, extensionVersion: ANYMCP_VERSION, mode: "auth" });
   }
 
   private onClosed() {
@@ -294,7 +294,7 @@ export class BridgeClient {
         this.wantConnected = false;
         this.paired = false;
         this.closeSocket();
-        this.setState("unpaired", "Access was revoked. The AI client can no longer use MyCP.");
+        this.setState("unpaired", "Access was revoked. The AI client can no longer use AnyMCP.");
         return;
       case "ack":
         await this.onAck(m.ref);

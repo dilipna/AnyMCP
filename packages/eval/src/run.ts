@@ -2,14 +2,14 @@
 //   npm run eval                       run the frozen catalogue, write eval/results/*.json|md
 //   npm run eval -- --freeze           (re)write scenarios.lock.json (only before a headline run!)
 //   npm run eval -- --only=read.empty  development run: NOT a headline result, labelled as partial
-//   MYCP_E2E_BROWSER=chrome npm run eval   use the real branded Chrome instead of Playwright's Chromium
+//   ANYMCP_E2E_BROWSER=chrome npm run eval   use the real branded Chrome instead of Playwright's Chromium
 
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import os from "node:os";
 import { resolve } from "node:path";
-import type { ResultEnvelope } from "mycp-protocol";
-import { MYCP_VERSION, isSuccessStatus } from "mycp-protocol";
+import type { ResultEnvelope } from "anymcp-protocol";
+import { ANYMCP_VERSION, isSuccessStatus } from "anymcp-protocol";
 import { buildDraft, type DraftSpec } from "../../extension/src/shared/draft";
 import type { TabCandidate } from "../../extension/src/shared/panel-api";
 import { startStack, waitForState, sleep } from "../../../e2e/harness";
@@ -59,7 +59,7 @@ async function main() {
   execFileSync(process.execPath, [resolve(import.meta.dirname, "../../extension/scripts/build.mjs"), "--target=e2e"], { stdio: "inherit" });
   const stack = await startStack({ reconnectGraceMs: 8000 });
   const browserVersion = stack.browserVersion;
-  const useChrome = process.env.MYCP_E2E_BROWSER === "chrome";
+  const useChrome = process.env.ANYMCP_E2E_BROWSER === "chrome";
   let n = 0;
   const idle = async () => {
     const d = Date.now() + 15_000;
@@ -197,7 +197,7 @@ async function main() {
     await page.getByRole("button", { name: "Search" }).click();
     await page.getByRole("link", { name: "A-1012" }).click();
     await page.waitForURL(/\/orders\/A-1012$/);
-    await page.locator("[data-mycp-banner]").waitFor({ state: "attached" });
+    await page.locator("[data-anymcp-banner]").waitFor({ state: "attached" });
     const pick = async (mode: "text" | "success", sel: string, o: number, g: number) => {
       await stack.call({ type: "record.pick", mode });
       await waitForState(stack, (x) => x.recording?.pick === mode);
@@ -265,7 +265,7 @@ async function main() {
   const git = gitRevision();
   const env = {
     protocolVersion: PROTOCOL_VERSION,
-    mycpVersion: MYCP_VERSION,
+    anymcpVersion: ANYMCP_VERSION,
     scenariosSha256: scenariosSha,
     sourceTreeSha256: rev.sha256,
     sourceFiles: rev.files,
@@ -288,7 +288,7 @@ async function main() {
   writeFileSync(resolve(dir, `fixture-${tag}.json`), JSON.stringify(json, null, 2) + "\n");
 
   const md = [
-    `# MyCP evaluation results — synthetic fixture${only || dev ? " (PARTIAL development run — not a headline result)" : ""}`,
+    `# AnyMCP evaluation results — synthetic fixture${only || dev ? " (PARTIAL development run — not a headline result)" : ""}`,
     "",
     "> Fixture only. These numbers say nothing about compatibility with any real website. The fixture is a development suite, not a held-out set. See `docs/evaluation-protocol.md`.",
     "",

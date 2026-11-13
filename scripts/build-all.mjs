@@ -11,9 +11,9 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 // 1. extension (production target: no test hooks, no fixed host permissions)
 execFileSync(process.execPath, [resolve(root, "packages/extension/scripts/build.mjs"), "--target=prod"], { stdio: "inherit" });
 
-// 2. bridge: ONE self-contained file (`node mycp-bridge.mjs`), dependencies inlined
-const version = /MYCP_VERSION = "([^"]+)"/.exec(readFileSync(resolve(root, "packages/protocol/src/version.ts"), "utf8"))[1];
-const outfile = resolve(root, "packages/bridge/dist/mycp-bridge.mjs");
+// 2. bridge: ONE self-contained file (`node anymcp-bridge.mjs`), dependencies inlined
+const version = /ANYMCP_VERSION = "([^"]+)"/.exec(readFileSync(resolve(root, "packages/protocol/src/version.ts"), "utf8"))[1];
+const outfile = resolve(root, "packages/bridge/dist/anymcp-bridge.mjs");
 mkdirSync(dirname(outfile), { recursive: true });
 await build({
   entryPoints: [resolve(root, "packages/bridge/src/cli.ts")],
@@ -31,4 +31,4 @@ await build({
   logLevel: "warning",
 });
 writeFileSync(resolve(root, "packages/bridge/dist/VERSION"), version + "\n");
-console.log(`built bridge ${version} → packages/bridge/dist/mycp-bridge.mjs`);
+console.log(`built bridge ${version} → packages/bridge/dist/anymcp-bridge.mjs`);

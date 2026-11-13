@@ -11,8 +11,8 @@ import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const dest = mkdtempSync(join(tmpdir(), "mycp-clean-"));
-const SKIP = new Set(["node_modules", "dist", "release", ".git", "test-results", "playwright-report", "results", "raw", ".mycp-test"]);
+const dest = mkdtempSync(join(tmpdir(), "anymcp-clean-"));
+const SKIP = new Set(["node_modules", "dist", "release", ".git", "test-results", "playwright-report", "results", "raw", ".anymcp-test"]);
 cpSync(root, dest, {
   recursive: true,
   filter: (src) => !src.split(sep).some((part) => SKIP.has(part)) || src === root,
@@ -40,8 +40,8 @@ let ok =
 
 if (ok) {
   // start the BUNDLED bridge exactly as documented and check it answers
-  const home = mkdtempSync(join(tmpdir(), "mycp-clean-home-"));
-  const child = spawn(process.execPath, [join(dest, "release", `mycp-bridge-0.1.0.mjs`), "--mcp-port=49820", "--ext-port=49821", `--home=${home}`], { stdio: "ignore" });
+  const home = mkdtempSync(join(tmpdir(), "anymcp-clean-home-"));
+  const child = spawn(process.execPath, [join(dest, "release", `anymcp-bridge-0.1.0.mjs`), "--mcp-port=49820", "--ext-port=49821", `--home=${home}`], { stdio: "ignore" });
   await new Promise((r) => setTimeout(r, 2500));
   let health = null;
   try {

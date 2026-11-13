@@ -1,6 +1,6 @@
 # Three-minute demonstration
 
-Audience: someone who has never seen MyCP. Everything uses the **synthetic** Acme Support Portal. Say so out loud.
+Audience: someone who has never seen AnyMCP. Everything uses the **synthetic** Acme Support Portal. Say so out loud.
 
 ## Setup (before the audience arrives)
 
@@ -9,12 +9,12 @@ npm ci && npm run build
 npm run dev            # builds the extension, starts the fixture site (4173) and the bridge; prints a pairing code
 ```
 In Chrome: `chrome://extensions` → Developer mode → *Load unpacked* → `packages/extension/dist/prod`.
-Open `http://127.0.0.1:4173/orders` in a tab and open the MyCP side panel (toolbar icon).
-Have an MCP client ready: `claude mcp add --transport http mycp http://127.0.0.1:47820/mcp --header "Authorization: Bearer <token>"`.
+Open `http://127.0.0.1:4173/orders` in a tab and open the AnyMCP side panel (toolbar icon).
+Have an MCP client ready: `claude mcp add --transport http anymcp http://127.0.0.1:47820/mcp --header "Authorization: Bearer <token>"`.
 
 ## 0:00 — The idea (20 s)
 
-"MyCP turns a website task I approve into a tool my AI assistant can call. The point isn't that it can click —
+"AnyMCP turns a website task I approve into a tool my AI assistant can call. The point isn't that it can click —
 it's that I review what it's allowed to do, and it tells me honestly whether it worked."
 
 ## 0:20 — Connect (20 s)
@@ -38,7 +38,7 @@ Name it, **Save**, open it, **Run test** with `A-1013`. Point at the verified re
 
 ## 2:05 — The assistant uses it (25 s)
 
-In the MCP client: "Look up order A-1013 with MyCP." Show the structured result: status `success`, source, capture
+In the MCP client: "Look up order A-1013 with AnyMCP." Show the structured result: status `success`, source, capture
 time, execution id. In the panel: **Runs** → the timeline.
 
 ## 2:30 — The part that matters: a change needs me (30 s)
@@ -49,7 +49,7 @@ exact action, the customer and status read from the page, "this one run only".
 2. Ask again and **Decline** → the assistant is told `rejected`; the portal shows no draft.
 3. Ask again, **Approve once** → `success`, one draft, verified by re-reading the page.
 
-Close: "If MyCP can't tell what happened it says **unknown outcome** and never repeats the action. Revoke everything is one button."
+Close: "If AnyMCP can't tell what happened it says **unknown outcome** and never repeats the action. Revoke everything is one button."
 
 ## Automated variant (real client, no human)
 

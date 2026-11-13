@@ -217,7 +217,7 @@ export interface ToolManifest {
 
 /**
  * The advertised output must accept BOTH a full success and the tool's constant empty result,
- * so `required` is reduced to the keys both shapes contain. MyCP's own validator still checks the
+ * so `required` is reduced to the keys both shapes contain. AnyMCP's own validator still checks the
  * full required set on success before a result is ever returned.
  */
 export function advertisedOutputSchema(tool: ToolDefinition): ObjectSchema {

@@ -29,7 +29,7 @@ function AllowedSites({ state }: { state: PanelState }) {
   return (
     <section className="card" aria-labelledby="sites-h">
       <h2 id="sites-h">Allowed sites</h2>
-      <p className="muted">MyCP can only read or act on sites listed here, and only through tools you enabled. Removing a site disables its tools.</p>
+      <p className="muted">AnyMCP can only read or act on sites listed here, and only through tools you enabled. Removing a site disables its tools.</p>
       {state.grants.length === 0 ? (
         <p className="muted">No sites allowed yet.</p>
       ) : (
@@ -91,7 +91,7 @@ export function Settings({ state }: { state: PanelState }) {
 
       <section className="card" aria-labelledby="priv-h">
         <h2 id="priv-h">Privacy</h2>
-        <p className="muted">By default MyCP stores no page content, screenshots or typed values. Run history keeps only what happened, not the data.</p>
+        <p className="muted">By default AnyMCP stores no page content, screenshots or typed values. Run history keeps only what happened, not the data.</p>
         <Toggle id="keep" checked={state.settings.keepResults} onChange={(v) => void call({ type: "settings.update", settings: { keepResults: v } })} label="Keep results in run history" hint="Saves returned values on this computer so you can review them later. Off by default." />
         <Toggle id="diag" checked={state.settings.captureDiagnostics} onChange={(v) => void call({ type: "settings.update", settings: { captureDiagnostics: v } })} label="Capture developer diagnostics on failures" hint="Saves a short outline of visible controls (names only, digits masked, never field values or passwords) to help debug a broken tool. Off by default." />
         <button type="button" className="btn" onClick={() => void call({ type: "history.clear" })}>Delete run history</button>
@@ -100,7 +100,7 @@ export function Settings({ state }: { state: PanelState }) {
       <section className="card" aria-labelledby="rev-h">
         <h2 id="rev-h">Revoke everything</h2>
         <p className="muted">Turns off every tool, removes access to every site, unpairs this browser and changes the bridge’s token so your AI client is locked out. Your saved tool definitions stay (disabled).</p>
-        {done && <Banner tone="ok">Done. MyCP has no access to any site, and the AI client’s token no longer works.</Banner>}
+        {done && <Banner tone="ok">Done. AnyMCP has no access to any site, and the AI client’s token no longer works.</Banner>}
         {!confirm ? (
           <button type="button" className="btn danger" onClick={() => setConfirm(true)}>Revoke all access…</button>
         ) : (
@@ -113,9 +113,9 @@ export function Settings({ state }: { state: PanelState }) {
       </section>
 
       <section className="card" aria-labelledby="about-h">
-        <h2 id="about-h">About MyCP</h2>
+        <h2 id="about-h">About AnyMCP</h2>
         <p className="muted">Version {state.version}{state.isTestBuild ? " · TEST BUILD" : ""}</p>
-        <p className="muted">MyCP works on pages built from standard buttons, links, fields and tables. It has not been verified on arbitrary sites. It does not handle iframes, shadow DOM, file uploads or CAPTCHAs, and it never signs in for you. See docs/supported-capabilities.md.</p>
+        <p className="muted">AnyMCP works on pages built from standard buttons, links, fields and tables. It has not been verified on arbitrary sites. It does not handle iframes, shadow DOM, file uploads or CAPTCHAs, and it never signs in for you. See docs/supported-capabilities.md.</p>
       </section>
     </div>
   );

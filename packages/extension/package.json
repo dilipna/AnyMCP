@@ -1,11 +1,12 @@
 {
-  "name": "mycp-extension",
+  "name": "anymcp-extension",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "MyCP Extension: Chrome MV3 extension (service worker, content script, side panel).",
+  "description": "AnyMCP Extension: Chrome MV3 extension (service worker, content script, side panel).",
+  "license": "MIT",
   "dependencies": {
-    "mycp-protocol": "*",
+    "anymcp-protocol": "*",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "zod": "^4.6.7"

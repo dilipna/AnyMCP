@@ -1,6 +1,6 @@
 # Threat model
 
-Scope: MyCP Extension + bridge on one user's computer. Not audited. This lists what MyCP defends against,
+Scope: AnyMCP Extension + bridge on one user's computer. Not audited. This lists what AnyMCP defends against,
 how, where the test is, and — equally important — what it does **not** defend against.
 
 ## Assets
@@ -8,7 +8,7 @@ how, where the test is, and — equally important — what it does **not** defen
 1. The user's logged-in website sessions (cookies, tokens). **Never exported**: the browser keeps them; the
    assistant only ever receives the declared output values.
 2. The ability to read or change data on sites the user is signed in to.
-3. The MyCP credentials: extension pairing secret, MCP bearer token.
+3. The AnyMCP credentials: extension pairing secret, MCP bearer token.
 4. The user's local run history and tool definitions.
 
 ## Actors
@@ -24,7 +24,7 @@ how, where the test is, and — equally important — what it does **not** defen
 
 | # | Threat | Mitigation (in code) | Evidence |
 |---|---|---|---|
-| T1 | A web page tells the assistant to misuse a tool ("ignore previous instructions…") | Page text is returned as data, flagged `untrustedContent`; MyCP's permission boundaries do not depend on model behaviour; writes need a human click | `failures.spec` hostile content: 0 writes, 0 prompts, tool set unchanged |
+| T1 | A web page tells the assistant to misuse a tool ("ignore previous instructions…") | Page text is returned as data, flagged `untrustedContent`; AnyMCP's permission boundaries do not depend on model behaviour; writes need a human click | `failures.spec` hostile content: 0 writes, 0 prompts, tool set unchanged |
 | T2 | Prompt injection makes the assistant call a write tool | Every write needs a per-run approval in the browser that the assistant cannot give; approval shows exact action + values | `approval.spec`; sender check unit tests |
 | T3 | Page changes between approval and click (bait-and-switch) | Approval bound to a hash of tool version, target, args, page values; page polled; re-checked in the content script right before the click | invalidation e2e (state, target, last-moment race) |
 | T4 | Web page or content script forges an approval/revoke/save-tool message | Only senders whose URL is the extension's own origin are accepted; a content script's sender is the web page and is refused | `sender.test.ts` |
@@ -33,7 +33,7 @@ how, where the test is, and — equally important — what it does **not** defen
 | T7 | Brute-forcing the pairing code | single use, 10-minute expiry, 5 attempts then rotates | bridge tests |
 | T8 | A tool acts on the wrong site (redirect, lookalike) | Exact origins only; origin checked on every `ensureContent`; links/forms that leave the origin are refused | permissions e2e (mid-run redirect to another origin) |
 | T9 | Stored tool tampered with / edited to skip approval | Definition hash re-checked at every run; policy re-validated at every run | permissions e2e (tampered, policy-violating) |
-| T10 | Recording captures secrets | Sensitive-field detection (type, autocomplete, name/id/label words, `data-mycp-ignore`) at capture; only trusted user events; only the approved origin; values kept in memory only | recording e2e (4 sensitive fields skipped; storage scanned for the secrets) |
+| T10 | Recording captures secrets | Sensitive-field detection (type, autocomplete, name/id/label words, `data-anymcp-ignore`) at capture; only trusted user events; only the approved origin; values kept in memory only | recording e2e (4 sensitive fields skipped; storage scanned for the secrets) |
 | T11 | Duplicate or replayed writes | Bridge dedupes in-flight identical calls and refuses an identical completed/unknown write for 10 min; extension never auto-replays a click; write tools have `maxAttempts = 1` | e2e duplicate + ack-lost tests (POST count) |
 | T12 | A false "success" | Success needs every postcondition observed and a schema-valid output; uncertain ⇒ `unknown_outcome` | evaluation: false-success count |
 | T13 | Stale approval prompt after the worker dies | Prompt held in memory only; panel drops it when the worker connection drops; `decide` verifies execution id + hash | resilience e2e |
@@ -42,20 +42,20 @@ how, where the test is, and — equally important — what it does **not** defen
 | T16 | A field that saves by itself changes data without approval | Fills can be marked `commit` (approval path, binding re-checked, write-ahead intent); unmarked dropdown/checkbox steps are flagged in review; a commit fill that would change nothing is not performed and is reported as `no_change_needed` | `webapps.spec` (settings dropdown + ARIA switch, server write log) |
 | T17 | The pairing code is read from disk | While unpaired, the running bridge writes its current single-use code to `pairing.json` (owner-only on POSIX) next to `state.json`, which already holds stronger secrets; removed once paired and on exit; only the bridge that owns the ports writes it | `stdio.integration.test.ts` (pairing file) |
 
-## Residual risks — what MyCP does not protect against
+## Residual risks — what AnyMCP does not protect against
 
-* **The assistant being fooled.** MyCP cannot stop a model from *believing* text it read in a result. It marks
+* **The assistant being fooled.** AnyMCP cannot stop a model from *believing* text it read in a result. It marks
   the data untrusted and limits what a tool can do, but a read tool's output can still influence the model.
 * **Malicious or buggy tool definitions the user approves.** The review shows what a tool can read and change,
   derived from its structure. A user who approves a harmful workflow can run it. Definitions cannot be imported
   from the assistant or the web in this release, which removes the main supply-chain path.
-* **A compromised browser profile or OS account.** Anything that can read `chrome.storage` or `~/.mycp` can
+* **A compromised browser profile or OS account.** Anything that can read `chrome.storage` or `~/.anymcp` can
   steal the pairing secret/token (and, while unpaired, the current pairing code). Apps launched with `--stdio`
-  read the token from `~/.mycp` themselves, which is the same trust boundary: any program running as the user. Both are stored unencrypted under the user's account (OS permissions apply).
+  read the token from `~/.anymcp` themselves, which is the same trust boundary: any program running as the user. Both are stored unencrypted under the user's account (OS permissions apply).
 * **Other extensions** with broad permissions can see the same pages.
-* **Browser/network retries.** A browser can re-send a request on its own. MyCP never re-clicks, but the
+* **Browser/network retries.** A browser can re-send a request on its own. AnyMCP never re-clicks, but the
   *site* may see more than one request; sites without idempotency can then record duplicates.
-* **Sites that detect automation**, or pages whose behaviour depends on trusted (OS-level) input events: MyCP
+* **Sites that detect automation**, or pages whose behaviour depends on trusted (OS-level) input events: AnyMCP
   uses DOM events, not OS input.
 * **Timing (TOCTOU) at the site.** The binding is checked immediately before the click, not at the server.
 * **No independent security review, no fuzzing, no penetration test** has been done.

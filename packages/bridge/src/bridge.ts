@@ -3,7 +3,7 @@
 import { rmSync, writeFileSync } from "node:fs";
 import type { Server } from "node:http";
 import { join } from "node:path";
-import { DEFAULT_EXT_PORT, DEFAULT_MCP_PORT, MYCP_VERSION } from "mycp-protocol";
+import { DEFAULT_EXT_PORT, DEFAULT_MCP_PORT, ANYMCP_VERSION } from "anymcp-protocol";
 import { createMcpHttpServer } from "./http";
 import { ExtensionHub } from "./hub";
 import { createBridgeMcpHandler } from "./mcp";
@@ -49,7 +49,7 @@ export async function startBridge(opts: BridgeOptions = {}): Promise<BridgeHandl
   const log = opts.log ?? (() => undefined);
   const store = new StateStore(opts.home);
   // While no browser is paired, the current single-use code is also written to a private file next to the state
-  // (which already holds this bridge's secrets), so `mycp-bridge` run in a terminal can show it even when an app
+  // (which already holds this bridge's secrets), so `anymcp-bridge` run in a terminal can show it even when an app
   // started this bridge in the background.
   const pairingFile = join(store.dir, PAIRING_FILE);
   let started = false; // only a bridge that really owns the ports may publish (a failed start must not overwrite another's code)
@@ -85,7 +85,7 @@ export async function startBridge(opts: BridgeOptions = {}): Promise<BridgeHandl
   const handler = createBridgeMcpHandler(hub, runs, () => ({
     extension: hub.connected ? "connected" : store.state.extension ? "paired_not_connected" : "not_paired",
     enabledTools: hub.listTools().length,
-    bridgeVersion: MYCP_VERSION,
+    bridgeVersion: ANYMCP_VERSION,
   }));
   const httpServer: Server = createMcpHttpServer({
     handler,

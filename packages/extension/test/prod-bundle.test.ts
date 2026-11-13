@@ -18,7 +18,7 @@ describe("production extension bundle", () => {
   it("manifest permissions are exactly the reviewed list — nothing fixed, everything per-site and optional", () => {
     const m = JSON.parse(read("manifest.json"));
     expect(m.manifest_version).toBe(3);
-    expect(m.name).toBe("MyCP Extension");
+    expect(m.name).toBe("AnyMCP Extension");
     expect(m.permissions.sort()).toEqual(["alarms", "scripting", "sidePanel", "storage"]);
     expect(m.host_permissions).toEqual([]); // no host access at install
     expect(m.optional_host_permissions).toEqual(["http://*/*", "https://*/*"]); // granted one origin at a time at runtime

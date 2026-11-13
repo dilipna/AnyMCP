@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PHASE_LABELS, userNextStep, type ResultEnvelope, type RunRecord } from "mycp-protocol";
+import { PHASE_LABELS, userNextStep, type ResultEnvelope, type RunRecord } from "anymcp-protocol";
 import type { PanelState } from "../../shared/types";
 import { ago, call } from "../api";
 import { Banner, Empty, StatusChip } from "../ui";

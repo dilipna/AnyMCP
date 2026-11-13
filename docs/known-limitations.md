@@ -6,10 +6,10 @@ boundaries of what was built and verified.
 ## Reliability and side effects
 
 1. **Exactly-once is not possible and not promised.** While building the fixture, a server that reset a reused
-   keep-alive connection caused Chromium to **re-send the same POST three times** — with one MyCP click.
-   MyCP never replays a click or re-submits a form, and verifies by reading the page, but a site without
+   keep-alive connection caused Chromium to **re-send the same POST three times** — with one AnyMCP click.
+   AnyMCP never replays a click or re-submits a form, and verifies by reading the page, but a site without
    idempotency can still record duplicates caused by the browser or network.
-2. **`unknown_outcome` needs a person.** When MyCP cannot confirm a write it says so and stops. It will not
+2. **`unknown_outcome` needs a person.** When AnyMCP cannot confirm a write it says so and stops. It will not
    guess. The tool's precondition ("this draft is not already there") makes a *later, deliberate* retry safe
    for the fixture; other tools must define their own.
 3. **Reads interrupted by a service-worker restart are reported as `interrupted`**, not resumed. The assistant
@@ -21,11 +21,11 @@ boundaries of what was built and verified.
 ## Compatibility
 
 7. Pages must be built from standard, visible, top-document controls (see supported-capabilities.md).
-8. Locators can break when a site is redesigned. MyCP then stops with `locator_missing` / `locator_ambiguous`;
+8. Locators can break when a site is redesigned. AnyMCP then stops with `locator_missing` / `locator_ambiguous`;
    it never rewrites an enabled tool. Fixing means editing/re-recording → a **new version** that must be tested again.
 9. DOM events, not OS input. Some sites ignore untrusted events.
 9a. **A dropdown or checkbox may save on change.** Some sites save a setting the moment it changes, with no Save
-    button. MyCP cannot detect this by itself. The review screen warns on every dropdown, checkbox and option
+    button. AnyMCP cannot detect this by itself. The review screen warns on every dropdown, checkbox and option
     step; the person must mark such a step **"Saves by itself"**, which makes it the tool's one data-changing step
     (approval every run). An unmarked step on such a site would change data without approval.
 9c. **Enter key.** Enter in a form that has a submit button is recorded as clicking that button. Elsewhere it is
@@ -49,7 +49,7 @@ boundaries of what was built and verified.
     real "Allow this site" prompt is on the owner's manual checklist.
 13. **No tool import/export or sharing**, no cloud, no accounts, no sync.
 14. **English only.**
-15. **Windows file permissions** for `~/.mycp/state.json` rely on the user-profile ACL (no `chmod`).
+15. **Windows file permissions** for `~/.anymcp/state.json` rely on the user-profile ACL (no `chmod`).
 
 ## Evidence
 
@@ -68,4 +68,4 @@ boundaries of what was built and verified.
 
 ## Naming and publication
 
-20. The name "MyCP" has public conflicts (see naming-check.md). Nothing here has been published.
+20. The name "AnyMCP" has public conflicts (see naming-check.md). Nothing here has been published.

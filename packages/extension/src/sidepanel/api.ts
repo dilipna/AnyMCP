@@ -5,7 +5,7 @@ import type { PanelState } from "../shared/types";
 export async function call<T = unknown>(req: PanelRequest): Promise<PanelResponse<T>> {
   try {
     const res = (await chrome.runtime.sendMessage({ [REQUEST_TAG]: true, req })) as PanelResponse<T> | undefined;
-    return res ?? { ok: false, error: "MyCP did not answer. Try again." };
+    return res ?? { ok: false, error: "AnyMCP did not answer. Try again." };
   } catch (e) {
     return { ok: false, error: String((e as Error).message ?? e) };
   }
@@ -19,7 +19,7 @@ export function usePanelState(): PanelState | null {
     let timer: ReturnType<typeof setTimeout> | undefined;
     let closed = false;
     const connect = () => {
-      port = chrome.runtime.connect({ name: "mycp-panel" });
+      port = chrome.runtime.connect({ name: "anymcp-panel" });
       port.onMessage.addListener((m: { type: string; state: PanelState }) => {
         if (m.type === "state") setState(m.state);
       });

@@ -1,14 +1,15 @@
 {
-  "name": "mycp-fixture",
+  "name": "anymcp-fixture",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Acme Support Portal: SYNTHETIC fixture website for MyCP development and evaluation.",
+  "description": "Acme Support Portal: SYNTHETIC fixture website for AnyMCP development and evaluation.",
+  "license": "MIT",
   "exports": {
     ".": "./src/server.ts",
     "./tools": "./src/tools.ts"
   },
   "dependencies": {
-    "mycp-protocol": "*"
+    "anymcp-protocol": "*"
   }
 }

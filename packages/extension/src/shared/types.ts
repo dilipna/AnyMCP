@@ -1,6 +1,6 @@
 // Shared shapes: persisted storage and what the side panel renders.
 
-import type { ApprovalRequest, Locator, RunRecord, ToolDefinition } from "mycp-protocol";
+import type { ApprovalRequest, Locator, RunRecord, ToolDefinition } from "anymcp-protocol";
 import type { PickMode } from "../content/recorder";
 import type { DraftOutput, DraftQueryPart, DraftSignal } from "./draft";
 

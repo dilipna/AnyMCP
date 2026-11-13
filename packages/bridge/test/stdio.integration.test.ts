@@ -1,4 +1,4 @@
-// `mycp-bridge --stdio`, for real: the CLI is spawned as a separate process and driven over stdin/stdout by the
+// `anymcp-bridge --stdio`, for real: the CLI is spawned as a separate process and driven over stdin/stdout by the
 // official MCP SDK client, the way Claude Desktop or Cursor would. A FakeExtension stands in for the browser.
 
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
@@ -8,8 +8,8 @@ import { join, resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { Client } from "@modelcontextprotocol/client";
 import { StdioClientTransport, getDefaultEnvironment } from "@modelcontextprotocol/client/stdio";
-import { makeDraftNoteTool, makeFindOrderTool } from "mycp-fixture/tools";
-import type { ResultEnvelope } from "mycp-protocol";
+import { makeDraftNoteTool, makeFindOrderTool } from "anymcp-fixture/tools";
+import type { ResultEnvelope } from "anymcp-protocol";
 import { startBridge, type BridgeHandle } from "../src/bridge";
 import { FakeExtension, okEnvelope, pairedExtension, sleep } from "./helpers";
 
@@ -62,7 +62,7 @@ async function waitFor<T>(fn: () => Promise<T>, ok: (v: T) => boolean, ms = 10_0
 
 describe("pairing code for a bridge running in the background", () => {
   it("is published only by the bridge that owns the ports, removed once paired, and gone when it stops", async () => {
-    const home = mkdtempSync(join(tmpdir(), "mycp-pairfile-"));
+    const home = mkdtempSync(join(tmpdir(), "anymcp-pairfile-"));
     cleanups.push(() => rmSync(home, { recursive: true, force: true }));
     const file = join(home, "pairing.json");
     const read = () => (existsSync(file) ? (JSON.parse(readFileSync(file, "utf8")) as { code: string; expiresAt: string }) : null);
@@ -86,9 +86,9 @@ describe("pairing code for a bridge running in the background", () => {
   });
 });
 
-describe("mycp-bridge --stdio", () => {
+describe("anymcp-bridge --stdio", () => {
   it("forwards to a running bridge: same tools, same results, tool changes appear, the app's name is shown", async () => {
-    const home = mkdtempSync(join(tmpdir(), "mycp-stdio-"));
+    const home = mkdtempSync(join(tmpdir(), "anymcp-stdio-"));
     const bridge = await startBridge({ mcpPort: await freePort(), extPort: await freePort(), home, reconnectGraceMs: 300, cancelWaitMs: 300 });
     cleanups.push(async () => {
       await bridge.close();
@@ -98,7 +98,7 @@ describe("mycp-bridge --stdio", () => {
     await ext.syncTools([makeFindOrderTool()]);
 
     const { client } = await stdioClient(home, bridge.mcpPort, bridge.extPort);
-    expect(await listNames(client)).toEqual(["find_order", "mycp_get_run", "mycp_status"]);
+    expect(await listNames(client)).toEqual(["anymcp_get_run", "anymcp_status", "find_order"]);
     const find = (await client.listTools()).tools.find((t) => t.name === "find_order")!;
     expect(find.annotations?.readOnlyHint).toBe(true);
     expect(find.outputSchema).toBeTruthy();
@@ -126,17 +126,17 @@ describe("mycp-bridge --stdio", () => {
     expect(await waitFor(() => listNames(client), (n) => n.includes("draft_customer_note"))).toContain("draft_customer_note");
     // ...and a disabled one disappears
     await ext.syncTools([makeDraftNoteTool()]);
-    expect(await waitFor(() => listNames(client), (n) => !n.includes("find_order"))).toEqual(["draft_customer_note", "mycp_get_run", "mycp_status"]);
+    expect(await waitFor(() => listNames(client), (n) => !n.includes("find_order"))).toEqual(["anymcp_get_run", "anymcp_status", "draft_customer_note"]);
 
     // status explains the connection without revealing secrets
-    const st = await client.callTool({ name: "mycp_status", arguments: {} });
+    const st = await client.callTool({ name: "anymcp_status", arguments: {} });
     expect(st.structuredContent).toEqual({ extension: "connected", enabledTools: 1, bridgeVersion: expect.any(String) });
     expect(JSON.stringify(st)).not.toContain(bridge.token());
     expect(JSON.stringify(st)).not.toContain(bridge.pairingCode());
   }, 60_000);
 
   it("becomes the bridge when none runs, takes over when the one it forwarded to stops, and exits when the app closes", async () => {
-    const home = mkdtempSync(join(tmpdir(), "mycp-stdio-"));
+    const home = mkdtempSync(join(tmpdir(), "anymcp-stdio-"));
     cleanups.push(() => rmSync(home, { recursive: true, force: true }));
     const mcpPort = await freePort();
     const extPort = await freePort();
@@ -148,12 +148,12 @@ describe("mycp-bridge --stdio", () => {
     ext.close();
 
     const { client } = await stdioClient(home, mcpPort, extPort);
-    expect((await client.callTool({ name: "mycp_status", arguments: {} })).structuredContent).toMatchObject({ extension: "paired_not_connected" });
+    expect((await client.callTool({ name: "anymcp_status", arguments: {} })).structuredContent).toMatchObject({ extension: "paired_not_connected" });
 
     // the terminal bridge is closed: the stdio process takes over the ports and keeps answering
     await bridge.close();
     bridge = null;
-    const st = await client.callTool({ name: "mycp_status", arguments: {} });
+    const st = await client.callTool({ name: "anymcp_status", arguments: {} });
     expect(st.isError).toBeFalsy();
     expect(st.structuredContent).toMatchObject({ extension: "paired_not_connected" });
 

@@ -1,4 +1,4 @@
-# How MyCP compares with existing browser-MCP and WebMCP projects
+# How AnyMCP compares with existing browser-MCP and WebMCP projects
 
 **Method.** A research pass on **2026-11-11** read primary sources (GitHub READMEs, docs, package registries,
 selected source files). Each cell below is tagged:
@@ -29,7 +29,7 @@ copied; licences are noted only so nobody copies by accident.
 | 11 | **Workflow-to-MCP** | 0.3.0, created 2026-10-29 | MIT (headed "Copyright Microsoft") | github.com/cassiomc1/Workflow-to-MCP |
 
 Projects **10 and 11 are the real overlap**: both record a workflow into a reviewed, typed, verified MCP tool.
-MyCP is *not* the first to do that.
+AnyMCP is *not* the first to do that.
 
 ## Comparison
 
@@ -46,27 +46,27 @@ MyCP is *not* the first to do that.
 | 9 | pip/Docker + LLM config (V-doc) | LLM/vision tasks; workflow blocks (V-doc) | No-code builder; extension is not a recorder (V-doc) | Chosen tabs in a "controlled" group (V-doc) | Validation block (V-doc) | Does not re-attach dropped tabs (V-doc) | Banner on controlled tab (V-doc) | Extension: no JS eval/downloads/incognito (V-doc) |
 | 10 | Python 3.11, uv, Playwright Chromium; **no Chrome extension** (V-doc) | **Workflow-specific, read-only typed tools** (V-doc) | Recording → unreviewed draft → `author` review → publish/rollback; local review UI (V-doc) | Domain allow-list; GET/HEAD/OPTIONS only; per-step risk/confirmation declared; V0 has **no approval UI and no writes** (V-doc) | Typed outputs, success check, draft evaluation vs independent expected answers, traces (V-doc) | No retries; stops at first failure (V-doc) | Redacted trace per run; live stop U (V-doc) | No login or sessions; public sites only (V-doc) |
 | 11 | Node 24, pnpm, Playwright browser, unpacked MV3 extension (V-doc) | **Workflow-specific typed tools** `wf_*` (V-doc) | MV3 recorder, review editor, SHA-256 hash trust, verify suite, publish (V-doc) | Origin grants and hash trust separate; **writes need a single-use 60 s approval in a local terminal**, enforced in code; MCP callers cannot grant it (V-doc) | Schema-validated outputs; verify-suite; `OUTCOME_UNKNOWN` after a failed mutating step (V-doc) | No retries or auto-repair (V-doc) | Audit log, `run inspect`; in-browser live indicator/stop U (V-doc) | **Runs in an isolated Chromium, never the primary profile**; auth profiles POSIX-only; no frames/popups/uploads (V-doc) |
-| — | **MyCP** (this repo) | Workflow-specific typed tools; generic browser actions are *not* exposed at all | Record → pick params/outputs/success → derived review → test exact version → enable (**M**: e2e) | Per-origin grant (Chrome permission), per-tool enable, code-enforced; approval in the browser bound to tool version + target + args + page values (**M**: e2e) | Mandatory pre/postconditions, schema-validated output, distinct `unknown_outcome`/`empty` (**M**: e2e + eval) | Never auto-replays a write; read-only re-check; interrupted ≠ unknown (**M**: e2e) | Run timeline, in-page banner, toolbar badge, Stop (**M**: e2e) | Standard top-document controls (incl. dropdowns, checkboxes, lists, shadow DOM) on one site per tool; fixture-verified only |
+| — | **AnyMCP** (this repo) | Workflow-specific typed tools; generic browser actions are *not* exposed at all | Record → pick params/outputs/success → derived review → test exact version → enable (**M**: e2e) | Per-origin grant (Chrome permission), per-tool enable, code-enforced; approval in the browser bound to tool version + target + args + page values (**M**: e2e) | Mandatory pre/postconditions, schema-validated output, distinct `unknown_outcome`/`empty` (**M**: e2e + eval) | Never auto-replays a write; read-only re-check; interrupted ≠ unknown (**M**: e2e) | Run timeline, in-page banner, toolbar badge, Stop (**M**: e2e) | Standard top-document controls (incl. dropdowns, checkboxes, lists, shadow DOM) on one site per tool; fixture-verified only |
 
 Competitor statements are the research pass's reading of the sources above, **not** independent experiments.
 
-## What MyCP can honestly claim from this
+## What AnyMCP can honestly claim from this
 
 **Improvement 1 — approval in the browser, bound to the exact run, with live visibility.** Of what was read:
 Workflow-to-MCP approves in a terminal; browser-to-mcp V0 has no approval UI; Playwright MCP and BrowserMCP
-approve at the *connection* level; Claude in Chrome approves per action on generic model-driven steps. MyCP
+approve at the *connection* level; Claude in Chrome approves per action on generic model-driven steps. AnyMCP
 shows the exact action and the page values on screen, binds the approval to tool version + target + arguments
 + page state, withdraws it if any changes, and re-checks right before the click. *This is a design difference,
 not proof of better safety*: Workflow-to-MCP's terminal approval may be preferable for some threat models.
 
 **Improvement 2 — reviewed typed tools that run in the user's own signed-in Chrome.** Workflow-to-MCP states it
 never uses the primary profile; browser-to-mcp supports no logins; the real-profile bridges expose only generic
-or unreviewed actions. MyCP runs in the user's real profile (in a tab it owns), which makes signed-in sites
+or unreviewed actions. AnyMCP runs in the user's real profile (in a tab it owns), which makes signed-in sites
 usable but also means the blast radius is the user's real sessions. That trade-off is stated, not hidden.
 
 **Not claimed.** "First", "best", "most secure", "state of the art", "more reliable". No head-to-head benchmark
 was run, so no performance comparison is made. Both overlapping projects ship result verification too — it is
-not a MyCP differentiator.
+not an AnyMCP differentiator.
 
 **Where competitors are ahead.** Much broader tool surfaces (Playwright MCP, DevTools MCP), WebMCP integration
 (Playwright MCP, DevTools MCP), non-Chrome browsers, vision/LLM-driven recovery (Skyvern, workflow-use), a
@@ -84,4 +84,4 @@ admin controls (Claude in Chrome).
 Apache-2.0 (1, 2, 3, 10): keep licence text/NOTICE, mark changes; BrowserMCP also asks modified builds be renamed.
 MIT (5, 7, 11): keep the notice (11 carries a Microsoft copyright header — check provenance before any reference).
 AGPL-3.0 (8, 9): strong copyleft incl. network use — do not adapt into a differently licensed product.
-Closed (6, Rook): no reuse. MyCP copied no code from any of them.
+Closed (6, Rook): no reuse. AnyMCP copied no code from any of them.

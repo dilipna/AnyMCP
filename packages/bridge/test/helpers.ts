@@ -12,13 +12,13 @@ import {
   type ResultEnvelope,
   type ToolDefinition,
   type ToolManifest,
-} from "mycp-protocol";
+} from "anymcp-protocol";
 import { startBridge, type BridgeHandle, type BridgeOptions } from "../src/bridge";
 
 export const EXT_ID = "abcdefghijklmnopabcdefghijklmnop";
 
 export async function withBridge(opts: BridgeOptions = {}): Promise<{ bridge: BridgeHandle; cleanup: () => Promise<void> }> {
-  const home = mkdtempSync(join(tmpdir(), "mycp-bridge-test-"));
+  const home = mkdtempSync(join(tmpdir(), "anymcp-bridge-test-"));
   const bridge = await startBridge({ mcpPort: 0, extPort: 0, home, reconnectGraceMs: 300, cancelWaitMs: 300, ...opts });
   return {
     bridge,
@@ -29,7 +29,7 @@ export async function withBridge(opts: BridgeOptions = {}): Promise<{ bridge: Br
   };
 }
 
-/** A stand-in for the MyCP Extension that speaks the real bridge protocol. */
+/** A stand-in for the AnyMCP Extension that speaks the real bridge protocol. */
 export class FakeExtension {
   ws!: WebSocket;
   inbox: BridgeToExt[] = [];
@@ -115,7 +115,7 @@ export async function pairedExtension(bridge: BridgeHandle, id = EXT_ID): Promis
 }
 
 export async function mcpClient(bridge: BridgeHandle, token = bridge.token()): Promise<Client> {
-  const client = new Client({ name: "mycp-test-client", version: "0.0.0" });
+  const client = new Client({ name: "anymcp-test-client", version: "0.0.0" });
   await client.connect(new StreamableHTTPClientTransport(new URL(bridge.mcpUrl), { requestInit: { headers: { Authorization: `Bearer ${token}` } } }));
   return client;
 }

@@ -95,7 +95,7 @@ test("the approval prompt is accessible, and a stray Enter cannot approve it", a
 
 test("the navigation is a labelled landmark and every section tab is keyboard-operable", async () => {
   await s.panel.reload();
-  const nav = s.panel.getByRole("navigation", { name: "MyCP sections" });
+  const nav = s.panel.getByRole("navigation", { name: "AnyMCP sections" });
   await expect(nav).toBeVisible();
   await s.panel.getByRole("button", { name: "Runs" }).focus();
   await s.panel.keyboard.press("Enter");

@@ -1,17 +1,17 @@
 // MCP surface. One McpServer is built per request (stateless Streamable HTTP, as the v2 SDK
 // recommends); all shared state lives in ExtensionHub / RunManager, never in the factory.
 //
-// Tools exposed = tools the user ENABLED in the extension (synced as manifests) + `mycp_get_run`.
+// Tools exposed = tools the user ENABLED in the extension (synced as manifests) + `anymcp_get_run`.
 // Enforcement does not rely on MCP annotations (they are hints): see RunManager and the extension.
 
 import { McpServer, createMcpHandler, fromJsonSchema, type McpHttpHandler } from "@modelcontextprotocol/server";
-import { MYCP_VERSION, envelopeJsonSchema, isErrorStatus, type ResultEnvelope, type ToolManifest } from "mycp-protocol";
+import { ANYMCP_VERSION, envelopeJsonSchema, isErrorStatus, type ResultEnvelope, type ToolManifest } from "anymcp-protocol";
 import type { ExtensionHub } from "./hub";
 import { connectionAbort } from "./http";
 import type { RunManager } from "./runs";
 
 function envelopeText(env: ResultEnvelope): string {
-  const head = `MyCP result: ${env.status}${env.reasonCode !== "ok" ? ` (${env.reasonCode})` : ""}. ${env.message}`;
+  const head = `AnyMCP result: ${env.status}${env.reasonCode !== "ok" ? ` (${env.reasonCode})` : ""}. ${env.message}`;
   const notes: string[] = [];
   if (env.actionMayHaveOccurred !== false) notes.push(`actionMayHaveOccurred: ${String(env.actionMayHaveOccurred)}.`);
   if (!env.retry.safe || env.status !== "success") notes.push(`Retry guidance: ${env.retry.guidance}`);
@@ -21,12 +21,12 @@ function envelopeText(env: ResultEnvelope): string {
 
 function describeFor(m: ToolManifest): string {
   const extra = m.approvalRequired
-    ? " This tool changes data on the website, so the user must approve every run in the MyCP side panel; the call waits for that decision."
+    ? " This tool changes data on the website, so the user must approve every run in the AnyMCP side panel; the call waits for that decision."
     : " Read-only.";
   return `${m.description}${extra} Runs only on ${m.origins.join(", ")}.`;
 }
 
-/** What `mycp_status` reports. Never contains secrets (no token, no pairing code). */
+/** What `anymcp_status` reports. Never contains secrets (no token, no pairing code). */
 export interface BridgeStatus {
   extension: "connected" | "paired_not_connected" | "not_paired";
   enabledTools: number;
@@ -34,16 +34,16 @@ export interface BridgeStatus {
 }
 
 function statusText(s: BridgeStatus): string {
-  if (s.extension === "connected") return `MyCP Extension is connected. ${s.enabledTools} tool(s) are enabled.${s.enabledTools === 0 ? " The user can teach and enable tools in the MyCP side panel in Chrome." : ""}`;
+  if (s.extension === "connected") return `AnyMCP Extension is connected. ${s.enabledTools} tool(s) are enabled.${s.enabledTools === 0 ? " The user can teach and enable tools in the AnyMCP side panel in Chrome." : ""}`;
   if (s.extension === "paired_not_connected")
-    return "MyCP Extension is paired but not connected right now. Ask the user to open Chrome; MyCP reconnects by itself within a minute. The MyCP side panel shows the connection state.";
-  return "No browser is paired with this MyCP bridge yet. Ask the user to open the MyCP side panel in Chrome, choose Connect, and enter the pairing code shown by the bridge (run `mycp-bridge` in a terminal to see it).";
+    return "AnyMCP Extension is paired but not connected right now. Ask the user to open Chrome; AnyMCP reconnects by itself within a minute. The AnyMCP side panel shows the connection state.";
+  return "No browser is paired with this AnyMCP bridge yet. Ask the user to open the AnyMCP side panel in Chrome, choose Connect, and enter the pairing code shown by the bridge (run `anymcp-bridge` in a terminal to see it).";
 }
 
 export function createBridgeMcpHandler(hub: ExtensionHub, runs: RunManager, status: () => BridgeStatus): McpHttpHandler {
   return createMcpHandler(
     () => {
-      const server = new McpServer({ name: "mycp", version: MYCP_VERSION });
+      const server = new McpServer({ name: "anymcp", version: ANYMCP_VERSION });
 
       for (const m of hub.listTools()) {
         server.registerTool(
@@ -78,9 +78,9 @@ export function createBridgeMcpHandler(hub: ExtensionHub, runs: RunManager, stat
                   tool: { id: m.id, version: m.version },
                   status: "denied",
                   reasonCode: "tool_disabled",
-                  message: "This tool is no longer enabled in MyCP.",
+                  message: "This tool is no longer enabled in AnyMCP.",
                   actionMayHaveOccurred: false,
-                  retry: { safe: false, guidance: "Ask the user to enable the tool in MyCP." },
+                  retry: { safe: false, guidance: "Ask the user to enable the tool in AnyMCP." },
                   verification: { preconditions: [], postconditions: [] },
                   timing: { startedAt: new Date().toISOString(), finishedAt: new Date().toISOString(), durationMs: 0 },
                   untrustedContent: false,
@@ -95,11 +95,11 @@ export function createBridgeMcpHandler(hub: ExtensionHub, runs: RunManager, stat
       }
 
       server.registerTool(
-        "mycp_status",
+        "anymcp_status",
         {
-          title: "MyCP connection status",
+          title: "AnyMCP connection status",
           description:
-            "Explains whether the MyCP browser extension is paired and connected and how many tools are enabled. Use it when no MyCP tools are listed or a call reports that the extension is disconnected. Read-only.",
+            "Explains whether the AnyMCP browser extension is paired and connected and how many tools are enabled. Use it when no AnyMCP tools are listed or a call reports that the extension is disconnected. Read-only.",
           inputSchema: fromJsonSchema({ type: "object", properties: {}, additionalProperties: false } as never),
           annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: false },
         },
@@ -111,11 +111,11 @@ ${JSON.stringify(s)}` }], structuredContent: s as unknown as Record<string, unkn
       );
 
       server.registerTool(
-        "mycp_get_run",
+        "anymcp_get_run",
         {
-          title: "Look up a MyCP run",
+          title: "Look up an AnyMCP run",
           description:
-            "Look up what MyCP recorded for an earlier execution id (for example after a timeout or an unknown_outcome). Returns status and verification only, never page content. Read-only.",
+            "Look up what AnyMCP recorded for an earlier execution id (for example after a timeout or an unknown_outcome). Returns status and verification only, never page content. Read-only.",
           inputSchema: fromJsonSchema({
             type: "object",
             properties: { execution_id: { type: "string", pattern: "^run_[0-9a-f]{16}$", maxLength: 24 } },

@@ -3,7 +3,7 @@
 // Do not edit after the first headline run; bump PROTOCOL_VERSION and re-freeze instead.
 
 import type { Client } from "@modelcontextprotocol/client";
-import type { ResultEnvelope } from "mycp-protocol";
+import type { ResultEnvelope } from "anymcp-protocol";
 import { waitForState, sleep, type Stack } from "../../../e2e/harness";
 
 export const PROTOCOL_VERSION = 1;

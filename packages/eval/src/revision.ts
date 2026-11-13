@@ -8,7 +8,7 @@ import { join, relative, resolve } from "node:path";
 
 const ROOT = resolve(import.meta.dirname, "../../..");
 const INCLUDE = ["packages", "e2e", "scripts", "docs/evaluation-protocol.md", "package.json"];
-const SKIP = new Set(["node_modules", "dist", "test-results", "release", ".mycp-test", "screenshots", "results", ".git"]);
+const SKIP = new Set(["node_modules", "dist", "test-results", "release", ".anymcp-test", "screenshots", "results", ".git"]);
 
 function walk(p: string, out: string[]) {
   const st = statSync(p);

@@ -1,4 +1,4 @@
-// Extension hub: the authenticated WebSocket channel between the bridge and the MyCP Extension.
+// Extension hub: the authenticated WebSocket channel between the bridge and the AnyMCP Extension.
 // This is a SEPARATE connection from the MCP transport.
 //
 // Security properties:
@@ -14,7 +14,7 @@ import { WebSocketServer, type WebSocket } from "ws";
 import {
   BridgeToExtZ,
   ExtToBridgeZ,
-  MYCP_VERSION,
+  ANYMCP_VERSION,
   PROTOCOL_VERSION,
   hmacSha256Hex,
   parseJsonMessage,
@@ -23,7 +23,7 @@ import {
   type BridgeToExt,
   type ExtToBridge,
   type ToolManifest,
-} from "mycp-protocol";
+} from "anymcp-protocol";
 import type { PairingManager } from "./pairing";
 import type { StateStore } from "./store";
 
@@ -170,7 +170,7 @@ export class ExtensionHub extends EventEmitter<HubEvents> {
     conn.stage = "ready";
     this.active = conn;
     conn.ws.send(
-      JSON.stringify({ type: "ready", bridgeVersion: MYCP_VERSION, protocol: PROTOCOL_VERSION, clientConnected: this.lastClientName !== null } satisfies BridgeToExt),
+      JSON.stringify({ type: "ready", bridgeVersion: ANYMCP_VERSION, protocol: PROTOCOL_VERSION, clientConnected: this.lastClientName !== null } satisfies BridgeToExt),
     );
     this.emit("ready");
   }
@@ -194,8 +194,8 @@ export class ExtensionHub extends EventEmitter<HubEvents> {
             r.reason === "wrong_code"
               ? "That pairing code is not correct."
               : r.reason === "expired"
-                ? "That pairing code expired. A new one was issued: the bridge terminal shows it, or run mycp-bridge in a terminal to see it."
-                : "Too many wrong attempts. A new pairing code was issued: the bridge terminal shows it, or run mycp-bridge in a terminal to see it.";
+                ? "That pairing code expired. A new one was issued: the bridge terminal shows it, or run anymcp-bridge in a terminal to see it."
+                : "Too many wrong attempts. A new pairing code was issued: the bridge terminal shows it, or run anymcp-bridge in a terminal to see it.";
           return this.reject(conn, `pairing_${r.reason}`, text);
         }
         const secret = randomHex(32);

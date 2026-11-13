@@ -14,9 +14,9 @@ const b64 = (p: string) => `data:image/png;base64,${readFileSync(p).toString("ba
 const icon = b64(resolve(root, "packages/extension/dist/prod/icons/icon-128.png"));
 
 const slides = [
-  { file: "01-review-before-you-enable.png", src: "03-tool-review.png", h: "Review what a tool can read and change", p: "A plain-language summary generated from what MyCP actually enforces: where it runs, what it reads, what it may change, when it asks, how success is checked." },
+  { file: "01-review-before-you-enable.png", src: "03-tool-review.png", h: "Review what a tool can read and change", p: "A plain-language summary generated from what AnyMCP actually enforces: where it runs, what it reads, what it may change, when it asks, how success is checked." },
   { file: "02-approve-every-change.png", src: "05-approval-request.png", h: "Approve every change, one run at a time", p: "The exact action and the page values you were shown. If the page changes before the click, the approval is withdrawn and nothing happens." },
-  { file: "03-honest-results.png", src: "07-run-timeline-unknown-outcome.png", h: "Honest results — even “unknown”", p: "A click is never proof. When MyCP can’t tell whether an action happened, it says so, tells you what to check, and never repeats it for you." },
+  { file: "03-honest-results.png", src: "07-run-timeline-unknown-outcome.png", h: "Honest results — even “unknown”", p: "A click is never proof. When AnyMCP can’t tell whether an action happened, it says so, tells you what to check, and never repeats it for you." },
   { file: "04-teach-once.png", src: "10-recording.png", h: "Teach a workflow once", p: "Do the task, pick the values to return and a message that proves it worked. Passwords and payment fields are never recorded." },
   { file: "05-stay-in-control.png", src: "08-settings.png", h: "You stay in control", p: "Allow sites one at a time, disconnect your assistant, delete local history, or revoke everything with one button." },
 ];
@@ -32,14 +32,14 @@ p{font-size:22px;line-height:1.45;margin:0;color:#dbe6ff;max-width:560px}
 .fade{position:absolute;left:0;right:0;bottom:0;height:70px;background:linear-gradient(transparent,#f6f7f9)}
 .note{position:absolute;left:72px;bottom:22px;font-size:13px;color:#aebfe6;max-width:600px}
 </style>
-<div class="t"><div class="brand"><img src="${icon}">MyCP Extension</div><h1>${s.h}</h1><p>${s.p}</p></div>
+<div class="t"><div class="brand"><img src="${icon}">AnyMCP Extension</div><h1>${s.h}</h1><p>${s.p}</p></div>
 <div class="panel"><img src="${b64(raw(s.src))}"><div class="fade"></div></div>
 <div class="note">Render of the extension’s side-panel page with synthetic data (Acme Support Portal fixture). Not affiliated with Google or Anthropic.</div>`;
 
 const promo = `<!doctype html><meta charset="utf-8"><style>
 body{margin:0;width:440px;height:280px;font-family:system-ui,"Segoe UI",sans-serif;color:#fff;background:linear-gradient(135deg,#0b57d0,#14213d);display:flex;flex-direction:column;justify-content:center;padding:0 34px;gap:12px}
 img{width:64px;height:64px} h1{margin:0;font-size:34px;font-weight:800} p{margin:0;font-size:17px;line-height:1.35;color:#dbe6ff}</style>
-<img src="${icon}"><h1>MyCP Extension</h1><p>Turn approved website workflows into reusable AI tools.</p>`;
+<img src="${icon}"><h1>AnyMCP Extension</h1><p>Turn approved website workflows into reusable AI tools.</p>`;
 
 for (const s of slides) if (!existsSync(raw(s.src))) throw new Error(`missing ${raw(s.src)} — run: npm run screenshots`);
 const browser = await chromium.launch();

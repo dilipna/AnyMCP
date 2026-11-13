@@ -2,7 +2,7 @@
 // start pages that carry a query string. Every case checks both the happy path and what must be refused.
 
 import { describe, expect, it } from "vitest";
-import { renderEntry } from "mycp-protocol";
+import { renderEntry } from "anymcp-protocol";
 import { buildDraft, buildEntryQuery, parameterizeText, queryPartsFromSearch, type DraftSpec } from "../src/shared/draft";
 
 const base = (over: Partial<DraftSpec> = {}): DraftSpec => ({

@@ -11,17 +11,23 @@
 // custom elements via chrome.dom), because component-based sites keep most of their controls there.
 // iframes are NOT entered: a frame is a different document with its own origin and permission question.
 
-import { resolveText } from "mycp-protocol/light";
-import type { Locator, LocatorLeaf, Role } from "mycp-protocol";
+import { resolveText } from "anymcp-protocol/light";
+import type { Locator, LocatorLeaf, Role } from "anymcp-protocol";
 
 export type Args = Record<string, unknown>;
+
+/**
+ * Parts of a page the site author marked as private: AnyMCP never records, reads or fills inside them.
+ * `data-mycp-ignore` is the attribute's pre-release name and is still honoured.
+ */
+export const PRIVATE_AREA = "[data-anymcp-ignore],[data-mycp-ignore]";
 
 export const norm = (s: string | null | undefined): string => (s ?? "").replace(/\s+/g, " ").trim();
 
 // ---- shadow-aware DOM helpers -----------------------------------------------
 /** The element's shadow root, if any. Closed roots are only looked up on custom elements (the only common case). */
 export function shadowRootOf(el: Element): ShadowRoot | null {
-  if (el.hasAttribute("data-mycp-banner")) return null; // MyCP's own indicator is never part of the page
+  if (el.hasAttribute("data-anymcp-banner")) return null; // AnyMCP's own indicator is never part of the page
   if (el.shadowRoot) return el.shadowRoot;
   if (!el.localName.includes("-")) return null;
   try {
@@ -173,7 +179,7 @@ function hasAriaName(el: Element): boolean {
   return !!(el.getAttribute("aria-label") || el.getAttribute("aria-labelledby") || el.getAttribute("title"));
 }
 
-// roles whose name comes from their visible content (MyCP also treats alert/status this way, which
+// roles whose name comes from their visible content (AnyMCP also treats alert/status this way, which
 // the ARIA spec does not — documented in docs/supported-capabilities.md)
 const NAME_FROM_CONTENT = new Set<Role>([
   "button", "link", "heading", "cell", "columnheader", "listitem", "tab", "alert", "status", "row",

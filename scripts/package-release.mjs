@@ -2,8 +2,8 @@
 //   node scripts/package-release.mjs [--verify]
 //
 // Produces release/:
-//   mycp-extension-<version>.zip   the Chrome Web Store upload (production build only)
-//   mycp-bridge-<version>.mjs      the single-file bridge
+//   anymcp-extension-<version>.zip   the Chrome Web Store upload (production build only)
+//   anymcp-bridge-<version>.mjs      the single-file bridge
 //   THIRD_PARTY_NOTICES.md         licences of bundled dependencies
 //   SHA256SUMS.txt
 //
@@ -19,7 +19,7 @@ import { deflateRawSync } from "node:zlib";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const extDir = resolve(root, "packages/extension/dist/prod");
-const version = /MYCP_VERSION = "([^"]+)"/.exec(readFileSync(resolve(root, "packages/protocol/src/version.ts"), "utf8"))[1];
+const version = /ANYMCP_VERSION = "([^"]+)"/.exec(readFileSync(resolve(root, "packages/protocol/src/version.ts"), "utf8"))[1];
 const releaseDir = resolve(root, "release");
 
 // ---------------------------------------------------------------- deterministic zip
@@ -75,10 +75,10 @@ function collectLicences() {
   const queue = [];
   for (const pkg of ["extension", "bridge", "protocol"]) {
     const j = JSON.parse(readFileSync(resolve(root, `packages/${pkg}/package.json`), "utf8"));
-    for (const d of Object.keys(j.dependencies ?? {})) if (!d.startsWith("mycp-")) queue.push(d);
+    for (const d of Object.keys(j.dependencies ?? {})) if (!d.startsWith("anymcp-")) queue.push(d);
   }
   const seen = new Set();
-  const lines = ["# Third-party notices", "", "MyCP bundles the following open-source packages. Each is used under its own licence.", ""];
+  const lines = ["# Third-party notices", "", "AnyMCP bundles the following open-source packages. Each is used under its own licence.", ""];
   while (queue.length) {
     const name = queue.shift();
     if (seen.has(name)) continue;
@@ -98,7 +98,7 @@ function collectLicences() {
 function buildOnce() {
   execFileSync(process.execPath, [resolve(root, "scripts/build-all.mjs")], { stdio: "ignore" });
   const zip = zipDir(extDir);
-  const bridge = readFileSync(resolve(root, "packages/bridge/dist/mycp-bridge.mjs"));
+  const bridge = readFileSync(resolve(root, "packages/bridge/dist/anymcp-bridge.mjs"));
   return { zip, bridge };
 }
 const sha = (b) => createHash("sha256").update(b).digest("hex");
@@ -115,12 +115,12 @@ if (process.argv.includes("--verify")) {
 
 rmSync(releaseDir, { recursive: true, force: true });
 mkdirSync(releaseDir, { recursive: true });
-const zipName = `mycp-extension-${version}.zip`, bridgeName = `mycp-bridge-${version}.mjs`;
+const zipName = `anymcp-extension-${version}.zip`, bridgeName = `anymcp-bridge-${version}.mjs`;
 writeFileSync(join(releaseDir, zipName), a.zip);
-copyFileSync(resolve(root, "packages/bridge/dist/mycp-bridge.mjs"), join(releaseDir, bridgeName));
+copyFileSync(resolve(root, "packages/bridge/dist/anymcp-bridge.mjs"), join(releaseDir, bridgeName));
 writeFileSync(join(releaseDir, "THIRD_PARTY_NOTICES.md"), collectLicences());
 const manifest = JSON.parse(readFileSync(join(extDir, "manifest.json"), "utf8"));
 writeFileSync(join(releaseDir, "permissions-summary.json"), JSON.stringify({ permissions: manifest.permissions, optional_host_permissions: manifest.optional_host_permissions, host_permissions: manifest.host_permissions, minimum_chrome_version: manifest.minimum_chrome_version }, null, 2) + "\n");
 const sums = [zipName, bridgeName, "THIRD_PARTY_NOTICES.md", "permissions-summary.json"].map((f) => `${sha(readFileSync(join(releaseDir, f)))}  ${f}`);
 writeFileSync(join(releaseDir, "SHA256SUMS.txt"), sums.join("\n") + "\n");
-console.log(`release/ ready for MyCP ${version}:\n${sums.map((s) => "  " + s).join("\n")}`);
+console.log(`release/ ready for AnyMCP ${version}:\n${sums.map((s) => "  " + s).join("\n")}`);

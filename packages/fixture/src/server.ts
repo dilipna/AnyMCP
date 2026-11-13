@@ -1,11 +1,11 @@
-// Acme Support Portal — a SYNTHETIC fixture website for developing and evaluating MyCP.
+// Acme Support Portal — a SYNTHETIC fixture website for developing and evaluating AnyMCP.
 // Every order, customer and note here is made up. Passing tests against this site says
 // nothing about compatibility with any real website.
 //
 // Control endpoints (/__control/*) exist only when started with control enabled. They let
 // tests inject failures (layout change, ambiguity, expired session, lost acknowledgements, ...)
 // and read the ground-truth write log, which is how the evaluation counts unapproved writes
-// without trusting MyCP's own reporting.
+// without trusting AnyMCP's own reporting.
 
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { pathToFileURL } from "node:url";
@@ -182,7 +182,7 @@ export const PRODUCTS: readonly Product[] = [
 
 export const productSlug = (name: string): string => name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
-/** The ground truth the catalog page shows for a search. Tests compare MyCP's output with this. */
+/** The ground truth the catalog page shows for a search. Tests compare AnyMCP's output with this. */
 export function searchProducts(q: { term?: string; category?: string; inStock?: boolean; sort?: "name" | "price" }): Product[] {
   const term = (q.term ?? "").trim().toLowerCase();
   const hits = PRODUCTS.filter(
@@ -240,7 +240,7 @@ export async function startFixture(opts: { port?: number; control?: boolean; hos
  dl{display:grid;grid-template-columns:140px 1fr;gap:4px 12px} dt{font-weight:600}
  .note-text{font-weight:500} .badge{font-size:12px;background:#dde6f5;border-radius:8px;padding:0 8px}
 </style></head><body>
-<div class="synthetic" role="note">SYNTHETIC DATA — this fixture is for MyCP testing only. No real customers or orders.</div>
+<div class="synthetic" role="note">SYNTHETIC DATA — this fixture is for AnyMCP testing only. No real customers or orders.</div>
 <header class="top"><strong>Acme Support Portal</strong><nav aria-label="Main"><a href="/orders">Orders</a></nav><span>Signed in as demo agent</span></header>
 <main>${body}</main>${script ? `<script>${script}</script>` : ""}</body></html>`;
 
@@ -350,7 +350,8 @@ form.addEventListener('submit', async (e) => {
   <label for="pw">Password</label><input id="pw" name="password" type="password" autocomplete="current-password">
   <label for="tok">API token</label><input id="tok" name="api_token" type="text" autocomplete="off">
   <label for="cc">Card number</label><input id="cc" name="cardnumber" type="text" autocomplete="cc-number">
-  <label for="priv">Internal reference</label><input id="priv" name="ref" type="text" data-mycp-ignore>
+  <label for="priv">Internal reference</label><input id="priv" name="ref" type="text" data-anymcp-ignore>
+  <span data-mycp-ignore><label for="legacy">Legacy reference</label><input id="legacy" name="legacy_ref" type="text"></span>
   <button type="submit">Save settings</button>
 </form>`,
     );

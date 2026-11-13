@@ -4,7 +4,7 @@
 // An approval is: single-use, time-limited, bound to one execution + one hash, and invalidated
 // automatically if the live page stops matching what the user was shown.
 
-import type { ApprovalRequest } from "mycp-protocol";
+import type { ApprovalRequest } from "anymcp-protocol";
 
 export type ApprovalDecision = "approved" | "rejected" | "expired" | "cancelled" | "invalidated";
 

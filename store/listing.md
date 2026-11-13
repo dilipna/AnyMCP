@@ -1,11 +1,11 @@
 # Chrome Web Store listing — DRAFT (not submitted, not approved)
 
 > Nothing here has been submitted. Approval is not claimed and does not exist. **Do not submit under the name
-> "MyCP" before the naming check (`docs/naming-check.md`) is resolved.** Items in [BRACKETS] are owner tasks.
+> "AnyMCP" before the naming check (`docs/naming-check.md`) is resolved.** Items in [BRACKETS] are owner tasks.
 
 ## Item
 
-* **Name:** MyCP Extension  *(pending naming clearance)*
+* **Name:** AnyMCP Extension  *(pending naming clearance)*
 * **Summary (≤ 132 chars, equals the manifest `description`):**
   `Turn approved website workflows into reusable AI tools. You review permissions and approve every change.`
 * **Category:** Developer Tools
@@ -17,12 +17,12 @@
 > **Turn approved website workflows into reusable AI tools.**
 > Teach a workflow, review its permissions, and let your AI assistant run it with verified results.
 >
-> MyCP Extension lets you teach your browser a website task once — like "find an order" — and turn it into a
+> AnyMCP Extension lets you teach your browser a website task once — like "find an order" — and turn it into a
 > tool your own AI assistant can call. You decide what a tool can read and change, test it, and only then
 > enable it.
 >
 > **How it works**
-> 1. Run the small MyCP bridge on your computer (free, open instructions included).
+> 1. Run the small AnyMCP bridge on your computer (free, open instructions included).
 > 2. Pair it with the extension using a one-time code.
 > 3. Open a website you allow, press *Teach*, and do the task once.
 > 4. Review a plain-language summary: where it may run, what it reads, what it may change, when it asks for
@@ -33,21 +33,21 @@
 > * Sites are allowed one at a time, and you can remove any site.
 > * Tools that change data ask for your approval **every time**, showing the exact action and values. The
 >   approval applies to that one run only and is cancelled if the page changes.
-> * A visible indicator and a Stop button are always available while MyCP is working.
-> * Results say honestly whether the task worked. If MyCP can't be sure, it says **"unknown outcome"** and does
+> * A visible indicator and a Stop button are always available while AnyMCP is working.
+> * Results say honestly whether the task worked. If AnyMCP can't be sure, it says **"unknown outcome"** and does
 >   not repeat the action for you.
 > * Password and payment fields are never recorded or read. Your sign-ins never leave your browser.
 >
-> **What MyCP does not do**
-> MyCP does not work on every website. It handles pages built from standard buttons, links, text fields,
+> **What AnyMCP does not do**
+> AnyMCP does not work on every website. It handles pages built from standard buttons, links, text fields,
 > dropdowns, checkboxes, lists and tables, including web components. It does not support iframes, rich-text
 > editors, file uploads or CAPTCHAs and never signs in for you.
 > It cannot guarantee that a website will not record a request twice. It has not had an independent security audit.
 >
-> **Requires** the free MyCP bridge program on your computer (Node.js 20+). Your AI app connects to it over
+> **Requires** the free AnyMCP bridge program on your computer (Node.js 20+). Your AI app connects to it over
 > MCP: over HTTP, or by starting it itself (stdio). The extension does nothing useful without it.
 >
-> MyCP is independent software and is not affiliated with Google or Anthropic.
+> AnyMCP is independent software and is not affiliated with Google or Anthropic.
 
 ## Single purpose
 

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { RunState } from "mycp-protocol";
+import type { RunState } from "anymcp-protocol";
 import { useCopy } from "./api";
 
 export const STATUS_VIEW: Record<RunState, { label: string; tone: "ok" | "warn" | "bad" | "info"; icon: string }> = {

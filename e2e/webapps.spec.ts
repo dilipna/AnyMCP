@@ -5,8 +5,8 @@
 // Outputs are compared with the fixture's own ground truth; writes are counted from the server's log.
 
 import { expect, test, type Page } from "@playwright/test";
-import { PRODUCTS, searchProducts } from "mycp-fixture";
-import type { ResultEnvelope } from "mycp-protocol";
+import { PRODUCTS, searchProducts } from "anymcp-fixture";
+import type { ResultEnvelope } from "anymcp-protocol";
 import { buildDraft, type DraftSpec } from "../packages/extension/src/shared/draft";
 import type { TabCandidate } from "../packages/extension/src/shared/panel-api";
 import { startStack, waitForState, sleep, type Stack } from "./harness";
@@ -45,7 +45,7 @@ test("single-page app: custom dropdown + Enter-to-search + list; start checks wa
   const { page, tabId } = await openTab("/app");
   await page.getByLabel("Find a product").waitFor(); // drawn ~600 ms after load
   expect((await s.call({ type: "record.start", tabId })).ok).toBe(true);
-  await page.locator("[data-mycp-banner]").waitFor({ state: "attached" });
+  await page.locator("[data-anymcp-banner]").waitFor({ state: "attached" });
 
   await page.getByRole("combobox", { name: "Category" }).click();
   await page.getByRole("option", { name: "Lighting" }).click();
@@ -103,7 +103,7 @@ test("single-page app: a result link that changes the address without reloading,
   const { page, tabId } = await openTab("/app");
   await page.getByLabel("Find a product").waitFor();
   expect((await s.call({ type: "record.start", tabId })).ok).toBe(true);
-  await page.locator("[data-mycp-banner]").waitFor({ state: "attached" });
+  await page.locator("[data-anymcp-banner]").waitFor({ state: "attached" });
 
   await page.getByLabel("Find a product").click();
   await page.keyboard.type("lamp");
@@ -131,7 +131,7 @@ test("single-page app: a result link that changes the address without reloading,
   spec.outputs[0]!.name = "price";
   spec.outputs[0]!.as = "number";
 
-  // the typed word "lamp" is INSIDE the link text: MyCP says so instead of silently changing what it clicks
+  // the typed word "lamp" is INSIDE the link text: AnyMCP says so instead of silently changing what it clicks
   const first = buildDraft(spec, 1);
   expect(first.warnings.join(" ")).toMatch(/“Brass desk lamp” will change with the input “find_a_product”/);
   // "keep this text as recorded" makes it the same link every time, with no warning
@@ -169,7 +169,7 @@ test("single-page app: a result link that changes the address without reloading,
 test("a dropdown that saves the moment it changes: approval every run, written once, 'nothing needed' when already set", async () => {
   const { page, tabId } = await openTab("/settings");
   expect((await s.call({ type: "record.start", tabId })).ok).toBe(true);
-  await page.locator("[data-mycp-banner]").waitFor({ state: "attached" });
+  await page.locator("[data-anymcp-banner]").waitFor({ state: "attached" });
   await page.getByLabel("Reminder frequency").focus();
   await page.keyboard.press("ArrowDown"); // Never -> Daily, and the SITE SAVES IT immediately
   await expect(page.getByRole("status")).toHaveText(/Saved: reminders Daily/);
@@ -190,7 +190,7 @@ test("a dropdown that saves the moment it changes: approval every run, written o
   await s.call({ type: "record.stop" });
 
   const spec = ((await s.call<DraftSpec>({ type: "record.spec" })) as { data: DraftSpec }).data;
-  // without marking it, MyCP warns that a dropdown may save on change
+  // without marking it, AnyMCP warns that a dropdown may save on change
   expect(buildDraft({ ...spec, id: "x_settings", title: "Set reminders", description: "Set the reminder frequency on the synthetic settings page." }, 1).warnings.join(" ")).toMatch(/dropdown/);
 
   spec.id = "set_reminders";

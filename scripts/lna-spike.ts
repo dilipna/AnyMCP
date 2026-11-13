@@ -1,4 +1,4 @@
-// Reproducible check: can the MyCP Extension's service worker open a WebSocket to the local bridge on 127.0.0.1
+// Reproducible check: can the AnyMCP Extension's service worker open a WebSocket to the local bridge on 127.0.0.1
 // in a REAL Chrome? Chrome 147+ gates some localhost access behind "Local Network Access"; Chrome's docs do not say
 // whether extension origins are exempt, so we measure instead of assuming.
 //
@@ -19,9 +19,9 @@ const channel = arg("channel", "chrome");
 const headed = process.argv.includes("--headed");
 const EXT = resolve(import.meta.dirname, "../packages/extension/dist/e2e");
 
-const home = mkdtempSync(join(tmpdir(), "mycp-lna-bridge-"));
+const home = mkdtempSync(join(tmpdir(), "anymcp-lna-bridge-"));
 const bridge = await startBridge({ mcpPort: 0, extPort: 0, home });
-const profile = mkdtempSync(join(tmpdir(), "mycp-lna-profile-"));
+const profile = mkdtempSync(join(tmpdir(), "anymcp-lna-profile-"));
 // A persistent context behaves like a normal profile (a plain newContext() is incognito-like: extensions are off there).
 const ctx = await chromium.launchPersistentContext(profile, {
   channel,

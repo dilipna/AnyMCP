@@ -1,7 +1,7 @@
 // Requests the side panel (an extension page) can make of the service worker.
 // Only extension pages can send these; web pages and the MCP client cannot reach them.
 
-import type { ResultEnvelope, ToolDefinition } from "mycp-protocol";
+import type { ResultEnvelope, ToolDefinition } from "anymcp-protocol";
 import type { PickMode } from "../content/recorder";
 import type { DraftSpec } from "./draft";
 import type { PanelState, Settings, StoredToolVersion } from "./types";
@@ -56,7 +56,7 @@ export interface TestOutcome {
 
 export type { DraftSpec, PanelState };
 
-export const REQUEST_TAG = "__mycp_panel__";
+export const REQUEST_TAG = "__anymcp_panel__";
 export interface Envelope<R extends PanelRequest = PanelRequest> {
   [REQUEST_TAG]: true;
   req: R;

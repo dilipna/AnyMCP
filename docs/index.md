@@ -1,4 +1,4 @@
-# MyCP documentation
+# AnyMCP documentation
 
 Start with the [README](../README.md). Then, by question:
 
@@ -18,11 +18,11 @@ Start with the [README](../README.md). Then, by question:
 
 ## Reading evidence correctly
 
-* **Fixture results** (`eval/results/fixture-*`) describe MyCP against a *synthetic* site the same author wrote.
+* **Fixture results** (`eval/results/fixture-*`) describe AnyMCP against a *synthetic* site the same author wrote.
   They are a development suite, not a held-out set, and say nothing about real websites.
 * **External results** (`eval/results/external-*`) describe one public sandbox on one day. They are kept apart.
 * **"0 failures"** always means "0 in N runs". It is never a guarantee.
 * **Demonstrations with a real assistant** (`eval/results/demo-claude-*`) are labelled demonstrations; a model's
   wording varies and they are not part of the numbers.
-* Every result file records the browser version, OS, Node, MyCP version, protocol version, scenario-catalogue
+* Every result file records the browser version, OS, Node, AnyMCP version, protocol version, scenario-catalogue
   hash and a hash of the source tree (there are no git commits yet, so the hash is the revision).

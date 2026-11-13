@@ -2,8 +2,8 @@
 // Each test attacks a boundary and checks that the code (not good manners) stops it.
 
 import { expect, test } from "@playwright/test";
-import { toolDefinitionHash, type ToolDefinition } from "mycp-protocol";
-import { startFixture } from "mycp-fixture";
+import { toolDefinitionHash, type ToolDefinition } from "anymcp-protocol";
+import { startFixture } from "anymcp-fixture";
 import { startStack, waitForState, sleep, type Stack } from "./harness";
 
 let s: Stack;
@@ -31,7 +31,7 @@ test("a tool whose site the user has NOT allowed is refused by the extension, ev
   await c.close();
 });
 
-test("a page that redirects to another origin mid-run is stopped; MyCP does not act on the other site", async () => {
+test("a page that redirects to another origin mid-run is stopped; AnyMCP does not act on the other site", async () => {
   s = await startStack();
   const other = await startFixture({ port: 0, control: true }); // a second, reachable site on a different origin
   try {

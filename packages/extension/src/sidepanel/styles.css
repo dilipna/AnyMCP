@@ -1,4 +1,4 @@
-/* MyCP side panel. One small design system: tokens -> primitives -> screens.
+/* AnyMCP side panel. One small design system: tokens -> primitives -> screens.
    Contrast: all text/background pairs below meet WCAG AA (>= 4.5:1) in both themes. */
 :root {
   --bg: #f6f7f9;

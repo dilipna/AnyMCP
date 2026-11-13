@@ -1,4 +1,4 @@
-// Builds the MyCP Extension.  node packages/extension/scripts/build.mjs [--target=prod|e2e] [--watch]
+// Builds the AnyMCP Extension.  node packages/extension/scripts/build.mjs [--target=prod|e2e] [--watch]
 //
 //   prod : the build that is zipped for the Chrome Web Store. No fixed host permissions (sites are granted
 //          one at a time at runtime), no test hooks, minified, no source maps.
@@ -22,8 +22,8 @@ const watch = process.argv.includes("--watch");
 const out = resolve(root, "dist", target);
 
 const versionSrc = readFileSync(resolve(root, "../protocol/src/version.ts"), "utf8");
-const version = /MYCP_VERSION = "([^"]+)"/.exec(versionSrc)?.[1];
-if (!version) throw new Error("could not read MYCP_VERSION");
+const version = /ANYMCP_VERSION = "([^"]+)"/.exec(versionSrc)?.[1];
+if (!version) throw new Error("could not read ANYMCP_VERSION");
 
 rmSync(out, { recursive: true, force: true });
 mkdirSync(join(out, "icons"), { recursive: true });
@@ -89,21 +89,21 @@ for (const s of [16, 32, 48, 128]) writeFileSync(join(out, "icons", `icon-${s}.p
 // ---------------------------------------------------------------- manifest
 const manifest = {
   manifest_version: 3,
-  name: target === "e2e" ? "MyCP Extension (test build)" : "MyCP Extension",
-  short_name: "MyCP",
+  name: target === "e2e" ? "AnyMCP Extension (test build)" : "AnyMCP Extension",
+  short_name: "AnyMCP",
   version,
   description: "Turn approved website workflows into reusable AI tools. You review permissions and approve every change.",
   minimum_chrome_version: "116",
   icons: { 16: "icons/icon-16.png", 32: "icons/icon-32.png", 48: "icons/icon-48.png", 128: "icons/icon-128.png" },
-  action: { default_title: "MyCP", default_icon: { 16: "icons/icon-16.png", 32: "icons/icon-32.png" } },
+  action: { default_title: "AnyMCP", default_icon: { 16: "icons/icon-16.png", 32: "icons/icon-32.png" } },
   side_panel: { default_path: "sidepanel.html" },
   background: { service_worker: "background.js", type: "module" },
   permissions: ["storage", "sidePanel", "scripting", "alarms"],
   // Sites are granted ONE AT A TIME at runtime (chrome.permissions.request from a user click).
   optional_host_permissions: ["http://*/*", "https://*/*"],
   // e2e only: loopback, plus (optionally) specific hosts for an authorised external read-only check, e.g.
-  // MYCP_E2E_HOSTS="https://books.toscrape.com/*". Never present in the prod build.
-  host_permissions: target === "e2e" ? ["http://127.0.0.1/*", "http://localhost/*", ...(process.env.MYCP_E2E_HOSTS ? process.env.MYCP_E2E_HOSTS.split(",").map((h) => h.trim()).filter(Boolean) : [])] : [],
+  // ANYMCP_E2E_HOSTS="https://books.toscrape.com/*". Never present in the prod build.
+  host_permissions: target === "e2e" ? ["http://127.0.0.1/*", "http://localhost/*", ...(process.env.ANYMCP_E2E_HOSTS ? process.env.ANYMCP_E2E_HOSTS.split(",").map((h) => h.trim()).filter(Boolean) : [])] : [],
   content_security_policy: { extension_pages: "script-src 'self'; object-src 'self'" },
 };
 if (manifest.description.length > 132) throw new Error("manifest description exceeds the 132-character Web Store limit");
@@ -119,7 +119,7 @@ const common = {
   sourcemap: target === "e2e" ? "inline" : false,
   legalComments: "none",
   logLevel: "info",
-  define: { __MYCP_TEST__: String(target === "e2e"), "process.env.NODE_ENV": '"production"' },
+  define: { __ANYMCP_TEST__: String(target === "e2e"), "process.env.NODE_ENV": '"production"' },
 };
 const jobs = [
   { ...common, entryPoints: { background: resolve(root, "src/background/index.ts") }, format: "esm", outdir: out },
@@ -132,5 +132,5 @@ if (watch) {
   console.log(`watching → ${out}`);
 } else {
   await Promise.all(jobs.map((j) => build(j)));
-  console.log(`built MyCP Extension ${version} (${target}) → ${out}`);
+  console.log(`built AnyMCP Extension ${version} (${target}) → ${out}`);
 }

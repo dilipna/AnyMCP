@@ -15,7 +15,7 @@ console.log(`
 Starting the SYNTHETIC fixture site (http://127.0.0.1:4173) and the bridge.
 
   1. chrome://extensions → Developer mode → Load unpacked → ${resolve(root, "packages/extension/dist/prod")}
-  2. Open http://127.0.0.1:4173/orders in a tab, then open the MyCP side panel (toolbar icon).
+  2. Open http://127.0.0.1:4173/orders in a tab, then open the AnyMCP side panel (toolbar icon).
   3. Pair with the code printed below, then Teach → choose the tab → Allow this site → Start recording.
 `);
 

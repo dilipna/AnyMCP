@@ -7,7 +7,7 @@ import {
   type ResultEnvelope,
   type ReviewSummary,
   type ToolDefinition,
-} from "mycp-protocol";
+} from "anymcp-protocol";
 import type { PanelState, ToolRow, ToolStatus } from "../../shared/types";
 import { call } from "../api";
 import { Banner, Empty, Field, Loading, originLabel } from "../ui";
@@ -29,7 +29,7 @@ export function ReviewCard({ s, collapsed = false }: { s: ReviewSummary; collaps
     <div className="card" aria-label="Tool review">
       <h3>What this tool can do</h3>
       <p style={{ margin: 0 }}>{s.authorDescription}</p>
-      <small className="muted">Written by the tool’s author. Everything below is generated from what MyCP will actually enforce.</small>
+      <small className="muted">Written by the tool’s author. Everything below is generated from what AnyMCP will actually enforce.</small>
 
       <dl className="glance">
         <div><dt>Runs only on</dt><dd className="mono">{s.runsOn.map(originLabel).join(", ")}</dd></div>
@@ -42,7 +42,7 @@ export function ReviewCard({ s, collapsed = false }: { s: ReviewSummary; collaps
         <summary>What data it reads</summary>
         {s.inputs.length > 0 && <p className="muted">Takes: {s.inputs.map((i) => `${i.name}${i.constraint ? ` (${i.constraint})` : ""}`).join(", ")}</p>}
         <ul>{s.reads.map((r) => <li key={r.field}><span className="mono">{r.field}</span> — <span className="muted">{r.from}</span></li>)}</ul>
-        <small className="muted">Starts at <span className="mono">{s.startsAt}</span>. It uses a tab MyCP opens itself and never navigates your other tabs.</small>
+        <small className="muted">Starts at <span className="mono">{s.startsAt}</span>. It uses a tab AnyMCP opens itself and never navigates your other tabs.</small>
       </details>
 
       <details className="sec" open={open}>
@@ -68,7 +68,7 @@ export function ReviewCard({ s, collapsed = false }: { s: ReviewSummary; collaps
 
       {s.fragile > 0 && (
         <Banner tone="warn" title="May break if the site changes">
-          {s.fragile} place{s.fragile === 1 ? "" : "s"} in this tool find{s.fragile === 1 ? "s" : ""} an element by page layout (CSS) because the page offers no clearer handle. If the site is redesigned, MyCP will stop and tell you — it will not guess.
+          {s.fragile} place{s.fragile === 1 ? "" : "s"} in this tool find{s.fragile === 1 ? "s" : ""} an element by page layout (CSS) because the page offers no clearer handle. If the site is redesigned, AnyMCP will stop and tell you — it will not guess.
         </Banner>
       )}
       <details className="sec">
@@ -107,7 +107,7 @@ function TestForm({ def, row, version, state }: { def: ToolDefinition; row: Tool
     <div className="card">
       <h3>Test it</h3>
       <p className="muted">
-        Runs the tool for real in a MyCP tab.{def.kind === "write" && <> This tool changes data, so <strong>you will be asked to approve</strong> the action.</>}
+        Runs the tool for real in an AnyMCP tab.{def.kind === "write" && <> This tool changes data, so <strong>you will be asked to approve</strong> the action.</>}
       </p>
       {props.map(([name, schema]) => (
         <Field key={name} label={name} hint={schema.description}>
@@ -265,7 +265,7 @@ function ToolDetail({ row, state, onBack }: { row: ToolRow; state: PanelState; o
           )}
           <span className="chip">{row.kind === "write" ? "Changes data (needs approval)" : "Read-only"}</span>
         </div>
-        {!grantedAll && <Banner tone="warn" title="Site not allowed">You have not allowed MyCP to use this site yet. Open Settings → Allowed sites. Until then runs are blocked.</Banner>}
+        {!grantedAll && <Banner tone="warn" title="Site not allowed">You have not allowed AnyMCP to use this site yet. Open Settings → Allowed sites. Until then runs are blocked.</Banner>}
         {err && <Banner tone="bad">{err}</Banner>}
         <div className="row">
           {isEnabled ? (
@@ -312,7 +312,7 @@ export function Tools({ state, goRecord, selected, setSelected }: { state: Panel
 
   if (!state.tools.length) {
     return (
-      <Empty title="No tools yet" action={<button type="button" className="btn primary" onClick={goRecord}>Teach MyCP a workflow</button>}>
+      <Empty title="No tools yet" action={<button type="button" className="btn primary" onClick={goRecord}>Teach AnyMCP a workflow</button>}>
         A tool is a website task you teach once — like “find an order” — that your AI assistant can then run. You review what it can read and change before turning it on.
       </Empty>
     );

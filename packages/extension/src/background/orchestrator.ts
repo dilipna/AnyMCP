@@ -34,7 +34,7 @@ import {
   type CommitStep,
   type Step,
   type ToolDefinition,
-} from "mycp-protocol";
+} from "anymcp-protocol";
 import type { Binding, CommitAction, StepResult, Watch } from "../content/engine";
 import type { ContentReply, PingResult, TerminalHit, ToContent } from "../shared/messages";
 import type { StoredToolVersion } from "../shared/types";
@@ -148,10 +148,10 @@ export class Orchestrator {
     };
 
     if (this.active) {
-      return this.finishDetached(record, { status: "precondition_failed", reason: "bridge_busy", message: "MyCP is already running another tool. Wait for it to finish, then retry." });
+      return this.finishDetached(record, { status: "precondition_failed", reason: "bridge_busy", message: "AnyMCP is already running another tool. Wait for it to finish, then retry." });
     }
     if (!stored || !tool) {
-      return this.finishDetached(record, { status: "denied", reason: "tool_not_found", message: "That tool (or version) does not exist in MyCP." });
+      return this.finishDetached(record, { status: "denied", reason: "tool_not_found", message: "That tool (or version) does not exist in AnyMCP." });
     }
 
     let rejectCancel!: () => void;
@@ -209,7 +209,7 @@ export class Orchestrator {
         run.tabId = tabId;
       } catch (e) {
         if (e instanceof CancelledError) throw e;
-        return { status: "precondition_failed", reason: e instanceof TabError && e.kind === "timeout" ? "timeout" : "no_tab", message: `MyCP could not open ${origin}: ${(e as Error).message}`, retryable: false };
+        return { status: "precondition_failed", reason: e instanceof TabError && e.kind === "timeout" ? "timeout" : "no_tab", message: `AnyMCP could not open ${origin}: ${(e as Error).message}`, retryable: false };
       }
       const outcome = await this.attempt(run, tabId, attempt);
       if (outcome.retryable && attempt < maxAttempts && !run.record.commitStarted && !run.cancel.requested) {
@@ -224,19 +224,19 @@ export class Orchestrator {
     const { req, tool } = run;
     const deny = (reason: ReasonCode, message: string): Outcome => ({ status: "denied", reason, message });
 
-    if (req.trigger === "mcp" && stored.status !== "enabled") return deny("tool_disabled", "This tool is not enabled in MyCP.");
+    if (req.trigger === "mcp" && stored.status !== "enabled") return deny("tool_disabled", "This tool is not enabled in AnyMCP.");
     if (req.trigger === "mcp" && req.definitionHash && req.definitionHash !== stored.definitionHash) {
       this.d.requestResync();
-      return deny("tool_disabled", "The tool changed after the bridge last synced. MyCP has re-synced; call it again.");
+      return deny("tool_disabled", "The tool changed after the bridge last synced. AnyMCP has re-synced; call it again.");
     }
-    if ((await toolDefinitionHash(stored.definition)) !== stored.definitionHash) return deny("internal_error", "The stored tool failed its integrity check, so MyCP will not run it.");
+    if ((await toolDefinitionHash(stored.definition)) !== stored.definitionHash) return deny("internal_error", "The stored tool failed its integrity check, so AnyMCP will not run it.");
     const issues = validateToolPolicy(tool);
-    if (issues.length) return deny("internal_error", `This tool no longer satisfies MyCP policy: ${issues[0]!.message}`);
+    if (issues.length) return deny("internal_error", `This tool no longer satisfies AnyMCP policy: ${issues[0]!.message}`);
 
     const grants = await getGrants();
     for (const o of tool.origins) {
       const granted = !!grants[o] && (await chrome.permissions.contains({ origins: [`${o}/*`] }));
-      if (!granted) return deny("origin_not_allowed", `You have not allowed MyCP to use ${o}. Open MyCP → Permissions and allow it.`);
+      if (!granted) return deny("origin_not_allowed", `You have not allowed AnyMCP to use ${o}. Open AnyMCP → Permissions and allow it.`);
     }
     const argIssues = validateAgainstSchema(tool.input, req.args);
     if (argIssues.length) return { status: "invalid_input", reason: "schema_violation", message: `The arguments were rejected: ${formatIssues(argIssues)}.` };
@@ -256,14 +256,14 @@ export class Orchestrator {
       const t0 = await this.rpc<{ terminal: TerminalHit | null }>(run, tabId, begin, { kind: "terminal", watch: { sessionExpired: run.watch.sessionExpired, failure: [], empty: [] } });
       if (t0.terminal?.terminal === "session_expired") {
         this.log(run, "preconditions_checked", "The website says your session has expired.", false, { condition: t0.terminal.id });
-        return { status: "precondition_failed", reason: "session_expired", message: "Your session on the website has expired. Sign in again in Chrome, then retry. MyCP never signs in for you." };
+        return { status: "precondition_failed", reason: "session_expired", message: "Your session on the website has expired. Sign in again in Chrome, then retry. AnyMCP never signs in for you." };
       }
 
       // 3. preconditions ---------------------------------------------------------
       const pre = await this.pollPre(run, tabId, begin);
       if (pre.expired) {
         this.log(run, "preconditions_checked", "The website says your session has expired.", false, { condition: pre.expired.id });
-        return { status: "precondition_failed", reason: "session_expired", message: "Your session on the website has expired. Sign in again in Chrome, then retry. MyCP never signs in for you." };
+        return { status: "precondition_failed", reason: "session_expired", message: "Your session on the website has expired. Sign in again in Chrome, then retry. AnyMCP never signs in for you." };
       }
       run.pre = pre.results;
       const failedPre = pre.results.filter((r) => !r.passed);
@@ -376,7 +376,7 @@ export class Orchestrator {
     const binding = prep.value as Binding;
     if (prep.noop) {
       // Setting it would change nothing, so a field that saves by itself would not save: do not ask, do not act.
-      this.log(run, "step_executed", "The field already has the requested value. Nothing needed to change, so MyCP did not ask for approval or act.", true, { step: step.id });
+      this.log(run, "step_executed", "The field already has the requested value. Nothing needed to change, so AnyMCP did not ask for approval or act.", true, { step: step.id });
       return { status: "precondition_failed", reason: "no_change_needed", message: "The website already shows the requested value, so nothing needed to change. Nothing was done.", actionMayHaveOccurred: false, pre: run.pre };
     }
     const url = (await tabUrl(tabId)) ?? tool.origins[0]!;
@@ -407,7 +407,7 @@ export class Orchestrator {
     };
 
     run.record.state = "awaiting_approval";
-    this.log(run, "approval_requested", "Waiting for your approval in the MyCP side panel.", undefined, { ttlSeconds: tool.approval.ttlSeconds });
+    this.log(run, "approval_requested", "Waiting for your approval in the AnyMCP side panel.", undefined, { ttlSeconds: tool.approval.ttlSeconds });
     this.d.setBadge("approval");
     await upsertRun(run.record);
 
@@ -441,7 +441,7 @@ export class Orchestrator {
     // ---- approved. WRITE-AHEAD INTENT: journal before the click. ----
     this.log(run, "approval_granted", "You approved this exact action.", true);
     run.record.commitStarted = true;
-    this.log(run, "commit_started", "Action started. From here on MyCP will not retry it.", true);
+    this.log(run, "commit_started", "Action started. From here on AnyMCP will not retry it.", true);
     await upsertRun(run.record);
 
     let r: StepResult;
@@ -484,7 +484,7 @@ export class Orchestrator {
 
     if (!post.allPassed) {
       if (run.record.commitStarted) return this.reconcile(run, tabId, begin, output, post.results);
-      return { status: "failed", reason: "postcondition_unmet", message: "The page did not reach the state this tool expects, so MyCP is not reporting a result.", post: post.results };
+      return { status: "failed", reason: "postcondition_unmet", message: "The page did not reach the state this tool expects, so AnyMCP is not reporting a result.", post: post.results };
     }
 
     Object.assign(output, tool.successResult ?? {});
@@ -493,7 +493,7 @@ export class Orchestrator {
       return {
         status: "failed",
         reason: "output_invalid",
-        message: `The result did not match the tool's output format (${formatIssues(issues)}), so MyCP is not returning it.${run.record.commitStarted ? " The action itself was verified." : ""}`,
+        message: `The result did not match the tool's output format (${formatIssues(issues)}), so AnyMCP is not returning it.${run.record.commitStarted ? " The action itself was verified." : ""}`,
         actionMayHaveOccurred: run.record.commitStarted ? true : false,
         post: post.results,
       };
@@ -533,7 +533,7 @@ export class Orchestrator {
   private async reconcile(run: ActiveRun, tabId: number, begin: Extract<ToContent, { kind: "begin" }>, output: Record<string, unknown>, firstPost: ConditionResult[]): Promise<Outcome> {
     const { tool, req } = run;
     const unknown = (reason: ReasonCode, message: string): Outcome => ({ status: "unknown_outcome", reason, message, actionMayHaveOccurred: "unknown", post: firstPost });
-    if (!tool.reconcile) return unknown("postcondition_unmet", "The action was started but MyCP could not see the expected result. It may or may not have happened. Check the website before trying again; MyCP will not repeat it.");
+    if (!tool.reconcile) return unknown("postcondition_unmet", "The action was started but AnyMCP could not see the expected result. It may or may not have happened. Check the website before trying again; AnyMCP will not repeat it.");
 
     this.log(run, "outcome_verified", "The result was not visible yet. Re-reading the page (read-only) to check what happened.", undefined);
     try {
@@ -545,17 +545,17 @@ export class Orchestrator {
       })());
     } catch (e) {
       if (e instanceof CancelledError) throw e;
-      return unknown("navigation_interrupted", "The action was started and MyCP then could not re-read the page. It may or may not have happened. Check the website; MyCP will not repeat it.");
+      return unknown("navigation_interrupted", "The action was started and AnyMCP then could not re-read the page. It may or may not have happened. Check the website; AnyMCP will not repeat it.");
     }
     const post = await this.pollPost(run, tabId, begin, tool.limits.stepTimeoutMs);
-    if (post.terminal?.terminal === "session_expired") return unknown("session_expired", "The action was started, then your session expired before MyCP could check. It may or may not have happened. Sign in and check the website; MyCP will not repeat it.");
-    if (!post.allPassed) return unknown("postcondition_unmet", "The action was started and a second, read-only look at the page still could not confirm it. It may or may not have happened. Check the website; MyCP will not repeat it.");
+    if (post.terminal?.terminal === "session_expired") return unknown("session_expired", "The action was started, then your session expired before AnyMCP could check. It may or may not have happened. Sign in and check the website; AnyMCP will not repeat it.");
+    if (!post.allPassed) return unknown("postcondition_unmet", "The action was started and a second, read-only look at the page still could not confirm it. It may or may not have happened. Check the website; AnyMCP will not repeat it.");
 
     // read-only tail (steps after the commit) to rebuild the output
     const commitIdx = tool.steps.findIndex(isCommitStep);
     const tailOut: Record<string, unknown> = {};
     const tail = await this.runSteps(run, tabId, begin, tool.steps.slice(commitIdx + 1), tailOut, false);
-    if (tail) return unknown("postcondition_unmet", "The action looks complete but MyCP could not read the result afterwards. It may or may not have happened. Check the website.");
+    if (tail) return unknown("postcondition_unmet", "The action looks complete but AnyMCP could not read the result afterwards. It may or may not have happened. Check the website.");
     Object.assign(tailOut, tool.successResult ?? {});
     const issues = validateAgainstSchema(tool.output, tailOut);
     if (issues.length) return { status: "failed", reason: "output_invalid", message: "The action was confirmed but the result could not be read in the expected format.", actionMayHaveOccurred: true, post: post.results };
@@ -572,7 +572,7 @@ export class Orchestrator {
     }
     if (t.terminal === "session_expired") {
       return committed
-        ? { status: "unknown_outcome", reason: "session_expired", message: "The action had started when your session expired. It may or may not have happened. Sign in and check the website; MyCP will not repeat it.", actionMayHaveOccurred: "unknown", post }
+        ? { status: "unknown_outcome", reason: "session_expired", message: "The action had started when your session expired. It may or may not have happened. Sign in and check the website; AnyMCP will not repeat it.", actionMayHaveOccurred: "unknown", post }
         : { status: "precondition_failed", reason: "session_expired", message: "Your session on the website expired. Sign in again in Chrome, then retry. Nothing was changed.", post };
     }
     // site-declared failure
@@ -589,10 +589,10 @@ export class Orchestrator {
     const what = `Step “${describeStep(step)}” could not be completed: ${r.detail}`;
     if (run.record.commitStarted) {
       // something failed AFTER the action began: we cannot claim it did not happen
-      return { status: "unknown_outcome", reason: r.code, message: `${what} The action had already started, so it may or may not have happened. Check the website; MyCP will not repeat it.`, actionMayHaveOccurred: "unknown" };
+      return { status: "unknown_outcome", reason: r.code, message: `${what} The action had already started, so it may or may not have happened. Check the website; AnyMCP will not repeat it.`, actionMayHaveOccurred: "unknown" };
     }
     if (r.code === "timeout" || r.code === "output_invalid") return { status: "failed", reason: r.code, message: `${what} Nothing was changed.`, retryable: r.code === "timeout" };
-    return { status: "precondition_failed", reason: r.code, message: `${what} MyCP stopped without guessing. The page may have changed; review or re-record the tool.` };
+    return { status: "precondition_failed", reason: r.code, message: `${what} AnyMCP stopped without guessing. The page may have changed; review or re-record the tool.` };
   }
 
   private tabOutcome(run: ActiveRun, e: TabError): Outcome {
@@ -600,7 +600,7 @@ export class Orchestrator {
     if (e.kind === "denied") return { status: "precondition_failed", reason: "wrong_origin", message: e.message };
     const reason: ReasonCode = e.kind === "closed" ? "tab_closed" : "navigation_interrupted";
     if (committed) {
-      return { status: "unknown_outcome", reason, message: `${e.kind === "closed" ? "The tab was closed" : "The page became unreachable"} after the action started. It may or may not have happened. Check the website; MyCP will not repeat it.`, actionMayHaveOccurred: "unknown" };
+      return { status: "unknown_outcome", reason, message: `${e.kind === "closed" ? "The tab was closed" : "The page became unreachable"} after the action started. It may or may not have happened. Check the website; AnyMCP will not repeat it.`, actionMayHaveOccurred: "unknown" };
     }
     return { status: "interrupted", reason, message: `${e.kind === "closed" ? "The tab was closed" : "The page became unreachable"} before anything was changed. It is safe to retry.`, retryable: e.kind !== "closed" };
   }
@@ -609,14 +609,14 @@ export class Orchestrator {
     if (e instanceof CancelledError || run.cancel.requested) {
       const reason: ReasonCode = cancelReasonCode(run.cancel.reason);
       if (run.record.commitStarted) {
-        return { status: "unknown_outcome", reason, message: "The run was stopped after the action had already started. It may already have happened; check the website. MyCP will not repeat it.", actionMayHaveOccurred: "unknown" };
+        return { status: "unknown_outcome", reason, message: "The run was stopped after the action had already started. It may already have happened; check the website. AnyMCP will not repeat it.", actionMayHaveOccurred: "unknown" };
       }
       return { status: "cancelled_before_action", reason, message: "The run was stopped before it changed anything." };
     }
     if (e instanceof TabError) return this.tabOutcome(run, e);
     const msg = String((e as Error)?.message ?? e);
-    if (run.record.commitStarted) return { status: "unknown_outcome", reason: "internal_error", message: `MyCP hit an internal error after the action started (${msg}). It may or may not have happened; MyCP will not repeat it.`, actionMayHaveOccurred: "unknown" };
-    return { status: "failed", reason: "internal_error", message: `MyCP hit an internal error before changing anything (${msg}).` };
+    if (run.record.commitStarted) return { status: "unknown_outcome", reason: "internal_error", message: `AnyMCP hit an internal error after the action started (${msg}). It may or may not have happened; AnyMCP will not repeat it.`, actionMayHaveOccurred: "unknown" };
+    return { status: "failed", reason: "internal_error", message: `AnyMCP hit an internal error before changing anything (${msg}).` };
   }
 
   // ---------------------------------------------------------------- plumbing
@@ -723,7 +723,7 @@ export class Orchestrator {
         status: committed ? "unknown_outcome" : "interrupted",
         reasonCode: "worker_restarted",
         message: committed
-          ? "The browser extension restarted after the action had started. It may or may not have happened. Check the website; MyCP will not repeat it."
+          ? "The browser extension restarted after the action had started. It may or may not have happened. Check the website; AnyMCP will not repeat it."
           : "The browser extension restarted before anything was changed. It is safe to retry.",
         actionMayHaveOccurred: committed ? "unknown" : false,
         startedAt: r.startedAt,

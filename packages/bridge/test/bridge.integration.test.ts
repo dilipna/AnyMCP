@@ -5,8 +5,8 @@
 import { request as httpRequest } from "node:http";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { WebSocket } from "ws";
-import { makeDraftNoteTool, makeFindOrderTool } from "mycp-fixture/tools";
-import type { ResultEnvelope } from "mycp-protocol";
+import { makeDraftNoteTool, makeFindOrderTool } from "anymcp-fixture/tools";
+import type { ResultEnvelope } from "anymcp-protocol";
 import { EXT_ID, FakeExtension, mcpClient, okEnvelope, pairedExtension, sleep, withBridge } from "./helpers";
 import type { BridgeHandle } from "../src/bridge";
 
@@ -150,7 +150,7 @@ describe("routing and structured results", () => {
     expect(find).toBeTruthy();
     expect(find!.outputSchema).toBeTruthy();
     expect(find!.annotations?.readOnlyHint).toBe(true);
-    expect(tools.map((t) => t.name)).toContain("mycp_get_run");
+    expect(tools.map((t) => t.name)).toContain("anymcp_get_run");
 
     const pending = client.callTool({ name: "find_order", arguments: { order_id: "A-1042" } });
     const req = await ext.waitFor("run.request");
@@ -284,7 +284,7 @@ describe("disconnection and interruption", () => {
     expect(env.retry.safe).toBe(true);
   });
 
-  it("a late authoritative result from the reconnected extension updates what mycp_get_run reports", async () => {
+  it("a late authoritative result from the reconnected extension updates what anymcp_get_run reports", async () => {
     const ext = await pairedExtension(bridge);
     await ext.syncTools([makeDraftNoteTool()]);
     const secret = ext.secret;
@@ -310,7 +310,7 @@ describe("disconnection and interruption", () => {
       }),
     });
     await back.waitFor("ack");
-    const lookup = await client.callTool({ name: "mycp_get_run", arguments: { execution_id: req.executionId } });
+    const lookup = await client.callTool({ name: "anymcp_get_run", arguments: { execution_id: req.executionId } });
     const info = lookup.structuredContent as unknown as { state: string; envelope: ResultEnvelope };
     expect(info.state).toBe("finished");
     expect(info.envelope.status).toBe("cancelled_before_action");

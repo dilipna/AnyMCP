@@ -3,7 +3,7 @@
 // Rules enforced HERE, at capture time:
 //  - runs only between an explicit start and stop, and only while the page origin is the approved one
 //  - only TRUSTED user events (isTrusted) are recorded; scripts on the page cannot inject steps
-//  - password / payment / secret / data-mycp-ignore fields are never captured: only a COUNT is reported
+//  - password / payment / secret / data-anymcp-ignore fields are never captured: only a COUNT is reported
 //  - typed values are sent to the service worker's memory for parameter selection; they are not persisted
 //  - picking mode swallows clicks so choosing an output never triggers a page action
 //
@@ -11,11 +11,11 @@
 // pointer position or focus), so controls inside web components are recorded like any others. `change` does
 // not leave a shadow root, so typed text is ALSO captured when the field loses focus (`focusout` does).
 
-import type { Locator, LocatorLeaf, Role } from "mycp-protocol";
-import { isSensitiveField } from "mycp-protocol/light";
+import type { Locator, LocatorLeaf, Role } from "anymcp-protocol";
+import { isSensitiveField } from "anymcp-protocol/light";
 import { defaultButton, fieldDescriptor, isChecked, optionLabel, toggleKind } from "./engine";
 import { showBanner, hideBanner } from "./banner";
-import { accessibleName, composedClosest, composedParent, computeRole, deepQueryAll, isVisible, norm, resolveLocator, shadowRootOf, visibleText } from "./locator";
+import { PRIVATE_AREA, accessibleName, composedClosest, composedParent, computeRole, deepQueryAll, isVisible, norm, resolveLocator, shadowRootOf, visibleText } from "./locator";
 
 export type PickMode = "text" | "table" | "list" | "success" | null;
 
@@ -200,7 +200,7 @@ export function isRecording(): boolean {
   return active;
 }
 
-const insideBanner = (t: EventTarget | null) => t instanceof Element && !!composedClosest(t, "[data-mycp-banner]");
+const insideBanner = (t: EventTarget | null) => t instanceof Element && !!composedClosest(t, "[data-anymcp-banner]");
 
 /**
  * The element the user really acted on. Events that cross a shadow boundary are re-targeted to the host, so we
@@ -270,7 +270,7 @@ function handleChange(ev: Event) {
 
 /** A checkbox, switch or option button was clicked: record the state it ended up in (not "a click"). */
 function captureToggle(el: Element, kind: "checkbox" | "radio") {
-  if ((el instanceof HTMLInputElement && isSensitiveField(fieldDescriptor(el))) || composedClosest(el, "[data-mycp-ignore]")) return skipSensitive(el);
+  if ((el instanceof HTMLInputElement && isSensitiveField(fieldDescriptor(el))) || composedClosest(el, PRIVATE_AREA)) return skipSensitive(el);
   // read the state after the page has handled the click (it may veto it, or update aria-checked a moment later)
   const order = nextSeq(); // the step belongs where the click happened, even though its state is read later
   setTimeout(() => {
@@ -358,7 +358,7 @@ function handleKeydown(ev: KeyboardEvent) {
   const el = deepTarget(ev);
   // in a <textarea> Enter is a new line, not an action
   if (!(el instanceof HTMLInputElement) || !isTextField(el)) return;
-  if (isSensitiveField(fieldDescriptor(el)) || composedClosest(el, "[data-mycp-ignore]")) return;
+  if (isSensitiveField(fieldDescriptor(el)) || composedClosest(el, PRIVATE_AREA)) return;
   captureInput(el); // flush the typed value first
   // Enter in a form with a submit button: record a click on that button, so replay does the same thing
   const def = el.form ? defaultButton(el.form) : null;
@@ -379,7 +379,7 @@ function handleKeydown(ev: KeyboardEvent) {
 function ensureOverlay(): HTMLElement {
   if (overlay) return overlay;
   overlay = document.createElement("div");
-  overlay.setAttribute("data-mycp-banner", "");
+  overlay.setAttribute("data-anymcp-banner", "");
   overlay.style.cssText = "all:initial;position:fixed;pointer-events:none;z-index:2147483646;border:2px solid #0b57d0;background:rgba(11,87,208,.12);border-radius:4px;display:none;";
   document.documentElement.appendChild(overlay);
   return overlay;
@@ -411,12 +411,12 @@ function finishPick(target: Element) {
     onPickCb?.({ mode, locator: s.locator, quality: s.quality, preview: `${headers.length} columns`, headers, rows: table.querySelectorAll("tbody tr").length });
     return;
   }
-  if (isFormFieldSensitive(target) || composedClosest(target, "[data-mycp-ignore]")) return;
+  if (isFormFieldSensitive(target) || composedClosest(target, PRIVATE_AREA)) return;
   if (mode === "list") {
     const list = suggestListLocator(target);
     if (!list) {
       // nothing repeats here: say so and keep picking, rather than saving a "list" of one
-      showBanner("MyCP: that item does not repeat on this page — click one of several similar items (Esc to cancel)", "recording", () => stopHandler?.());
+      showBanner("AnyMCP: that item does not repeat on this page — click one of several similar items (Esc to cancel)", "recording", () => stopHandler?.());
       return;
     }
     const first = list.items.slice(0, 3).map((x) => `“${previewOf(x).slice(0, 30)}”`).join(", ");
@@ -442,7 +442,7 @@ export function setPickMode(mode: PickMode): void {
   pickMode = mode;
   if (!mode && overlay) overlay.style.display = "none";
   if (!active) return;
-  showBanner(mode ? `MyCP: click ${mode === "table" ? "the table" : mode === "list" ? "one of the repeated items" : mode === "success" ? "the message that shows it worked" : "the value"} to capture (Esc to cancel)` : "MyCP is recording — nothing is saved until you finish", "recording", () => stopHandler?.());
+  showBanner(mode ? `AnyMCP: click ${mode === "table" ? "the table" : mode === "list" ? "one of the repeated items" : mode === "success" ? "the message that shows it worked" : "the value"} to capture (Esc to cancel)` : "AnyMCP is recording — nothing is saved until you finish", "recording", () => stopHandler?.());
 }
 
 let stopHandler: (() => void) | null = null;
@@ -462,7 +462,7 @@ export function startRecording(origin: string, onEvent: (e: RecordedEvent) => vo
   document.addEventListener("keydown", handleKeydown, true);
   document.addEventListener("keydown", handleEsc, true);
   document.addEventListener("mousemove", handleMove, true);
-  showBanner("MyCP is recording — nothing is saved until you finish", "recording", onStopRequested);
+  showBanner("AnyMCP is recording — nothing is saved until you finish", "recording", onStopRequested);
 }
 
 export function stopRecording(): void {

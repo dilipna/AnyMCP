@@ -1,4 +1,4 @@
-# Release checklist — MyCP 0.1.0 (release candidate)
+# Release checklist — AnyMCP 0.1.0 (release candidate)
 
 **Overall: release candidate for local use. NOT published, NOT submitted to the Chrome Web Store, NOT approved.**
 Each line is one of: **VERIFIED** (we ran it; evidence given) · **UNVERIFIED** (written/not run, or only partly) ·
@@ -26,7 +26,7 @@ Each line is one of: **VERIFIED** (we ran it; evidence given) · **UNVERIFIED** 
 | Types check | `npm run typecheck` |
 | Unit + integration tests pass | `npm test` |
 | Browser tests pass in Playwright Chromium | `npm run test:e2e` |
-| Browser tests pass in the real, branded Chrome on this machine | `MYCP_E2E_BROWSER=chrome npm run test:e2e` |
+| Browser tests pass in the real, branded Chrome on this machine | `ANYMCP_E2E_BROWSER=chrome npm run test:e2e` |
 | Extension reaches the loopback bridge in real Chrome 157 (no Local Network Access block) | `npm run spike:lna` (and `-- --headed`) |
 | Frozen evaluation, fixture | `npm run eval` → `eval/results/fixture-*.md` |
 | External read-only check | `npm run eval:external` → `eval/results/external-books-toscrape-*.md` |
@@ -51,9 +51,9 @@ Each line is one of: **VERIFIED** (we ran it; evidence given) · **UNVERIFIED** 
 
 ## Owner-required (shortest list first)
 
-1. **Decide the name.** Do a proper trademark search — a Class 42 "MYCP" registration was reported by third-party sites and **not** verified at the USPTO (`docs/naming-check.md`). Nothing may be published under the name until resolved.
+1. **Decide the name.** Do a proper trademark search — a Class 42 "ANYMCP" registration was reported by third-party sites and **not** verified at the USPTO (`docs/naming-check.md`). Nothing may be published under the name until resolved.
 2. **Choose a licence** (none chosen) and a vulnerability-disclosure address; add `SECURITY.md`.
-3. **Chrome Web Store:** developer account (fee, 2-step verification), host the privacy policy, fill the privacy-practices tab, upload `release/mycp-extension-0.1.0.zip`, add real screenshots. Expect review questions about the localhost companion and optional broad host permissions.
+3. **Chrome Web Store:** developer account (fee, 2-step verification), host the privacy policy, fill the privacy-practices tab, upload `release/anymcp-extension-0.1.0.zip`, add real screenshots. Expect review questions about the localhost companion and optional broad host permissions.
 4. **Legal review** of `docs/privacy-policy.md`.
 5. **Commit the work** (the repo was initialised but has **no commits**; evaluation results are stamped with a source-tree hash instead of a git revision until then).
 6. **Run it yourself once on your own sites** (read-only first) before anyone else uses it; add the first real-site entry to `docs/supported-capabilities.md`.

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deriveReviewSummary, parseToolDefinition, validateToolPolicy, type ToolDefinition } from "mycp-protocol";
+import { deriveReviewSummary, parseToolDefinition, validateToolPolicy, type ToolDefinition } from "anymcp-protocol";
 import { makeDraftNoteTool, makeFindOrderTool } from "../src/tools";
 
 const clone = <T>(v: T): T => JSON.parse(JSON.stringify(v)) as T;

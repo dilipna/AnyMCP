@@ -7,7 +7,7 @@ let host: HTMLElement | null = null;
 export function showBanner(text: string, kind: "running" | "recording", onStop: () => void): void {
   hideBanner();
   host = document.createElement("div");
-  host.setAttribute("data-mycp-banner", "");
+  host.setAttribute("data-anymcp-banner", "");
   host.style.cssText = "all:initial;position:fixed;top:12px;right:12px;z-index:2147483647;";
   const root = host.attachShadow({ mode: "closed" });
   const color = kind === "recording" ? "#b42318" : "#0b57d0";

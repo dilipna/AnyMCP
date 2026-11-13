@@ -10,12 +10,12 @@ interface Creds {
 }
 
 export function clientCommand(c: Creds, masked = false): string {
-  return `claude mcp add --transport http mycp ${c.mcpUrl} --header "Authorization: Bearer ${masked ? "••••••••" + c.token.slice(-4) : c.token}"`;
+  return `claude mcp add --transport http anymcp ${c.mcpUrl} --header "Authorization: Bearer ${masked ? "••••••••" + c.token.slice(-4) : c.token}"`;
 }
 
 /** The standard "mcpServers" entry for apps that start MCP servers as local programs. Contains no secret. */
 export function stdioConfig(stdio: NonNullable<Creds["stdio"]>): string {
-  return JSON.stringify({ mcpServers: { mycp: { command: stdio.command, args: stdio.args } } }, null, 2);
+  return JSON.stringify({ mcpServers: { anymcp: { command: stdio.command, args: stdio.args } } }, null, 2);
 }
 
 export function Connect({ state, compact = false }: { state: PanelState; compact?: boolean }) {
@@ -50,11 +50,11 @@ export function Connect({ state, compact = false }: { state: PanelState; compact
   if (!c.paired) {
     return (
       <section className="card" aria-labelledby="connect-h">
-        <h2 id="connect-h">Connect MyCP to your AI assistant</h2>
-        {!compact && <p className="muted">MyCP has two parts that talk to each other on this computer only: this extension, and a small local program called the bridge. Three steps:</p>}
+        <h2 id="connect-h">Connect AnyMCP to your AI assistant</h2>
+        {!compact && <p className="muted">AnyMCP has two parts that talk to each other on this computer only: this extension, and a small local program called the bridge. Three steps:</p>}
         <div className="stack">
           <h3>1 · Start the bridge</h3>
-          <p className="muted">It runs on your computer and lets your AI assistant call the tools you approve. Run this in a terminal, in the MyCP folder:</p>
+          <p className="muted">It runs on your computer and lets your AI assistant call the tools you approve. Run this in a terminal, in the AnyMCP folder:</p>
           <CopyLine id="bridge" label="Start the bridge" text="npm run bridge" />
           <p className="muted">It prints a pairing code and the command for step 3.</p>
         </div>
@@ -101,7 +101,7 @@ export function Connect({ state, compact = false }: { state: PanelState; compact
 
       {c.state !== "connected" && (
         <Banner tone={c.state === "connecting" ? "info" : "warn"} title={c.state === "connecting" ? "Connecting to the bridge…" : "Not connected to the bridge"}>
-          <p>{c.error ?? "Start the bridge (npm run bridge). MyCP reconnects automatically."}</p>
+          <p>{c.error ?? "Start the bridge (npm run bridge). AnyMCP reconnects automatically."}</p>
           <button type="button" className="btn small" onClick={() => void call({ type: "reconnect" })}>
             Reconnect now
           </button>
@@ -138,12 +138,12 @@ export function Connect({ state, compact = false }: { state: PanelState; compact
                 <>
                   <p className="muted">
                     Add this to the app’s MCP settings (in Claude Desktop: Settings → Developer → Edit Config). It contains no password: the app
-                    starts MyCP on this computer and shares this browser connection. To disconnect such an app, remove “mycp” from its settings.
+                    starts AnyMCP on this computer and shares this browser connection. To disconnect such an app, remove “anymcp” from its settings.
                   </p>
                   <CopyLine id="stdio" label="MCP settings entry for apps that start tools themselves" text={stdioConfig(creds.stdio)} />
                 </>
               ) : (
-                <p className="muted">Run the packaged bridge (<span className="mono">mycp-bridge.mjs</span>) to get a ready-made settings entry here.</p>
+                <p className="muted">Run the packaged bridge (<span className="mono">anymcp-bridge.mjs</span>) to get a ready-made settings entry here.</p>
               )}
             </>
           )}

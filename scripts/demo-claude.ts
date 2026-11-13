@@ -1,4 +1,4 @@
-// A REAL MCP client demonstration: Claude Code (`claude -p`) calls MyCP tools through the bridge, against the
+// A REAL MCP client demonstration: Claude Code (`claude -p`) calls AnyMCP tools through the bridge, against the
 // SYNTHETIC fixture, in a browser with the extension loaded. A person's approval is simulated by clicking
 // "Approve once" / "Decline" in the panel so the run can finish unattended.
 //
@@ -16,9 +16,9 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { startStack, waitForState } from "../e2e/harness";
 
-if (process.argv.includes("--chrome")) process.env.MYCP_E2E_BROWSER = "chrome";
+if (process.argv.includes("--chrome")) process.env.ANYMCP_E2E_BROWSER = "chrome";
 
-const tmp = mkdtempSync(join(tmpdir(), "mycp-demo-"));
+const tmp = mkdtempSync(join(tmpdir(), "anymcp-demo-"));
 const out = resolve(import.meta.dirname, "../eval/results");
 mkdirSync(out, { recursive: true });
 
@@ -36,19 +36,19 @@ const s = await startStack();
 const record: Record<string, unknown> = { when: new Date().toISOString(), browser: s.browserVersion, site: "synthetic fixture", client: "claude -p (Claude Code)" };
 try {
   const cfg = join(tmp, "mcp.json");
-  writeFileSync(cfg, JSON.stringify({ mcpServers: { mycp: { type: "http", url: s.bridge.mcpUrl, headers: { Authorization: `Bearer ${s.bridge.token()}` } } } }));
+  writeFileSync(cfg, JSON.stringify({ mcpServers: { anymcp: { type: "http", url: s.bridge.mcpUrl, headers: { Authorization: `Bearer ${s.bridge.token()}` } } } }));
   const order = s.fixture.state.orders.find((o) => o.id === "A-1012")!;
 
   // ---- 1. read tool ----
   console.log("1/3  read: asking Claude Code to look up order A-1012 …");
-  const r1 = await claude("Use the MyCP find_order tool to look up order A-1012. Reply with one line: the customer name and the order status exactly as returned.", ["mcp__mycp__find_order"], cfg);
+  const r1 = await claude("Use the AnyMCP find_order tool to look up order A-1012. Reply with one line: the customer name and the order status exactly as returned.", ["mcp__anymcp__find_order"], cfg);
   record.read = { exit: r1.code, output: r1.stdout.slice(0, 4000), expect: { customer: order.customer, status: order.status } };
   console.log("     →", (JSON.parse(r1.stdout || "{}") as { result?: string }).result ?? r1.stderr.slice(0, 300));
 
   // ---- 2. write tool, approved by the "user" in the panel ----
   console.log("2/3  write: asking Claude Code to save a DRAFT note (approval is granted in the panel) …");
   const note = "Customer called; will follow up tomorrow.";
-  const w = claude(`Use the MyCP draft_customer_note tool to save the draft note "${note}" on order A-1012. Then tell me the status MyCP reported and whether it was verified.`, ["mcp__mycp__draft_customer_note"], cfg);
+  const w = claude(`Use the AnyMCP draft_customer_note tool to save the draft note "${note}" on order A-1012. Then tell me the status AnyMCP reported and whether it was verified.`, ["mcp__anymcp__draft_customer_note"], cfg);
   await waitForState(s, (st) => !!st.approval, 120_000);
   const shown = await s.panel.getByRole("alertdialog").innerText();
   await s.approve();
@@ -60,7 +60,7 @@ try {
   // ---- 3. write tool, declined ----
   console.log("3/3  write: the user DECLINES …");
   const before = s.fixture.state.writeLog.length;
-  const d = claude(`Use the MyCP draft_customer_note tool to save the draft note "Second note, to be declined." on order A-1013. Report exactly what MyCP said.`, ["mcp__mycp__draft_customer_note"], cfg);
+  const d = claude(`Use the AnyMCP draft_customer_note tool to save the draft note "Second note, to be declined." on order A-1013. Report exactly what AnyMCP said.`, ["mcp__anymcp__draft_customer_note"], cfg);
   await waitForState(s, (st) => !!st.approval, 120_000);
   await s.decline();
   const r3 = await d;

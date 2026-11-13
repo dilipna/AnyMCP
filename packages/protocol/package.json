@@ -1,9 +1,10 @@
 {
-  "name": "mycp-protocol",
+  "name": "anymcp-protocol",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Shared schemas, policy and result types for MyCP.",
+  "description": "Shared schemas, policy and result types for AnyMCP.",
+  "license": "MIT",
   "exports": {
     ".": "./src/index.ts",
     "./light": "./src/light.ts"

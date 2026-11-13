@@ -4,8 +4,8 @@
 // the output is compared with the fixture's own ground truth.
 
 import { expect, test, type Page } from "@playwright/test";
-import { searchProducts } from "mycp-fixture";
-import type { ResultEnvelope } from "mycp-protocol";
+import { searchProducts } from "anymcp-fixture";
+import type { ResultEnvelope } from "anymcp-protocol";
 import { buildDraft, type DraftSpec } from "../packages/extension/src/shared/draft";
 import type { TabCandidate } from "../packages/extension/src/shared/panel-api";
 import { startStack, waitForState, sleep, type Stack } from "./harness";
@@ -33,7 +33,7 @@ test("record dropdown + checkbox + option + shadow-DOM button + list, then run i
   const SECRET = "XYZSECRET42";
   const { page, tabId } = await openTab(`/catalog?lang=en&utm_source=newsletter&sid=${SECRET}`);
   expect((await s.call({ type: "record.start", tabId })).ok).toBe(true);
-  await page.locator("[data-mycp-banner]").waitFor({ state: "attached" });
+  await page.locator("[data-anymcp-banner]").waitFor({ state: "attached" });
 
   // the person does the task once, with real (trusted) input only
   await page.getByLabel("Search products").click();
@@ -111,7 +111,7 @@ test("record dropdown + checkbox + option + shadow-DOM button + list, then run i
   const listed = (await client.listTools()).tools.find((t) => t.name === def.id)!;
   expect(listed.inputSchema.properties).toMatchObject({ category: { enum: ["All", "Lighting", "Garden", "Kitchen"] }, in_stock_only: { type: "boolean" } });
 
-  // different words, a different category, and the checkbox UNticked (MyCP sets state; it does not toggle blindly)
+  // different words, a different category, and the checkbox UNticked (AnyMCP sets state; it does not toggle blindly)
   const env = await s.run(client, def.id, { search_products: "", category: "Garden", in_stock_only: false });
   expect(env.status, env.message).toBe("success");
   expect(env.output).toEqual({ products: names("", "Garden", false) });
@@ -123,7 +123,7 @@ test("record dropdown + checkbox + option + shadow-DOM button + list, then run i
   expect(env2.output).toEqual({ products: names("a", "All", true) });
 
   // a choice that is not in the dropdown is refused before anything runs
-  // (the MCP SDK may reject at its schema layer before MyCP's own validator; either way: an error and no run)
+  // (the MCP SDK may reject at its schema layer before AnyMCP's own validator; either way: an error and no run)
   const runsBefore = (await s.state()).runs.length;
   const bad = await client.callTool({ name: def.id, arguments: { search_products: "x", category: "Toys", in_stock_only: true } });
   expect(bad.isError).toBe(true);

@@ -1,4 +1,4 @@
-# MyCP Extension — Privacy Policy (DRAFT)
+# AnyMCP Extension — Privacy Policy (DRAFT)
 
 > **Draft for the owner to review with a lawyer before publication.** Bracketed items are owner tasks.
 > It is written to match what the code does today; if behaviour changes, this must change with it.
@@ -7,7 +7,7 @@
 
 ## Summary
 
-MyCP Extension helps you turn website tasks you approve into tools that **your own AI assistant** can run.
+AnyMCP Extension helps you turn website tasks you approve into tools that **your own AI assistant** can run.
 **The developer does not receive your data.** The extension does not send anything to any server operated by
 the developer, has no analytics or advertising, and does not load or run remotely hosted code.
 
@@ -28,12 +28,12 @@ sign-ins stay in the browser; cookies and tokens are never sent to the bridge or
 ## The AI assistant you connect
 
 Values a tool returns are passed to the assistant you connected (for example Claude Code). That assistant may
-send them to its provider under **that provider's** policy, which MyCP does not control. Only connect
+send them to its provider under **that provider's** policy, which AnyMCP does not control. Only connect
 assistants you trust with the data your enabled tools read.
 
 ## Remote code
 
-None. MyCP does not download, fetch or evaluate code or workflows from any server. Tool definitions are data
+None. AnyMCP does not download, fetch or evaluate code or workflows from any server. Tool definitions are data
 created on your computer by you, interpreted by a fixed set of operations inside the extension.
 
 ## Permissions
@@ -46,7 +46,7 @@ at a time**, only when you click *Allow this site*, and you can remove any site 
 * **Revoke everything** (Settings): turns off all tools, removes all site access, unpairs the bridge and rotates its token.
 * **Delete run history** (Settings) and **disable / delete any tool**.
 * **Uninstalling** the extension removes its stored data. The bridge keeps a small state folder
-  (`~/.mycp`) that you can delete.
+  (`~/.anymcp`) that you can delete.
 
 ## Children, sale of data, advertising
 

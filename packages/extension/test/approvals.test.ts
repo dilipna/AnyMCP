@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ApprovalRequest } from "mycp-protocol";
+import type { ApprovalRequest } from "anymcp-protocol";
 import { ApprovalCenter } from "../src/background/approvals";
 
 const req = (over: Partial<ApprovalRequest> = {}): ApprovalRequest => ({

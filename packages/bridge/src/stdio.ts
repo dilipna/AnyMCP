@@ -1,4 +1,4 @@
-// `mycp-bridge --stdio`: MCP over stdin/stdout, for AI apps that launch their tools as a local program
+// `anymcp-bridge --stdio`: MCP over stdin/stdout, for AI apps that launch their tools as a local program
 // (Claude Desktop, Cursor and others). Stdout carries ONLY protocol messages; every log line goes to stderr.
 //
 // One bridge owns the browser connection on this computer. This process:
@@ -17,7 +17,7 @@ import { join } from "node:path";
 import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
 import { McpServer, fromJsonSchema, type RegisteredTool } from "@modelcontextprotocol/server";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
-import { MYCP_VERSION } from "mycp-protocol";
+import { ANYMCP_VERSION } from "anymcp-protocol";
 import { startBridge, type BridgeHandle, type BridgeOptions } from "./bridge";
 
 /** A tool as `tools/list` returns it. */
@@ -53,7 +53,7 @@ const unauthorized = (e: unknown) => [...chain(e)].some((x) => x.status === 401 
 /** The request certainly never reached a bridge (none could be reached or it refused the connection): nothing ran. */
 export class NotSent extends Error {
   constructor(readonly reason: unknown) {
-    super(`MyCP bridge not reachable: ${String((reason as Error)?.message ?? reason)}`);
+    super(`AnyMCP bridge not reachable: ${String((reason as Error)?.message ?? reason)}`);
   }
 }
 
@@ -104,7 +104,7 @@ export class Upstream extends EventEmitter<{ tools: [RemoteTool[]] }> {
     if (this.own) return { url: this.own.mcpUrl, token: this.own.token() };
     const forward = () => {
       const url = `http://127.0.0.1:${this.o.mcpPort}/mcp`;
-      this.o.log(`another MyCP bridge is already running; forwarding to ${url}`);
+      this.o.log(`another AnyMCP bridge is already running; forwarding to ${url}`);
       return { url, token: readToken(this.o.home) };
     };
     // a bridge is already there: forward without touching its state at all
@@ -112,8 +112,8 @@ export class Upstream extends EventEmitter<{ tools: [RemoteTool[]] }> {
     try {
       this.own = await startBridge({ ...this.o.bridge, home: this.o.home, mcpPort: this.o.mcpPort, extPort: this.o.extPort, log: this.o.log });
       this.own.hub.on("tools", () => void this.refresh());
-      this.o.log(`serving as the MyCP bridge (extension channel ${this.own.extUrl})`);
-      if (!this.own.store.state.extension) this.o.log(`not paired yet: enter ${this.own.pairingCode().replace(/^(\d{4})/, "$1 ")} in the MyCP side panel (Connect)`);
+      this.o.log(`serving as the AnyMCP bridge (extension channel ${this.own.extUrl})`);
+      if (!this.own.store.state.extension) this.o.log(`not paired yet: enter ${this.own.pairingCode().replace(/^(\d{4})/, "$1 ")} in the AnyMCP side panel (Connect)`);
       return { url: this.own.mcpUrl, token: this.own.token() };
     } catch (e) {
       if ((e as NodeJS.ErrnoException).code !== "EADDRINUSE") throw e;
@@ -127,7 +127,7 @@ export class Upstream extends EventEmitter<{ tools: [RemoteTool[]] }> {
       try {
         for (let attempt = 0; ; attempt++) {
           const { url, token } = await this.acquire();
-          const client = new Client({ name: "mycp-stdio", version: MYCP_VERSION });
+          const client = new Client({ name: "anymcp-stdio", version: ANYMCP_VERSION });
           try {
             await client.connect(new StreamableHTTPClientTransport(new URL(url), { requestInit: { headers: { Authorization: `Bearer ${token}` } } }));
             this.client = client;
@@ -235,17 +235,17 @@ const textResult = (text: string): CallResult => ({ content: [{ type: "text", te
 
 /** Turn a failed forward into an honest answer: nothing ran, the bridge said no, or the outcome is unknown. */
 export function forwardFailure(name: string, e: unknown): CallResult {
-  if (e instanceof NotSent || refused(e)) return textResult("MyCP: the MyCP bridge could not be reached, so nothing ran. It is safe to try again in a moment.");
+  if (e instanceof NotSent || refused(e)) return textResult("AnyMCP: the AnyMCP bridge could not be reached, so nothing ran. It is safe to try again in a moment.");
   const code = (e as { code?: unknown }).code;
-  if (typeof code === "number") return textResult(`MyCP: the bridge refused the request (${String((e as Error).message ?? e)}). Nothing ran.`);
+  if (typeof code === "number") return textResult(`AnyMCP: the bridge refused the request (${String((e as Error).message ?? e)}). Nothing ran.`);
   return textResult(
-    `MyCP: the connection to the MyCP bridge was lost or timed out while “${name}” was running, so its outcome is unknown. Do NOT retry automatically: the action may already have happened. Ask the user to check the website and the run history in the MyCP side panel.`,
+    `AnyMCP: the connection to the AnyMCP bridge was lost or timed out while “${name}” was running, so its outcome is unknown. Do NOT retry automatically: the action may already have happened. Ask the user to check the website and the run history in the AnyMCP side panel.`,
   );
 }
 
 /** One MCP server for the stdio connection, mirroring the bridge's current tools and forwarding calls to it. */
 export function buildForwardingServer(up: Upstream): McpServer {
-  const server = new McpServer({ name: "mycp", version: MYCP_VERSION }, { capabilities: { tools: { listChanged: true } } });
+  const server = new McpServer({ name: "anymcp", version: ANYMCP_VERSION }, { capabilities: { tools: { listChanged: true } } });
   const registered = new Map<string, { reg: RegisteredTool; json: string }>();
 
   const sync = (tools: RemoteTool[]) => {
@@ -302,7 +302,7 @@ export function buildForwardingServer(up: Upstream): McpServer {
   return server;
 }
 
-/** Entry point for `mycp-bridge --stdio`. Resolves once stdio is being served. */
+/** Entry point for `anymcp-bridge --stdio`. Resolves once stdio is being served. */
 export async function runStdio(o: StdioOptions): Promise<{ upstream: Upstream; close: () => Promise<void> }> {
   const upstream = new Upstream(o);
   await upstream.start();

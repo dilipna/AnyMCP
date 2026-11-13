@@ -1,6 +1,6 @@
 // Messages between the service worker, content scripts and the side panel.
 
-import type { Condition, Locator, NamedCondition, Step, ToolDefinition } from "mycp-protocol";
+import type { Condition, Locator, NamedCondition, Step, ToolDefinition } from "anymcp-protocol";
 import type { Binding, CommitAction, StepResult, Watch } from "../content/engine";
 
 // ---- service worker -> content script ----

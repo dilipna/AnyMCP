@@ -95,7 +95,7 @@ await page.keyboard.type("A-1012");
 await page.getByRole("button", { name: "Search" }).click();
 await page.getByRole("link", { name: "A-1012" }).click();
 await page.waitForURL(/orders\/A-1012$/);
-await page.locator("[data-mycp-banner]").waitFor({ state: "attached" });
+await page.locator("[data-anymcp-banner]").waitFor({ state: "attached" });
 await s.call({ type: "record.pick", mode: "text" });
 await waitForState(s, (x) => x.recording?.pick === "text");
 await page.locator('[data-testid="order-status"]').click();

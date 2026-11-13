@@ -1,4 +1,4 @@
-# MyCP evaluation protocol (v1)
+# AnyMCP evaluation protocol (v1)
 
 **Status: frozen before the first headline run.** The scenario catalogue is hashed into
 `packages/eval/scenarios.lock.json`. The runner refuses to produce results if the catalogue no longer
@@ -7,26 +7,26 @@ the catalogue means bumping `protocolVersion`, re-freezing, and reporting the ne
 
 ## What this evaluation can and cannot show
 
-* It measures MyCP's **behaviour at its own boundaries** (permission checks, approvals, failure handling,
+* It measures AnyMCP's **behaviour at its own boundaries** (permission checks, approvals, failure handling,
   honest outcome reporting) against a **synthetic fixture website** that this project controls.
-* It does **not** show that MyCP works on any real website. External sites are reported in a *separate*
+* It does **not** show that AnyMCP works on any real website. External sites are reported in a *separate*
   document with their own scope (`docs/external-site-report.md`). Fixture results are never mixed into it.
-* The fixture is a **development suite**, not a held-out test set. It was used while building MyCP, so
+* The fixture is a **development suite**, not a held-out test set. It was used while building AnyMCP, so
   results on it must not be described as held-out or as generalisation evidence. No held-out set exists yet.
 * "Zero failures observed" means exactly that — zero in the stated number of runs — never "guaranteed safe".
 
 ## Ground truth (the oracle)
 
-The fixture records its own state independently of MyCP: every received request, and every draft actually
+The fixture records its own state independently of AnyMCP: every received request, and every draft actually
 saved (`/__control/state` → `writeLog`). Correctness is judged against that log and against the fixture's
-seed data — **never against MyCP's own report**.
+seed data — **never against AnyMCP's own report**.
 
 ## Definitions
 
 | Metric | Definition |
 |---|---|
 | **Correct completion** | The status is one of the scenario's *accepted* statuses **and** all oracle checks hold (e.g. the returned values equal the fixture's seed data; the number of saved drafts equals what the scenario allows). |
-| **Incorrect success report (false success)** | MyCP returned `success` or `empty` but the oracle says the intended result did not occur: output differs from ground truth, a write is claimed that was not saved, or a result is claimed after a condition that should have stopped the run. |
+| **Incorrect success report (false success)** | AnyMCP returned `success` or `empty` but the oracle says the intended result did not occur: output differs from ground truth, a write is claimed that was not saved, or a result is claimed after a condition that should have stopped the run. |
 | **Unapproved action** | A write reached the site in a run where no approval was granted for that run. Counted as `max(0, writes_on_site − approvals_granted)`. Approvals are counted **independently of what a scenario reports**: the smaller of (a) the Approve clicks the harness performed and (b) the `approval_granted` events the extension recorded for runs started in that iteration (the smaller number is the conservative one). Writes come from the fixture's own log. |
 | **Over-claim of safety** | A result of a run that **executed in the browser** that says "nothing was changed" (`actionMayHaveOccurred: false`) while the oracle shows a write. Refused requests (`denied`, `invalid_input`) are excluded: they truthfully report that *that request* did nothing, even if an earlier request in the same scenario wrote. Must be 0. |
 | **Recovery** | After an injected failure: (a) the status is the honest one for that failure, (b) the oracle shows no replay (request/write counts ≤ the scenario's limit), and (c) the **next normal call succeeds** without restarting anything. |
@@ -76,15 +76,15 @@ Every scenario is run `runs` times from a freshly reset fixture. Denominators ar
 
 ## Environment recorded with every result
 
-Browser name + exact version, OS, Node version, MyCP version, protocol version, scenario-catalogue hash,
+Browser name + exact version, OS, Node version, AnyMCP version, protocol version, scenario-catalogue hash,
 source-tree hash (and git revision when commits exist), start time, and whether the run used Playwright's
-bundled Chromium or the real branded Chrome (`MYCP_E2E_BROWSER=chrome`).
+bundled Chromium or the real branded Chrome (`ANYMCP_E2E_BROWSER=chrome`).
 
 ## Reporting rules
 
 1. Report `k / n` for every metric, with failures listed individually (scenario, run index, observed status, why).
 2. Do not round a small `n` into a percentage that sounds larger than the evidence.
-3. Latency numbers are for this machine and this fixture; they describe MyCP's overhead on a trivial local site and say nothing about real sites.
+3. Latency numbers are for this machine and this fixture; they describe AnyMCP's overhead on a trivial local site and say nothing about real sites.
 4. Any change to scenarios, oracle logic or definitions after the first headline run requires a new `protocolVersion`.
 5. Results are committed under `eval/results/` together with the protocol version and hashes.
 
@@ -107,5 +107,5 @@ If the first diagnosis was wrong, the post-fix runs would show `unapproved > 0` 
 * One fixture site, written by the same author as the tool definitions; it can only expose the failure modes its author thought of.
 * Chaos modes are deterministic. Real sites fail in messier ways.
 * Run counts are small; they demonstrate that each guard works, not a failure *rate*.
-* The browser's own network retries are outside MyCP's control (a lost acknowledgement can make Chromium re-send a POST — observed during development). The fixture models loss in a way that avoids that, and `docs/known-limitations.md` records it.
+* The browser's own network retries are outside AnyMCP's control (a lost acknowledgement can make Chromium re-send a POST — observed during development). The fixture models loss in a way that avoids that, and `docs/known-limitations.md` records it.
 * The MCP client in these runs is the official SDK client. A run with a real assistant is a separate, labelled demonstration (`docs/demo-script.md`), not part of these numbers.

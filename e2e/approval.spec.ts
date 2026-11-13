@@ -1,5 +1,5 @@
 // The consequential action (a DRAFT customer note) under every approval outcome.
-// Truth comes from the fixture's own write log, not from MyCP's report: "nothing was changed"
+// Truth comes from the fixture's own write log, not from AnyMCP's report: "nothing was changed"
 // must mean the site received no write.
 
 import { expect, test, type Page } from "@playwright/test";

@@ -4,8 +4,8 @@
 
 | Component | Where | Responsibility | Trusted with |
 |---|---|---|---|
-| **MyCP Extension — service worker** | `packages/extension/src/background` | Source of truth for tool definitions, grants, approvals. Orchestrates runs. Talks to the bridge. | Everything the user approved |
-| **Content script** | `packages/extension/src/content` | Executes one step at a time in a page; records when asked. Shows the in-page "MyCP is running — Stop" banner. | Only the origin it was injected into |
+| **AnyMCP Extension — service worker** | `packages/extension/src/background` | Source of truth for tool definitions, grants, approvals. Orchestrates runs. Talks to the bridge. | Everything the user approved |
+| **Content script** | `packages/extension/src/content` | Executes one step at a time in a page; records when asked. Shows the in-page "AnyMCP is running — Stop" banner. | Only the origin it was injected into |
 | **Side panel (React)** | `packages/extension/src/sidepanel` | The only place a person can approve, enable, revoke. | Runs on the extension's origin |
 | **Bridge** | `packages/bridge` | MCP server for the assistant + authenticated WebSocket to the extension. Validates arguments, serialises runs, dedupes, answers honestly when the extension goes silent. | Tool *manifests* only — never workflow steps, cookies, or page content |
 | **Protocol** | `packages/protocol` | Shared schemas: tool definition, policy, result envelope, approval binding, messages. | — |
@@ -23,7 +23,7 @@ unknown operations are rejected. There are seven operations:
 | op | meaning | safety rule enforced in the page |
 |---|---|---|
 | `locate` | bind a name to **exactly one** visible element via a semantic locator (role+name, label, test id, text; optionally inside a named container) | 0 matches ⇒ `locator_missing`; >1 ⇒ `locator_ambiguous`. Never "best guess". |
-| `fill` | put a value into a text box, dropdown, checkbox/switch or option button; `effect: "commit"` marks a field that saves by itself | refuses password / payment / secret / `data-mycp-ignore` fields; sets a *state* (never a blind toggle); verifies it stuck; a `commit` fill is reachable only through the approval path, and one that would change nothing is reported as `no_change_needed` without asking |
+| `fill` | put a value into a text box, dropdown, checkbox/switch or option button; `effect: "commit"` marks a field that saves by itself | refuses password / payment / secret / `data-anymcp-ignore` fields; sets a *state* (never a blind toggle); verifies it stuck; a `commit` fill is reachable only through the approval path, and one that would change nothing is reported as `no_change_needed` without asking |
 | `click` | `ui` / `navigate` / `commit` | only buttons, links, tabs, menu choices and dropdown openers; refuses links/forms that leave the allowed origins; `commit` is reachable only through the approval path |
 | `press` | press Enter in a text box (`ui` / `navigate` / `commit`) | dispatches the key events, then does exactly what the browser would (click the form's default button, or submit a one-field form) unless the page cancelled the key; refuses forms that post to another origin |
 | `waitFor` | wait for an observable state | also watches the site-declared *empty*, *error* and *session-expired* states, so those are reported as what they are |
@@ -45,7 +45,7 @@ cannot describe behaviour the engine does not enforce. The author's description 
 request ─▶ bridge: args vs reviewed schema · busy? · duplicate? · extension connected?
         ─▶ extension: tool enabled & version matches? · definition hash intact? · policy still satisfied?
                       origin granted by the user? · args validate again
-        ─▶ open/reuse a tab MyCP owns, go to the entry path (same origin)
+        ─▶ open/reuse a tab AnyMCP owns, go to the entry path (same origin)
         ─▶ session-expired guard · preconditions
         ─▶ steps (locate/fill/click/waitFor/extract/assert) — one message per step
         ─▶ if a `commit` step:
@@ -71,7 +71,7 @@ request ─▶ bridge: args vs reviewed schema · busy? · duplicate? · extensi
 | `failed` | confirmed failure (the site reported it) or a read that could not complete |
 
 `actionMayHaveOccurred` is `false`, `true` or `"unknown"`; `retry.safe` follows from the status. The only
-"no effect" claims MyCP makes are ones it can prove: the content script refused *before* clicking, or the
+"no effect" claims AnyMCP makes are ones it can prove: the content script refused *before* clicking, or the
 site itself reported a rejection.
 
 ## Why writes are never replayed (write-ahead intent)
@@ -105,7 +105,7 @@ declared `maxAttempts` for reads, only before any consequential step.
   run history **without outputs, typed values or URL paths** (`redactEnvelopeForStorage`).
 * Extension `chrome.storage.session` (memory only): the owned tab id, un-acknowledged results, and an
   in-progress recording (which may hold the example values you typed). Cleared when the browser closes.
-* Bridge `~/.mycp/state.json` (owner-only on POSIX; user-profile ACL on Windows): pairing secret, MCP token,
+* Bridge `~/.anymcp/state.json` (owner-only on POSIX; user-profile ACL on Windows): pairing secret, MCP token,
   redacted run records.
 * Nothing else is stored. No screenshots, no page contents. Optional diagnostics (off by default) store
   a short outline of control names with digits masked and never field values.

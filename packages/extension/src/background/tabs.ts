@@ -1,6 +1,6 @@
 // Tab handling for runs.
 //
-//  - MyCP runs workflows in a tab IT owns (one per origin, reused). It never navigates a tab the user opened.
+//  - AnyMCP runs workflows in a tab IT owns (one per origin, reused). It never navigates a tab the user opened.
 //  - The content script is injected on demand, only into origins the user granted.
 //  - A lost message is classified: tab gone (closed), or document replaced (navigation).
 //  - After navigation, content-script state (element bindings) is gone by design; the engine re-locates.
@@ -44,8 +44,8 @@ export async function waitComplete(tabId: number, timeoutMs: number): Promise<vo
 }
 
 /**
- * Get a tab MyCP owns for this origin and point it at `entryUrl` (same origin as `origin`).
- * Reuses the previous MyCP tab when it still exists; otherwise opens a new background tab.
+ * Get a tab AnyMCP owns for this origin and point it at `entryUrl` (same origin as `origin`).
+ * Reuses the previous AnyMCP tab when it still exists; otherwise opens a new background tab.
  */
 export async function acquireTab(origin: string, entryUrl: string, timeoutMs: number): Promise<number> {
   const owned = await getOwnedTabs();
@@ -104,7 +104,7 @@ async function inject(tabId: number): Promise<void> {
   } catch (e) {
     if (!(await tabExists(tabId))) throw new TabError("closed", "The tab was closed.");
     const msg = String((e as Error).message ?? e);
-    if (/cannot access|permission|extensions gallery/i.test(msg)) throw new TabError("denied", "MyCP does not have permission to use this page.");
+    if (/cannot access|permission|extensions gallery/i.test(msg)) throw new TabError("denied", "AnyMCP does not have permission to use this page.");
     // otherwise: the document is mid-navigation; the caller retries
   }
 }
@@ -137,7 +137,7 @@ export async function ensureContent(
     }
     await sleep(100);
   }
-  throw new TabError("timeout", `The page was not ready for MyCP (${lastError || "still loading"}).`);
+  throw new TabError("timeout", `The page was not ready for AnyMCP (${lastError || "still loading"}).`);
 }
 
 /** Wait until the document in the tab is a different one than `previousUrl`/doc. Used after a navigating click. */

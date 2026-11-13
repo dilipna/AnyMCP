@@ -1,10 +1,10 @@
 // Local bridge state. Holds the extension pairing secret and the MCP client token.
 // Never contains page content, typed values or tool outputs (outputs are stripped from run records).
 
-import { chmodSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { randomHex, redactEnvelopeForStorage, type ResultEnvelope } from "mycp-protocol";
+import { randomHex, redactEnvelopeForStorage, type ResultEnvelope } from "anymcp-protocol";
 
 export interface PairedExtension {
   id: string;
@@ -21,8 +21,27 @@ export interface BridgeState {
 
 const MAX_RUNS = 200;
 
+/**
+ * Where the bridge keeps its state. `ANYMCP_HOME` overrides it (`MYCP_HOME`, the pre-release name, still works).
+ * Pre-release builds kept their state in `~/.mycp`: if only that exists, its state (pairing + client token) is
+ * copied to `~/.anymcp` once, so an existing browser pairing keeps working. The old folder is left for the user
+ * to delete.
+ */
 export function defaultHome(): string {
-  return process.env.MYCP_HOME ?? join(homedir(), ".mycp");
+  const fromEnv = process.env.ANYMCP_HOME ?? process.env.MYCP_HOME;
+  if (fromEnv) return fromEnv;
+  const home = join(homedir(), ".anymcp");
+  const legacyState = join(homedir(), ".mycp", "state.json");
+  if (!existsSync(join(home, "state.json")) && existsSync(legacyState)) {
+    try {
+      mkdirSync(home, { recursive: true, mode: 0o700 });
+      copyFileSync(legacyState, join(home, "state.json"));
+      chmodSync(join(home, "state.json"), 0o600);
+    } catch {
+      /* fall through: a fresh state is created and the browser simply pairs again */
+    }
+  }
+  return home;
 }
 
 export class StateStore {
@@ -94,7 +113,7 @@ export class StateStore {
     try {
       this.save();
     } catch (e) {
-      if (!this.warnedHistory) process.stderr.write(`MyCP bridge: could not save run history (${(e as Error).message}). Results are still returned.
+      if (!this.warnedHistory) process.stderr.write(`AnyMCP bridge: could not save run history (${(e as Error).message}). Results are still returned.
 `);
       this.warnedHistory = true;
     }

@@ -1,8 +1,9 @@
 {
-  "name": "mycp-monorepo",
+  "name": "anymcp-monorepo",
   "version": "0.1.0",
   "private": true,
-  "description": "MyCP: turn approved website workflows into reusable AI tools.",
+  "description": "AnyMCP: turn approved website workflows into reusable AI tools.",
+  "license": "MIT",
   "type": "module",
   "engines": {
     "node": ">=20.19"

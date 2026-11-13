@@ -9,12 +9,12 @@ import { startRecording, stopRecording, setPickMode, isRecording } from "./recor
 
 declare global {
   interface Window {
-    __mycpContent?: true;
+    __anymcpContent?: true;
   }
 }
 
-if (!window.__mycpContent) {
-  window.__mycpContent = true;
+if (!window.__anymcpContent) {
+  window.__anymcpContent = true;
   let run: RunContext | null = null;
 
   const post = (m: FromContent) => void chrome.runtime.sendMessage(m).catch(() => undefined);
@@ -29,7 +29,7 @@ if (!window.__mycpContent) {
         }
         case "begin": {
           run = { runId: raw.runId, args: raw.args, origins: raw.origins, bindings: new Map() };
-          showBanner(`MyCP is running “${raw.title}”`, "running", () => post({ kind: "content.stop", runId: raw.runId }));
+          showBanner(`AnyMCP is running “${raw.title}”`, "running", () => post({ kind: "content.stop", runId: raw.runId }));
           return sendResponse({ ok: true });
         }
         case "end": {

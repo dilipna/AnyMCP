@@ -4,7 +4,7 @@
 // example values the user may turn into parameters) lives in chrome.storage.session: memory only,
 // survives worker suspension, never written to disk, gone when the browser closes.
 
-import { randomHex } from "mycp-protocol";
+import { randomHex } from "anymcp-protocol";
 import type { PickMode, PickResult, RecordedEvent } from "../content/recorder";
 import { buildDraft, paramNameFor, queryPartsFromSearch, type DraftParam, type DraftSpec, type DraftStep } from "../shared/draft";
 import type { PickedOutputView, PickedSignalView, RecordedStepView, RecordingView } from "../shared/types";
@@ -63,11 +63,11 @@ export class RecordingManager {
     try {
       u = new URL(url);
     } catch {
-      return { ok: false, error: "MyCP can only record on web pages you have allowed." };
+      return { ok: false, error: "AnyMCP can only record on web pages you have allowed." };
     }
     const origin = u.origin;
     const granted = (await getGrants())[origin] && (await chrome.permissions.contains({ origins: [`${origin}/*`] }));
-    if (!granted) return { ok: false, error: `Allow MyCP to use ${origin} first (Permissions → Allow this site), then start recording.` };
+    if (!granted) return { ok: false, error: `Allow AnyMCP to use ${origin} first (Permissions → Allow this site), then start recording.` };
 
     this.rec = {
       id: `rec_${randomHex(6)}`,

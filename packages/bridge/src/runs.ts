@@ -17,7 +17,7 @@ import {
   type ResultEnvelope,
   type RunPhase,
   type ToolManifest,
-} from "mycp-protocol";
+} from "anymcp-protocol";
 import type { ExtensionHub } from "./hub";
 import type { StateStore } from "./store";
 
@@ -61,7 +61,7 @@ export class RunManager {
       const ctx = this.current;
       if (!ctx || ctx.executionId !== e.executionId) return;
       if (phaseIndex(e.phase) > phaseIndex(ctx.phase)) ctx.phase = e.phase;
-      if (e.phase === "approval_requested") ctx.progress?.("Waiting for you to approve this action in the MyCP side panel.");
+      if (e.phase === "approval_requested") ctx.progress?.("Waiting for you to approve this action in the AnyMCP side panel.");
     });
     hub.on("result", (r) => {
       const env = r.envelope;
@@ -75,7 +75,7 @@ export class RunManager {
       if (this.disconnectTimer) clearTimeout(this.disconnectTimer);
       this.disconnectTimer = setTimeout(() => {
         const ctx = this.current;
-        if (ctx) this.settleByPhase(ctx, "bridge_disconnected", "The connection to MyCP Extension was lost.");
+        if (ctx) this.settleByPhase(ctx, "bridge_disconnected", "The connection to AnyMCP Extension was lost.");
       }, this.opts.reconnectGraceMs ?? 10_000);
     });
     hub.on("ready", () => {
@@ -94,7 +94,7 @@ export class RunManager {
     const ctx = this.current;
     if (ctx) {
       this.hub.send({ type: "run.cancel", executionId: ctx.executionId, reason: "bridge_shutdown" });
-      this.settleByPhase(ctx, "bridge_disconnected", "The MyCP bridge was shut down.");
+      this.settleByPhase(ctx, "bridge_disconnected", "The AnyMCP bridge was shut down.");
     }
     this.closed = true;
   }
@@ -103,7 +103,7 @@ export class RunManager {
     return this.current?.executionId ?? null;
   }
 
-  /** For `mycp_get_run`. */
+  /** For `anymcp_get_run`. */
   describe(executionId: string): { state: "running" | "finished" | "unknown_run"; phase?: string; envelope?: ResultEnvelope } {
     if (this.current?.executionId === executionId) return { state: "running", phase: this.current.phase };
     const env = this.store.getRun(executionId);
@@ -138,17 +138,17 @@ export class RunManager {
           newExecutionId(),
           "denied",
           "duplicate_request",
-          `An identical request already ran (${prior.executionId}, outcome: ${prior.status}). MyCP will not repeat a write automatically. Ask the user to check the website first.`,
+          `An identical request already ran (${prior.executionId}, outcome: ${prior.status}). AnyMCP will not repeat a write automatically. Ask the user to check the website first.`,
         );
       }
     }
 
     // 3. one run at a time (one browser tab, one human watching)
-    if (this.current) return quick(newExecutionId(), "precondition_failed", "bridge_busy", "Another MyCP run is in progress. Wait for it to finish, then retry.");
+    if (this.current) return quick(newExecutionId(), "precondition_failed", "bridge_busy", "Another AnyMCP run is in progress. Wait for it to finish, then retry.");
 
     // 4. the extension must be connected
     if (!this.hub.connected) {
-      return quick(newExecutionId(), "precondition_failed", "extension_disconnected", "MyCP Extension is not connected. Open Chrome with MyCP installed and check it shows “Connected”.");
+      return quick(newExecutionId(), "precondition_failed", "extension_disconnected", "AnyMCP Extension is not connected. Open Chrome with AnyMCP installed and check it shows “Connected”.");
     }
 
     const executionId = newExecutionId();
@@ -170,7 +170,7 @@ export class RunManager {
     if (!sent) {
       this.current = null;
       this.byKey.delete(key);
-      return quick(executionId, "precondition_failed", "extension_disconnected", "MyCP Extension is not connected.");
+      return quick(executionId, "precondition_failed", "extension_disconnected", "AnyMCP Extension is not connected.");
     }
 
     // overall safety net, and keep-alive progress while a human may be deciding
@@ -180,7 +180,7 @@ export class RunManager {
         this.settleByPhase(ctx, "timeout", "The run did not finish in the allowed time.");
       }, manifest.budgetMs),
     );
-    ctx.timers.push(setInterval(() => ctx.progress?.(ctx.phase === "approval_requested" ? "Still waiting for approval in the MyCP side panel." : "MyCP is working in the browser."), 15_000));
+    ctx.timers.push(setInterval(() => ctx.progress?.(ctx.phase === "approval_requested" ? "Still waiting for approval in the AnyMCP side panel." : "AnyMCP is working in the browser."), 15_000));
 
     const onAbort = () => {
       this.hub.send({ type: "run.cancel", executionId, reason: "client_cancelled" });
@@ -223,7 +223,7 @@ export class RunManager {
       status: risky ? "unknown_outcome" : "interrupted",
       reasonCode,
       message: risky
-        ? `${message} The action had reached the approval step, so it may or may not have happened. MyCP will not replay it. Check the website, then use mycp_get_run for the extension's final record.`
+        ? `${message} The action had reached the approval step, so it may or may not have happened. AnyMCP will not replay it. Check the website, then use anymcp_get_run for the extension's final record.`
         : `${message} Nothing was changed on the website. It is safe to retry.`,
       actionMayHaveOccurred: risky ? "unknown" : false,
       startedAt: ctx.startedAt,

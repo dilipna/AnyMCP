@@ -37,7 +37,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
-          name: mycp-release
+          name: anymcp-release
           path: release/
       - name: Keep test output on failure
         if: failure()

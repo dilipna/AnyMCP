@@ -1,8 +1,8 @@
 // Failure scenarios. For every one: the status must be honest, nothing unsafe may happen, and the
-// fixture's own request/write logs (ground truth) must agree with what MyCP reported.
+// fixture's own request/write logs (ground truth) must agree with what AnyMCP reported.
 
 import { expect, test, type Page } from "@playwright/test";
-import type { ResultEnvelope } from "mycp-protocol";
+import type { ResultEnvelope } from "anymcp-protocol";
 import { startStack, waitForState, sleep, type Stack } from "./harness";
 
 let s: Stack;
@@ -195,7 +195,7 @@ test.describe("write workflow", () => {
     await c.close();
   });
 
-  test("lost acknowledgement that cannot be verified: unknown_outcome — and MyCP does not guess or retry", async () => {
+  test("lost acknowledgement that cannot be verified: unknown_outcome — and AnyMCP does not guess or retry", async () => {
     await s.chaos({ ackLost: "opaque" });
     const c = await s.mcp();
     const pending = s.run(c, "draft_customer_note", fresh());
@@ -245,7 +245,7 @@ test.describe("write workflow", () => {
     const deadline = Date.now() + 15_000;
     let truth: ResultEnvelope | undefined;
     while (Date.now() < deadline) {
-      const r = await c.callTool({ name: "mycp_get_run", arguments: { execution_id: env.executionId } });
+      const r = await c.callTool({ name: "anymcp_get_run", arguments: { execution_id: env.executionId } });
       const info = r.structuredContent as unknown as { state: string; envelope?: ResultEnvelope };
       if (info.envelope && info.envelope.status === "cancelled_before_action") {
         truth = info.envelope;

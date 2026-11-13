@@ -1,22 +1,22 @@
 // EXTERNAL read-only check — kept separate from the fixture evaluation on purpose.
 //
-//   MYCP_E2E_HOSTS="https://books.toscrape.com/*" node packages/extension/scripts/build.mjs --target=e2e
+//   ANYMCP_E2E_HOSTS="https://books.toscrape.com/*" node packages/extension/scripts/build.mjs --target=e2e
 //   npx tsx packages/eval/src/external.ts [--chrome]
 //
 // SCOPE (recorded in the output): one site, https://books.toscrape.com, a public sandbox whose purpose is to be
 // scraped. Read-only: the extension navigates by URL and reads text. NO forms are submitted, NO accounts are
 // created or used, NO messages are sent. Sequential, ~15 page loads in total, with a pause between runs.
-// Ground truth for the happy path is the same page's raw HTML fetched independently of MyCP.
+// Ground truth for the happy path is the same page's raw HTML fetched independently of AnyMCP.
 
 import { mkdirSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import { join, resolve } from "node:path";
-import type { ResultEnvelope, ToolDefinition } from "mycp-protocol";
-import { MYCP_VERSION } from "mycp-protocol";
+import type { ResultEnvelope, ToolDefinition } from "anymcp-protocol";
+import { ANYMCP_VERSION } from "anymcp-protocol";
 import { startStack, sleep } from "../../../e2e/harness";
 import { gitRevision, sourceTreeHash } from "./revision";
 
-if (process.argv.includes("--chrome")) process.env.MYCP_E2E_BROWSER = "chrome";
+if (process.argv.includes("--chrome")) process.env.ANYMCP_E2E_BROWSER = "chrome";
 const ORIGIN = "https://books.toscrape.com";
 
 const base: Omit<ToolDefinition, "id" | "title" | "description" | "entry" | "input" | "output" | "steps" | "preconditions" | "postconditions"> = {
@@ -84,7 +84,7 @@ const BOOKS = [
   { slug: "sapiens-a-brief-history-of-humankind_996", title: "Sapiens: A Brief History of Humankind" },
 ];
 
-/** Independent oracle: the page's own HTML, fetched without MyCP. */
+/** Independent oracle: the page's own HTML, fetched without AnyMCP. */
 async function truthFor(slug: string): Promise<string | null> {
   const res = await fetch(`${ORIGIN}/catalogue/${slug}/index.html`);
   if (!res.ok) return null;
@@ -147,7 +147,7 @@ try {
 } finally {
   const rev = sourceTreeHash();
   const git = gitRevision();
-  const env = { mycpVersion: MYCP_VERSION, browser: s.browserVersion, os: `${os.type()} ${os.release()}`, node: process.version, sourceTreeSha256: rev.sha256, gitHead: git.head, startedAt: new Date().toISOString() };
+  const env = { anymcpVersion: ANYMCP_VERSION, browser: s.browserVersion, os: `${os.type()} ${os.release()}`, node: process.version, sourceTreeSha256: rev.sha256, gitHead: git.head, startedAt: new Date().toISOString() };
   await s.close();
   const okN = rows.filter((r) => r.ok).length;
   const dir = resolve(import.meta.dirname, "../../../eval/results");
@@ -161,9 +161,9 @@ try {
     "",
     "**Scope.** `https://books.toscrape.com` (a sandbox whose purpose is to be scraped). Read-only: navigation by URL and reading text. **No forms submitted, no accounts, no messages.** Sequential, one page load per run, 0.8 s pause between runs.",
     "",
-    "**Ground truth.** For the happy path, the page's own HTML fetched independently of MyCP.",
+    "**Ground truth.** For the happy path, the page's own HTML fetched independently of AnyMCP.",
     "",
-    `**Environment.** MyCP ${env.mycpVersion}; ${env.browser}; ${env.os}; Node ${env.node}; source ${env.sourceTreeSha256.slice(0, 16)}…`,
+    `**Environment.** AnyMCP ${env.anymcpVersion}; ${env.browser}; ${env.os}; Node ${env.node}; source ${env.sourceTreeSha256.slice(0, 16)}…`,
     "",
     `## Result: ${okN} of ${rows.length} runs behaved as expected`,
     "",

@@ -24,7 +24,7 @@ export function App() {
   if (!state) {
     return (
       <div className="app">
-        <header className="top"><span className="brand">MyCP</span></header>
+        <header className="top"><span className="brand">AnyMCP</span></header>
         <main><Loading /></main>
       </div>
     );
@@ -38,7 +38,7 @@ export function App() {
   return (
     <div className="app">
       <header className="top">
-        <span className="brand">MyCP</span>
+        <span className="brand">AnyMCP</span>
         <span className={`pill ${connPill.cls}`} title={c.error ?? undefined}>
           <span className="dot" aria-hidden="true" />
           {connPill.text}
@@ -63,7 +63,7 @@ export function App() {
         </div>
       </header>
 
-      <nav className="nav" aria-label="MyCP sections">
+      <nav className="nav" aria-label="AnyMCP sections">
         {TABS.map((t) => (
           <button key={t.id} type="button" aria-current={view === t.id ? "page" : undefined} onClick={() => { setView(t.id); if (t.id !== "tools") setSelected(null); }}>
             {t.label}
@@ -80,8 +80,8 @@ export function App() {
             {!c.paired && !selected && <Connect state={state} compact />}
             {c.paired && c.state !== "connected" && !selected && (
               <div className="banner warn" role="alert">
-                <strong>Your AI assistant can’t reach MyCP right now</strong>
-                <p>{c.error ?? "The bridge is not running."} MyCP keeps trying to reconnect.</p>
+                <strong>Your AI assistant can’t reach AnyMCP right now</strong>
+                <p>{c.error ?? "The bridge is not running."} AnyMCP keeps trying to reconnect.</p>
                 <button type="button" className="btn small" onClick={() => void call({ type: "reconnect" })}>Reconnect now</button>
               </div>
             )}

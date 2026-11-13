@@ -5,7 +5,7 @@
 // session : in-memory only (survives worker suspension, cleared when the browser closes): owned tabs, in-flight run
 //           arguments, un-acknowledged results. Entered values are NEVER written to local storage by default.
 
-import { MYCP_VERSION, toolDefinitionHash, validateToolPolicy, type RunRecord } from "mycp-protocol";
+import { ANYMCP_VERSION, toolDefinitionHash, validateToolPolicy, type RunRecord } from "anymcp-protocol";
 import { DEFAULT_SETTINGS, type Pairing, type Settings, type StoredToolVersion, type ToolRow, type ToolStatus } from "../shared/types";
 
 const MAX_RUNS = 100;
@@ -180,4 +180,4 @@ export function upsertRun(record: RunRecord) {
 }
 export const clearRuns = () => setLocal("runs", []);
 
-export const EXTENSION_VERSION = MYCP_VERSION;
+export const EXTENSION_VERSION = ANYMCP_VERSION;

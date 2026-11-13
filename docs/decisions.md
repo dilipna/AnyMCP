@@ -27,7 +27,7 @@ Each entry: the decision, the alternatives rejected, the reason, and the cost.
   no CORS headers. Extension side: Origin must be `chrome-extension://<id>` **and** equal the id the extension
   claims; first contact needs a one-time pairing code (single-use, expiring, attempt-limited); later contact
   proves possession of the pairing secret with an HMAC over a fresh nonce (the secret is never re-sent).
-* **Cost:** the user runs a local process. **Update:** `mycp-bridge --stdio` now lets apps that start MCP servers
+* **Cost:** the user runs a local process. **Update:** `anymcp-bridge --stdio` now lets apps that start MCP servers
   themselves launch it. It becomes the one bridge if none is running, otherwise forwards to the running one over
   the same authenticated HTTP endpoint, and takes over if that one stops. So there is still exactly one owner of
   the browser socket, and every tool is served by the same handler. A forwarded call is retried only when it
@@ -47,7 +47,7 @@ Each entry: the decision, the alternatives rejected, the reason, and the cost.
 * **Why:** after the click, the only honest answers are *verified success*, *site-reported rejection* or
   *unknown*. See architecture.md.
 * **Evidence:** during development the Chromium network stack **re-sent a POST three times** when the server
-  reset a reused connection. MyCP clicked once. This is why "exactly once" is never promised and why results
+  reset a reused connection. AnyMCP clicked once. This is why "exactly once" is never promised and why results
   are verified by reading the page, not inferred from the click.
 
 ### D6. Mandatory preconditions and postconditions
@@ -65,7 +65,7 @@ Each entry: the decision, the alternatives rejected, the reason, and the cost.
 * **Why:** smaller permission surface and faster store review; the user grants one site at a time with
   Chrome's own prompt (`chrome.permissions.request`, from a click). Revoking a site disables its tools.
 
-### D9. MyCP works in a tab it owns
+### D9. AnyMCP works in a tab it owns
 * **Why:** it never navigates or acts in a tab the user is working in. The in-page banner and the toolbar
   badge show when it is running; Stop works from the panel and from the page.
 

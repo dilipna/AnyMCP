@@ -7,9 +7,9 @@
 //  - never click something that leaves the tool's allowed origins
 //  - the consequential click only happens through `commit`, which re-checks the approved binding first
 
-import { isSensitiveField, resolveText, type FieldDescriptor } from "mycp-protocol/light";
-import type { Condition, ExtractSource, Locator, NamedCondition, ReasonCode, Step, ValueRef } from "mycp-protocol";
-import { accessibleName, composedClosest, computeRole, deepQueryAll, fingerprintElement, isVisible, norm, resolveLocator, visibleText, type Args } from "./locator";
+import { isSensitiveField, resolveText, type FieldDescriptor } from "anymcp-protocol/light";
+import type { Condition, ExtractSource, Locator, NamedCondition, ReasonCode, Step, ValueRef } from "anymcp-protocol";
+import { PRIVATE_AREA, accessibleName, composedClosest, computeRole, deepQueryAll, fingerprintElement, isVisible, norm, resolveLocator, visibleText, type Args } from "./locator";
 
 export interface Watch {
   sessionExpired: NamedCondition[];
@@ -56,7 +56,7 @@ export function fieldDescriptor(el: Element): FieldDescriptor {
     label: labels || null,
     ariaLabel: el.getAttribute("aria-label"),
     placeholder: el.getAttribute("placeholder"),
-    mycpIgnore: !!composedClosest(el, "[data-mycp-ignore]"),
+    anymcpIgnore: !!composedClosest(el, PRIVATE_AREA),
   };
 }
 
@@ -66,10 +66,10 @@ function isFormField(el: Element): el is HTMLInputElement | HTMLTextAreaElement 
 
 function readText(el: Element): string | { blocked: string } {
   if (isFormField(el)) {
-    if (isSensitiveField(fieldDescriptor(el))) return { blocked: "That field looks like a password or payment field, so MyCP will not read it." };
+    if (isSensitiveField(fieldDescriptor(el))) return { blocked: "That field looks like a password or payment field, so AnyMCP will not read it." };
     return norm(el.value);
   }
-  if (composedClosest(el, "[data-mycp-ignore]")) return { blocked: "That part of the page is marked as private." };
+  if (composedClosest(el, PRIVATE_AREA)) return { blocked: "That part of the page is marked as private." };
   return visibleText(el);
 }
 
@@ -81,7 +81,7 @@ function sameOriginHref(href: string, origins: string[]): boolean {
   }
 }
 
-/** Returns an error string if MyCP must refuse to click this element. */
+/** Returns an error string if AnyMCP must refuse to click this element. */
 export function clickRefusal(el: Element, origins: string[]): string | null {
   const role = computeRole(el);
   const allowedRoles = new Set(["button", "link", "tab", "option", "menuitem", "combobox"]);
@@ -188,7 +188,7 @@ async function doLocate(ctx: RunContext, step: Extract<Step, { op: "locate" }>, 
       return { ok: true, matches: 1 };
     }
     if (r.elements.length > 1) {
-      if (++ambiguousStreak >= 3) return { ok: false, code: "locator_ambiguous", detail: `${r.elements.length} elements match; MyCP will not guess.`, matches: r.elements.length };
+      if (++ambiguousStreak >= 3) return { ok: false, code: "locator_ambiguous", detail: `${r.elements.length} elements match; AnyMCP will not guess.`, matches: r.elements.length };
     } else ambiguousStreak = 0;
     if (t) return terminalFailure(t);
     return undefined;
@@ -204,7 +204,7 @@ function bound(ctx: RunContext, name: string): { el: Element } | { fail: StepRes
   return { el };
 }
 
-/** A two-state control MyCP can set: a native checkbox/radio, or an ARIA checkbox/switch/radio. */
+/** A two-state control AnyMCP can set: a native checkbox/radio, or an ARIA checkbox/switch/radio. */
 export function toggleKind(el: Element): "checkbox" | "radio" | null {
   if (el instanceof HTMLInputElement) return el.type === "checkbox" ? "checkbox" : el.type === "radio" ? "radio" : null;
   const role = computeRole(el);
@@ -230,7 +230,7 @@ function fillSelect(el: HTMLSelectElement, value: string): StepResult {
   let hits = options.filter((o) => optionLabel(o) === norm(value));
   if (hits.length === 0) hits = options.filter((o) => o.value === value);
   if (hits.length === 0) return { ok: false, code: "precondition_unmet", detail: "The requested choice is not in that dropdown." };
-  if (new Set(hits.map((o) => o.value)).size > 1) return { ok: false, code: "locator_ambiguous", detail: `${hits.length} choices in that dropdown have the same name; MyCP will not guess.`, matches: hits.length };
+  if (new Set(hits.map((o) => o.value)).size > 1) return { ok: false, code: "locator_ambiguous", detail: `${hits.length} choices in that dropdown have the same name; AnyMCP will not guess.`, matches: hits.length };
   const option = hits[0]!;
   if (option.disabled) return { ok: false, code: "precondition_unmet", detail: "That choice is disabled." };
   if (el.selectedIndex !== option.index) {
@@ -260,10 +260,10 @@ async function fillToggle(el: Element, kind: "checkbox" | "radio", value: string
 
 const NOT_TEXT_INPUT = new Set(["button", "submit", "reset", "image", "file", "hidden", "checkbox", "radio"]);
 
-/** Returns an error string if MyCP must refuse to fill this element. */
+/** Returns an error string if AnyMCP must refuse to fill this element. */
 export function fillRefusal(el: Element): string | null {
-  if (isFormField(el) && isSensitiveField(fieldDescriptor(el))) return "That field looks like a password or payment field, so MyCP will not fill it.";
-  if (composedClosest(el, "[data-mycp-ignore]")) return "That part of the page is marked as private.";
+  if (isFormField(el) && isSensitiveField(fieldDescriptor(el))) return "That field looks like a password or payment field, so AnyMCP will not fill it.";
+  if (composedClosest(el, PRIVATE_AREA)) return "That part of the page is marked as private.";
   return null;
 }
 
@@ -311,7 +311,7 @@ export function defaultButton(form: HTMLFormElement): HTMLElement | null {
   return null;
 }
 
-/** Returns an error string if MyCP must refuse to press a key in this element. */
+/** Returns an error string if AnyMCP must refuse to press a key in this element. */
 export function pressRefusal(el: Element, origins: string[]): string | null {
   if (!(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) || (el instanceof HTMLInputElement && NOT_TEXT_INPUT.has(el.type))) return "Keys can only be pressed in a text box.";
   const refusal = fillRefusal(el);
@@ -330,7 +330,7 @@ export function pressRefusal(el: Element, origins: string[]): string | null {
 
 /**
  * Press Enter in a field. Synthetic key events never trigger the browser's own "Enter submits the form", so after
- * the key events MyCP does exactly what the browser would have done: click the form's default button, or submit a
+ * the key events AnyMCP does exactly what the browser would have done: click the form's default button, or submit a
  * form that has no button and at most one text field. Nothing happens if the page cancelled the key.
  */
 function pressEnter(el: HTMLInputElement | HTMLTextAreaElement): StepResult {

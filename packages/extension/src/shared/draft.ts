@@ -17,8 +17,8 @@ import {
   type Step,
   type TextRef,
   type ToolDefinition,
-} from "mycp-protocol";
-import type { ObjectSchema, SchemaSubset } from "mycp-protocol";
+} from "anymcp-protocol";
+import type { ObjectSchema, SchemaSubset } from "anymcp-protocol";
 
 export type FillValue = { mode: "param"; param: string } | { mode: "literal"; text: string } | { mode: "skip" };
 
@@ -218,7 +218,7 @@ export function buildDraft(spec: DraftSpec, version: number): BuildResult {
     const as = uniqueName(snake(s.label, s.kind === "click" ? "button" : "field"), usedBindings);
     steps.push({ id: nextId(), op: "locate", as, locator: loc });
     const partial = s.keepText ? null : partlyParameterized(s.locator, loc, params);
-    if (partial) warnings.push(`“${s.label}” will change with the input “${partial}”: MyCP will look for ${describeLocator(loc)}. If it should be the same element on every run, choose “Keep this text as recorded” on that step.`);
+    if (partial) warnings.push(`“${s.label}” will change with the input “${partial}”: AnyMCP will look for ${describeLocator(loc)}. If it should be the same element on every run, choose “Keep this text as recorded” on that step.`);
     if (s.kind === "input" && s.effect !== "commit" && s.control && s.control !== "text") {
       const what = s.control === "select" ? "a dropdown" : s.control === "radio" ? "an option button" : "a checkbox";
       warnings.push(`“${s.label}” is ${what}. If this site saves the moment it changes (with no Save button), the tool would change data without asking you. Keep this step only if it just fills in a form.`);
@@ -300,7 +300,7 @@ export function buildDraft(spec: DraftSpec, version: number): BuildResult {
   const emptyWhen = bySignal("empty");
   const failureWhen = bySignal("error");
   const sessionExpiredWhen = bySignal("expired");
-  if (kind === "write" && failureWhen.length === 0) warnings.push("No error message was picked. MyCP will verify by re-reading the page if the result is unclear.");
+  if (kind === "write" && failureWhen.length === 0) warnings.push("No error message was picked. AnyMCP will verify by re-reading the page if the result is unclear.");
 
   // Read barrier: pages often fill in results asynchronously. Wait for the success indicator, then read values.
   if (postconditions[0]) steps.push({ id: nextId(), op: "waitFor", condition: postconditions[0].condition, timeoutMs: 5000 });

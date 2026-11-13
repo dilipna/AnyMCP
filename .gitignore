@@ -4,8 +4,10 @@ build/
 release/
 test-results/
 playwright-report/
-.mycp-test/
+.anymcp-test/
 *.log
 .DS_Store
 # Local bridge state (pairing secret + client token) must never be committed.
+.anymcp/
+# Pre-release name of the bridge state folder: never commit it either.
 .mycp/

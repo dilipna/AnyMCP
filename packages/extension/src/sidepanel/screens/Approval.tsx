@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { ApprovalRequest } from "mycp-protocol";
+import type { ApprovalRequest } from "anymcp-protocol";
 import { call, useNow } from "../api";
 import { Banner } from "../ui";
 
@@ -59,7 +59,7 @@ export function ApprovalSheet({ req }: { req: ApprovalRequest }) {
       </details>
 
       <Banner tone="info">
-        This approval is for <strong>this one run only</strong>. If the page, these values or the button change before the click, MyCP cancels it and does nothing.
+        This approval is for <strong>this one run only</strong>. If the page, these values or the button change before the click, AnyMCP cancels it and does nothing.
       </Banner>
       {err && <Banner tone="bad">{err}</Banner>}
       <div className="row">

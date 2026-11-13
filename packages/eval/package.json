@@ -1,11 +1,12 @@
 {
-  "name": "mycp-eval",
+  "name": "anymcp-eval",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "MyCP evaluation harness: frozen scenarios, real stack, exact denominators.",
+  "description": "AnyMCP evaluation harness: frozen scenarios, real stack, exact denominators.",
+  "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/client": "^2.4.0",
-    "mycp-protocol": "*"
+    "anymcp-protocol": "*"
   }
 }

@@ -1,5 +1,5 @@
 // The first vertical slice, end to end, with nothing mocked:
-//   MCP client -> local bridge (validates + authorizes) -> MyCP Extension -> real browser tab on the
+//   MCP client -> local bridge (validates + authorizes) -> AnyMCP Extension -> real browser tab on the
 //   synthetic fixture -> tool locates the order -> schema-validated, verified result with source ->
 //   the run appears in the side panel.
 
@@ -20,7 +20,7 @@ test.beforeEach(async () => {
 test("find_order: MCP client gets a verified, schema-valid result with source, and the run shows in the panel", async () => {
   const client = await s.mcp();
   const { tools } = await client.listTools();
-  expect(tools.map((t) => t.name)).toEqual(expect.arrayContaining(["find_order", "draft_customer_note", "mycp_get_run"]));
+  expect(tools.map((t) => t.name)).toEqual(expect.arrayContaining(["find_order", "draft_customer_note", "anymcp_get_run"]));
 
   const order = s.fixture.state.orders.find((o) => o.id === "A-1012")!;
   const env = await s.run(client, "find_order", { order_id: "A-1012" });

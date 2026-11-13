@@ -105,7 +105,7 @@ export function retryGuidance(status: OutcomeStatus, reason: ReasonCode): { safe
     case "empty":
       return { safe: true, guidance: "No retry needed." };
     case "denied":
-      return { safe: false, guidance: "Ask the user to review MyCP permissions. Retrying will not help." };
+      return { safe: false, guidance: "Ask the user to review AnyMCP permissions. Retrying will not help." };
     case "invalid_input":
       return { safe: true, guidance: "Fix the arguments and call again." };
     case "precondition_failed":
@@ -117,11 +117,11 @@ export function retryGuidance(status: OutcomeStatus, reason: ReasonCode): { safe
             : reason === "no_change_needed"
               ? "The website already has the requested value. Nothing was changed; there is nothing to retry."
             : reason === "locator_ambiguous" || reason === "locator_missing"
-              ? "The page no longer matches this tool. Ask the user to review or re-record it in MyCP."
+              ? "The page no longer matches this tool. Ask the user to review or re-record it in AnyMCP."
               : "Nothing was changed. Fix the stated condition, then retry.",
       };
     case "awaiting_approval":
-      return { safe: false, guidance: "Waiting for the user to approve in the MyCP side panel." };
+      return { safe: false, guidance: "Waiting for the user to approve in the AnyMCP side panel." };
     case "rejected":
     case "approval_expired":
     case "approval_invalidated":
@@ -132,7 +132,7 @@ export function retryGuidance(status: OutcomeStatus, reason: ReasonCode): { safe
     case "unknown_outcome":
       return {
         safe: false,
-        guidance: "Do NOT retry automatically. Ask the user to check the website, then decide. MyCP will not replay this action.",
+        guidance: "Do NOT retry automatically. Ask the user to check the website, then decide. AnyMCP will not replay this action.",
       };
     case "failed":
       return { safe: false, guidance: "The action did not complete. Ask the user before trying again." };
@@ -149,17 +149,17 @@ export function userNextStep(status: OutcomeStatus, reason: ReasonCode): string 
     case "empty":
       return "";
     case "denied":
-      return "Nothing ran. Open Settings to review what MyCP is allowed to do.";
+      return "Nothing ran. Open Settings to review what AnyMCP is allowed to do.";
     case "invalid_input":
       return "The assistant sent input this tool does not accept, so nothing ran.";
     case "precondition_failed":
-      if (reason === "session_expired") return "Sign in to the website in Chrome, then ask your assistant to try again. MyCP never signs in for you.";
+      if (reason === "session_expired") return "Sign in to the website in Chrome, then ask your assistant to try again. AnyMCP never signs in for you.";
       if (reason === "no_change_needed") return "It was already set that way, so nothing was changed.";
       if (reason === "locator_missing" || reason === "locator_ambiguous" || reason === "stale_element")
         return "The page no longer matches this tool. Open the tool and test it; edit or re-record it if the site changed.";
-      if (reason === "wrong_origin") return "The page moved to a different site, so MyCP stopped. Check the site, then try again.";
+      if (reason === "wrong_origin") return "The page moved to a different site, so AnyMCP stopped. Check the site, then try again.";
       if (reason === "bridge_busy") return "Another run was in progress. Wait for it to finish, then try again.";
-      if (reason === "extension_disconnected") return "Start the bridge and check that MyCP shows Connected, then try again.";
+      if (reason === "extension_disconnected") return "Start the bridge and check that AnyMCP shows Connected, then try again.";
       return "Nothing was changed. Fix the condition above, then try again.";
     case "awaiting_approval":
       return "Waiting for your decision in this panel.";
@@ -171,7 +171,7 @@ export function userNextStep(status: OutcomeStatus, reason: ReasonCode): string 
     case "interrupted":
       return "Nothing was changed. It is safe to try again.";
     case "unknown_outcome":
-      return "Open the website and check whether the change is there before doing anything else. MyCP will not repeat it for you.";
+      return "Open the website and check whether the change is there before doing anything else. AnyMCP will not repeat it for you.";
     case "failed":
       return "The task did not complete. Check the website, then try again.";
   }

@@ -1,6 +1,6 @@
 # Supported capabilities (precise list)
 
-MyCP does **not** claim to work on every website. This is what is implemented and tested, and what is not.
+AnyMCP does **not** claim to work on every website. This is what is implemented and tested, and what is not.
 
 ## Tested
 
@@ -8,7 +8,7 @@ MyCP does **not** claim to work on every website. This is what is implemented an
 * **Browsers:** Playwright Chromium 158 and branded Google Chrome 157.0.8103.50 on Windows 11, via the DevTools
   protocol (Chrome 137+ ignores `--load-extension`; manual "Load unpacked" works).
 * **MCP clients:** the official TypeScript SDK client over HTTP (tests/evaluation) and over **stdio**
-  (`mycp-bridge --stdio`, spawned as a separate process); Claude Code 2.1.207 — see
+  (`anymcp-bridge --stdio`, spawned as a separate process); Claude Code 2.1.207 — see
   [demo-script.md](demo-script.md) for what was and was not exercised. Claude Desktop and Cursor were **not** tested.
 * **External sites:** read-only checks recorded in [external-site-report.md](external-site-report.md). Nothing else.
 
@@ -28,7 +28,7 @@ MyCP does **not** claim to work on every website. This is what is implemented an
 | Outputs | the same, plus arrays of strings/numbers (lists) and arrays of objects (tables) |
 | Navigation | within the tool's origin, via link clicks (including single-page apps that change the address without reloading); start checks wait for pages that draw themselves after loading; the tool starts at a declared path **plus an optional query string** (each key is kept, turned into an input, or dropped; keys that look like credentials, such as `sid`, `token`, `api_key`, are refused by policy and their values are never held) |
 | Writes | exactly one consequential click per tool, with per-run approval and read-back verification |
-| Recording | clicks, text input, dropdown choices and checkbox/radio state on the approved site, including controls inside open shadow roots; picking a value, a **list** (click one item and MyCP finds the others like it, showing the match count before you save), a table, or a success message; no passwords etc. |
+| Recording | clicks, text input, dropdown choices and checkbox/radio state on the approved site, including controls inside open shadow roots; picking a value, a **list** (click one item and AnyMCP finds the others like it, showing the match count before you save), a table, or a success message; no passwords etc. |
 
 ## Not supported (will not work, or is refused)
 
@@ -38,8 +38,8 @@ MyCP does **not** claim to work on every website. This is what is implemented an
   typed text inside a closed root depends on how the component forwards events. Open roots are tested end to end.
 * **Custom (non-native) dropdowns** are recorded as two clicks (open, then the option). The option can be made an
   input in review; choices that load later (search-as-you-type lists) are not known in advance.
-* **CAPTCHAs, MFA prompts, sign-in.** MyCP never signs in for you and never handles passwords or payment fields.
-* **Sites that require OS-level (trusted) input events.** MyCP dispatches DOM events (`isTrusted` is false).
+* **CAPTCHAs, MFA prompts, sign-in.** AnyMCP never signs in for you and never handles passwords or payment fields.
+* **Sites that require OS-level (trusted) input events.** AnyMCP dispatches DOM events (`isTrusted` is false).
 * **Multiple tabs / multi-site workflows**, **wildcard origins**, **non-HTTP(S)** pages, **incognito** (extensions are off by default there).
 * **Branching, loops, scripting.** By design.
 * **Purchases, payments, deleting accounts, sending messages.** Out of scope for this release. The only write
@@ -50,7 +50,7 @@ MyCP does **not** claim to work on every website. This is what is implemented an
 
 ## Accessible-name differences from the ARIA spec
 
-MyCP computes a simplified accessible name: `aria-labelledby`, `aria-label`, associated `<label>`, `placeholder`
+AnyMCP computes a simplified accessible name: `aria-labelledby`, `aria-label`, associated `<label>`, `placeholder`
 (inputs only), `alt`, then visible text for roles whose name comes from content. It also treats `alert` and
-`status` text as their name (ARIA does not). A locator that works in MyCP may not match another tool's idea of
+`status` text as their name (ARIA does not). A locator that works in AnyMCP may not match another tool's idea of
 the same role/name.

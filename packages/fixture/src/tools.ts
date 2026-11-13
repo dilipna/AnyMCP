@@ -2,7 +2,7 @@
 // vertical slice, tests and evaluation. The recorder (M3) is tested against these.
 // They are not shipped as "supported sites": they only work on the local fixture origin.
 
-import type { ToolDefinition } from "mycp-protocol";
+import type { ToolDefinition } from "anymcp-protocol";
 
 export const FIXTURE_ORIGIN = "http://127.0.0.1:4173";
 

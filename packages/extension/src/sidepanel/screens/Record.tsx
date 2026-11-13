@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { deriveReviewSummary, describeLocator, isCredentialQueryKey } from "mycp-protocol";
+import { deriveReviewSummary, describeLocator, isCredentialQueryKey } from "anymcp-protocol";
 import { buildDraft, parameterizeLocator, partlyParameterized, type DraftOutput, type DraftParam, type DraftQueryPart, type DraftSignal, type DraftSpec, type DraftStep, type SignalKind } from "../../shared/draft";
 import type { TabCandidate } from "../../shared/panel-api";
 import type { PanelState, RecordedStepView } from "../../shared/types";
@@ -46,7 +46,7 @@ function TabPicker() {
     setErr(null);
     // must be called directly from the click so Chrome treats it as a user gesture
     const granted = await chrome.permissions.request({ origins: [`${origin}/*`] });
-    if (!granted) return setErr("Chrome did not grant access. MyCP can only use sites you allow.");
+    if (!granted) return setErr("Chrome did not grant access. AnyMCP can only use sites you allow.");
     const r = await call({ type: "origin.granted", origin });
     if (!r.ok) setErr(r.error);
     load();
@@ -60,10 +60,10 @@ function TabPicker() {
   return (
     <div className="stack view">
       <div className="card">
-        <h2>Teach MyCP a workflow</h2>
+        <h2>Teach AnyMCP a workflow</h2>
         <p>Open the website in a tab, choose it below, then do the task once as you normally would.</p>
         <ul>
-          <li>MyCP records only your clicks and typing in <strong>that tab</strong>, only on <strong>that site</strong>, only until you stop.</li>
+          <li>AnyMCP records only your clicks and typing in <strong>that tab</strong>, only on <strong>that site</strong>, only until you stop.</li>
           <li>It <strong>never records</strong> password, payment or one-time-code fields.</li>
           <li>Nothing is saved until you review and approve it.</li>
         </ul>
@@ -117,7 +117,7 @@ function LiveRecording({ state, onSpec }: { state: PanelState; onSpec: (s: Draft
         </div>
         {rec.notice && <Banner tone="warn">{rec.notice}</Banner>}
         {rec.skippedSensitive > 0 && (
-          <Banner tone="info">{rec.skippedSensitive} password/payment field{rec.skippedSensitive > 1 ? "s were" : " was"} ignored. MyCP never records those.</Banner>
+          <Banner tone="info">{rec.skippedSensitive} password/payment field{rec.skippedSensitive > 1 ? "s were" : " was"} ignored. AnyMCP never records those.</Banner>
         )}
         {picking && <Banner tone="info" title="Click the item on the page">Press Esc on the page to cancel.</Banner>}
         {live && (
@@ -246,7 +246,7 @@ function Editor({ initial, onDone }: { initial: DraftSpec; onDone: (savedId: str
       parts[i] = next;
       return { ...s, params, entryQuery: parts };
     });
-  /** Would turning this click's text into an input actually change what MyCP looks for? */
+  /** Would turning this click's text into an input actually change what AnyMCP looks for? */
   const canBeInput = (s: DraftStep) =>
     !!s.label && JSON.stringify(parameterizeLocator(s.locator, [{ name: "probe", description: "", type: "string", example: s.label, maxLength: 200 }])) !== JSON.stringify(s.locator);
   const makeInput = (i: number) =>
@@ -301,7 +301,7 @@ function Editor({ initial, onDone }: { initial: DraftSpec; onDone: (savedId: str
         <Field label="Tool id" hint="What the AI assistant calls it. Lowercase letters, digits and underscores.">
           <input type="text" value={spec.id} onChange={(e) => { setIdTouched(true); patch({ id: snake(e.target.value) }); }} />
         </Field>
-        <Field label="Description for the AI assistant" hint="One or two sentences. This is only a description; MyCP enforces the rules below.">
+        <Field label="Description for the AI assistant" hint="One or two sentences. This is only a description; AnyMCP enforces the rules below.">
           <textarea value={spec.description} onChange={(e) => patch({ description: e.target.value })} />
         </Field>
       </div>
@@ -310,7 +310,7 @@ function Editor({ initial, onDone }: { initial: DraftSpec; onDone: (savedId: str
         <h3>Start page</h3>
         <p className="mono" style={{ wordBreak: "break-all" }}>{originLabel(spec.origin)}{spec.entryPath}</p>
         {(spec.entryQuery ?? []).length === 0 ? (
-          <small className="muted">Every run starts here, in a tab MyCP opens itself.</small>
+          <small className="muted">Every run starts here, in a tab AnyMCP opens itself.</small>
         ) : (
           <>
             <p className="muted">This address has extra settings after the “?”. Choose what each one does on every run.</p>
@@ -330,7 +330,7 @@ function Editor({ initial, onDone }: { initial: DraftSpec; onDone: (savedId: str
               );
             })}
             {(spec.entryQuery ?? []).some((q) => isCredentialQueryKey(q.key)) && (
-              <small className="muted">Settings that look like sign-in or security values are always left out. MyCP uses your normal signed-in session instead.</small>
+              <small className="muted">Settings that look like sign-in or security values are always left out. AnyMCP uses your normal signed-in session instead.</small>
             )}
           </>
         )}
@@ -478,7 +478,7 @@ function Editor({ initial, onDone }: { initial: DraftSpec; onDone: (savedId: str
       </div>
 
       <div className="card">
-        <h3>How MyCP knows it worked</h3>
+        <h3>How AnyMCP knows it worked</h3>
         {spec.signals.length === 0 && <Banner tone="warn">Go back and use “Mark a message” on something that appears only when the task worked.</Banner>}
         {spec.signals.map((g, i) => (
           <div key={g.id} className="card flat">

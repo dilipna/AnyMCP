@@ -1,4 +1,4 @@
-// Smoke test of the PACKAGED bridge over stdio: `node packages/bridge/dist/mycp-bridge.mjs --stdio`, driven by the
+// Smoke test of the PACKAGED bridge over stdio: `node packages/bridge/dist/anymcp-bridge.mjs --stdio`, driven by the
 // official MCP SDK client exactly as an app that launches local MCP servers would. Run after `npm run build`.
 //   npx tsx scripts/stdio-smoke.ts
 
@@ -9,7 +9,7 @@ import { join, resolve } from "node:path";
 import { Client } from "@modelcontextprotocol/client";
 import { StdioClientTransport, getDefaultEnvironment } from "@modelcontextprotocol/client/stdio";
 
-const bundle = resolve(import.meta.dirname, "../packages/bridge/dist/mycp-bridge.mjs");
+const bundle = resolve(import.meta.dirname, "../packages/bridge/dist/anymcp-bridge.mjs");
 const freePort = () =>
   new Promise<number>((res) => {
     const s = createServer().listen(0, "127.0.0.1", () => {
@@ -18,7 +18,7 @@ const freePort = () =>
     });
   });
 
-const home = mkdtempSync(join(tmpdir(), "mycp-stdio-smoke-"));
+const home = mkdtempSync(join(tmpdir(), "anymcp-stdio-smoke-"));
 try {
   const transport = new StdioClientTransport({
     command: process.execPath,
@@ -29,9 +29,9 @@ try {
   const client = new Client({ name: "stdio-smoke", version: "0.0.0" });
   await client.connect(transport);
   const names = (await client.listTools()).tools.map((t) => t.name).sort();
-  const status = await client.callTool({ name: "mycp_status", arguments: {} });
+  const status = await client.callTool({ name: "anymcp_status", arguments: {} });
   await client.close();
-  const ok = JSON.stringify(names) === JSON.stringify(["mycp_get_run", "mycp_status"]) && (status.structuredContent as { extension?: string })?.extension === "not_paired";
+  const ok = JSON.stringify(names) === JSON.stringify(["anymcp_get_run", "anymcp_status"]) && (status.structuredContent as { extension?: string })?.extension === "not_paired";
   console.log(`${ok ? "PASS" : "FAIL"} packaged bridge over stdio: tools=${JSON.stringify(names)} status=${JSON.stringify(status.structuredContent)}`);
   process.exitCode = ok ? 0 : 1;
 } finally {

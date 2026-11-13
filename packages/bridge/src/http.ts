@@ -11,7 +11,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 import { timingSafeEqual } from "node:crypto";
 import { localhostHostValidation, localhostOriginValidation, toNodeHandler } from "@modelcontextprotocol/node";
 import type { McpHttpHandler } from "@modelcontextprotocol/server";
-import { MYCP_VERSION } from "mycp-protocol";
+import { ANYMCP_VERSION } from "anymcp-protocol";
 
 export interface McpHttpOptions {
   handler: McpHttpHandler;
@@ -97,7 +97,7 @@ export function createMcpHttpServer(o: McpHttpOptions): Server {
       const path = (req.url ?? "/").split("?")[0];
       if (path === "/health" && req.method === "GET") {
         res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" });
-        res.end(JSON.stringify({ ok: true, name: "mycp-bridge", version: MYCP_VERSION }));
+        res.end(JSON.stringify({ ok: true, name: "anymcp-bridge", version: ANYMCP_VERSION }));
         return;
       }
       if (path !== "/mcp") {
@@ -107,8 +107,8 @@ export function createMcpHttpServer(o: McpHttpOptions): Server {
       }
       if (!validateHost(req, res) || !validateOrigin(req, res)) return; // they write the 403 themselves
       if (!tokenOk(req.headers.authorization, o.getToken())) {
-        res.writeHead(401, { "content-type": "application/json", "www-authenticate": 'Bearer realm="mycp"' });
-        res.end(JSON.stringify({ error: "unauthorized", hint: "Use the Authorization header printed by the MyCP bridge." }));
+        res.writeHead(401, { "content-type": "application/json", "www-authenticate": 'Bearer realm="anymcp"' });
+        res.end(JSON.stringify({ error: "unauthorized", hint: "Use the Authorization header printed by the AnyMCP bridge." }));
         return;
       }
 

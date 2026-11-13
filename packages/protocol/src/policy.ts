@@ -180,7 +180,7 @@ export function validateToolPolicy(tool: ToolDefinition): PolicyIssue[] {
   // start page: a saved query string must never carry credentials
   if (tool.entry.query) {
     for (const key of queryKeys(tool.entry.query)) {
-      if (isCredentialQueryKey(key)) err("entry_query_sensitive", `The start address contains “${key}”, which looks like a sign-in or security value. Remove it: MyCP uses your normal signed-in session instead.`);
+      if (isCredentialQueryKey(key)) err("entry_query_sensitive", `The start address contains “${key}”, which looks like a sign-in or security value. Remove it: AnyMCP uses your normal signed-in session instead.`);
     }
   }
 

@@ -1,4 +1,4 @@
-// MyCP Extension service worker. Wires: bridge client <-> orchestrator <-> side panel <-> recording.
+// AnyMCP Extension service worker. Wires: bridge client <-> orchestrator <-> side panel <-> recording.
 //
 // MV3 rules honoured here:
 //  - every listener is registered synchronously at top level (the worker can be torn down at any time)
@@ -7,7 +7,7 @@
 //  - nothing consequential is retried automatically
 
 import "../shared/zod-init";
-import { MYCP_VERSION, newExecutionId, toolDefinitionHash, type ResultEnvelope, type RunRecord } from "mycp-protocol";
+import { ANYMCP_VERSION, newExecutionId, toolDefinitionHash, type ResultEnvelope, type RunRecord } from "anymcp-protocol";
 import type { FromContent } from "../shared/messages";
 import { REQUEST_TAG, type PanelRequest, type PanelResponse, type TabCandidate } from "../shared/panel-api";
 import { isTrustedPanelSender } from "../shared/sender";
@@ -19,16 +19,16 @@ import { RecordingManager } from "./recording";
 import * as store from "./storage";
 import { getOwnedTabs, showTab } from "./tabs";
 
-declare const __MYCP_TEST__: boolean;
-const IS_TEST = typeof __MYCP_TEST__ !== "undefined" && __MYCP_TEST__;
+declare const __ANYMCP_TEST__: boolean;
+const IS_TEST = typeof __ANYMCP_TEST__ !== "undefined" && __ANYMCP_TEST__;
 
 /**
- * Test-only hooks. In the production build `__MYCP_TEST__` is the constant `false`, so this whole expression folds to
+ * Test-only hooks. In the production build `__ANYMCP_TEST__` is the constant `false`, so this whole expression folds to
  * `null` and the hook code and its strings are REMOVED from the shipped bundle (verified by a build test), not merely
  * disabled at runtime.
  */
 const TEST_HOOKS =
-  typeof __MYCP_TEST__ !== "undefined" && __MYCP_TEST__
+  typeof __ANYMCP_TEST__ !== "undefined" && __ANYMCP_TEST__
     ? {
         prefix: "__test.",
         startedAt: Date.now(), // lets a test prove the worker really was restarted
@@ -60,7 +60,7 @@ let lastTest: TestOutcomeView | null = null;
 async function buildState(): Promise<PanelState> {
   const [tools, grants, runs, settings, recording] = await Promise.all([store.listToolRows(), store.getGrants(), store.getRuns(), store.getSettings(), recordingMgr.view()]);
   return {
-    version: MYCP_VERSION,
+    version: ANYMCP_VERSION,
     isTestBuild: IS_TEST,
     conn: bridge.view(),
     tools,
@@ -94,7 +94,7 @@ function setBadge(kind: "idle" | "running" | "approval") {
   const text = kind === "idle" ? "" : kind === "running" ? "RUN" : "OK?";
   void chrome.action.setBadgeText({ text });
   void chrome.action.setBadgeBackgroundColor({ color: kind === "approval" ? "#b54708" : "#0b57d0" });
-  void chrome.action.setTitle({ title: kind === "idle" ? "MyCP" : kind === "running" ? "MyCP is running a tool" : "MyCP needs your approval" });
+  void chrome.action.setTitle({ title: kind === "idle" ? "AnyMCP" : kind === "running" ? "AnyMCP is running a tool" : "AnyMCP needs your approval" });
 }
 
 // ---------------------------------------------------------------- core objects
@@ -142,7 +142,7 @@ async function recoverInterrupted() {
 
 async function startup() {
   void chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(() => undefined);
-  await chrome.alarms.create("mycp-keepalive", { periodInMinutes: 0.5 });
+  await chrome.alarms.create("anymcp-keepalive", { periodInMinutes: 0.5 });
   await recoverInterrupted();
   await bridge.init();
 }
@@ -151,11 +151,11 @@ async function startup() {
 chrome.runtime.onInstalled.addListener(() => void startup());
 chrome.runtime.onStartup.addListener(() => void startup());
 chrome.alarms.onAlarm.addListener((a) => {
-  if (a.name === "mycp-keepalive") void bridge.init();
+  if (a.name === "anymcp-keepalive") void bridge.init();
 });
 
 chrome.runtime.onConnect.addListener((port) => {
-  if (port.name !== "mycp-panel" || port.sender?.id !== chrome.runtime.id) return;
+  if (port.name !== "anymcp-panel" || port.sender?.id !== chrome.runtime.id) return;
   panelPorts.add(port);
   port.onDisconnect.addListener(() => panelPorts.delete(port));
   void buildState().then((state) => port.postMessage({ type: "state", state }));
@@ -313,7 +313,7 @@ async function handlePanel(req: PanelRequest): Promise<PanelResponse> {
     case "tabs.candidates": {
       const grants = await store.getGrants();
       const tabs = await chrome.tabs.query({ currentWindow: true });
-      // MyCP's own automation tabs are not offered: the next tool run would navigate them away mid-recording
+      // AnyMCP's own automation tabs are not offered: the next tool run would navigate them away mid-recording
       const owned = new Set(Object.values(await getOwnedTabs()));
       const out: TabCandidate[] = [];
       for (const t of tabs) {
@@ -325,7 +325,7 @@ async function handlePanel(req: PanelRequest): Promise<PanelResponse> {
     }
     case "record.start": {
       if (orchestrator.active) return fail("Wait for the running tool to finish before recording.");
-      if (Object.values(await getOwnedTabs()).includes(req.tabId)) return fail("That is a tab MyCP uses to run tools. Open the website in a tab of your own and record there.");
+      if (Object.values(await getOwnedTabs()).includes(req.tabId)) return fail("That is a tab AnyMCP uses to run tools. Open the website in a tab of your own and record there.");
       const r = await recordingMgr.start(req.tabId);
       return r.ok ? ok() : fail(r.error);
     }

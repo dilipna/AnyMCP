@@ -14,7 +14,7 @@ test("connect and pair using the on-screen steps only", async () => {
   s = await startStack({ pair: false });
   const p = s.panel;
   await p.reload();
-  await expect(p.getByRole("heading", { name: "Connect MyCP to your AI assistant" })).toBeVisible();
+  await expect(p.getByRole("heading", { name: "Connect AnyMCP to your AI assistant" })).toBeVisible();
   await expect(p.getByText("npm run bridge")).toBeVisible();
   // the Advanced box lets a person target a non-default bridge port (the test bridge uses a random one)
   await p.getByRole("button", { name: /advanced/i }).click();
@@ -51,7 +51,7 @@ test("teach → review → save → test → enable → use via MCP → disconne
   await page.getByRole("button", { name: "Search" }).click();
   await page.getByRole("link", { name: "A-1012" }).click();
   await page.waitForURL(/\/orders\/A-1012$/);
-  await page.locator("[data-mycp-banner]").waitFor({ state: "attached" });
+  await page.locator("[data-anymcp-banner]").waitFor({ state: "attached" });
   await expect(p.getByText("Typed into “Order ID”")).toBeVisible();
 
   await p.getByRole("button", { name: "Pick a value to return" }).click();
@@ -121,7 +121,7 @@ test("teach → review → save → test → enable → use via MCP → disconne
   // ---- 8. disconnect the assistant, then revoke everything ----
   await p.getByRole("button", { name: "Settings" }).click();
   await p.getByRole("button", { name: "Show the client command" }).click();
-  await expect(p.locator("code").filter({ hasText: "claude mcp add --transport http mycp" })).toBeVisible();
+  await expect(p.locator("code").filter({ hasText: "claude mcp add --transport http anymcp" })).toBeVisible();
   const oldToken = s.bridge.token();
   await p.getByRole("button", { name: "Disconnect the AI client" }).click();
   await expect.poll(() => s.bridge.token()).not.toBe(oldToken);
@@ -129,7 +129,7 @@ test("teach → review → save → test → enable → use via MCP → disconne
 
   await p.getByRole("button", { name: "Revoke all access…" }).click();
   await p.getByRole("button", { name: "Yes, revoke" }).click();
-  await expect(p.getByText(/MyCP has no access to any site/)).toBeVisible();
+  await expect(p.getByText(/AnyMCP has no access to any site/)).toBeVisible();
   const final = await s.state();
   expect(final.conn.paired).toBe(false);
   expect(final.grants).toHaveLength(0);

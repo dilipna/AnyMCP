@@ -1,10 +1,10 @@
-// `mycp-bridge` — start the local MyCP bridge and print copyable setup steps.
-// `mycp-bridge --stdio` — the same bridge for apps that launch MCP servers as local programs (see stdio.ts).
+// `anymcp-bridge` — start the local AnyMCP bridge and print copyable setup steps.
+// `anymcp-bridge --stdio` — the same bridge for apps that launch MCP servers as local programs (see stdio.ts).
 
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { DEFAULT_EXT_PORT, DEFAULT_MCP_PORT, MYCP_VERSION } from "mycp-protocol";
+import { DEFAULT_EXT_PORT, DEFAULT_MCP_PORT, ANYMCP_VERSION } from "anymcp-protocol";
 import { PAIRING_FILE, startBridge, type BridgeHandle } from "./bridge";
 import { listening, runStdio } from "./stdio";
 import { defaultHome } from "./store";
@@ -20,7 +20,7 @@ function arg(name: string): string | undefined {
  */
 function stdioLaunch(passThrough: string[]): { command: string; args: string[] } | null {
   const self = fileURLToPath(import.meta.url);
-  const bundle = self.endsWith(".mjs") ? self : resolve(dirname(self), "../dist/mycp-bridge.mjs");
+  const bundle = self.endsWith(".mjs") ? self : resolve(dirname(self), "../dist/anymcp-bridge.mjs");
   return existsSync(bundle) ? { command: process.execPath, args: [bundle, "--stdio", ...passThrough] } : null;
 }
 
@@ -38,31 +38,31 @@ function explainRunningBridge(home: string, mcpPort: number, launch: { command: 
   const pairing = readJson(join(home, PAIRING_FILE));
   const url = `http://127.0.0.1:${mcpPort}/mcp`;
   console.log(`
-A MyCP bridge is already running on this computer (perhaps started by an app such as Claude Desktop or Cursor).
+An AnyMCP bridge is already running on this computer (perhaps started by an app such as Claude Desktop or Cursor).
 You do not need a second one.
 `);
   const expires = typeof pairing?.expiresAt === "string" ? Date.parse(pairing.expiresAt) : 0;
   if (state?.extension) console.log(`  Pairing: already paired with a browser.\n`);
   else if (typeof pairing?.code === "string" && expires > Date.now()) {
-    console.log(`  Pair the extension: in the MyCP side panel choose “Connect” and enter`);
+    console.log(`  Pair the extension: in the AnyMCP side panel choose “Connect” and enter`);
     console.log(`           ${pairing.code.slice(0, 4)} ${pairing.code.slice(4)}      (single use, expires at ${new Date(expires).toLocaleTimeString()})\n`);
   } else {
     console.log(`  Pairing: no code is available right now. Wait a minute and run this command again.\n`);
   }
   if (typeof state?.mcpToken === "string") {
-    console.log(`  Claude Code (HTTP):\n  claude mcp add --transport http mycp ${url} --header "Authorization: Bearer ${state.mcpToken}"\n`);
+    console.log(`  Claude Code (HTTP):\n  claude mcp add --transport http anymcp ${url} --header "Authorization: Bearer ${state.mcpToken}"\n`);
   }
   if (launch) {
     console.log(`  Apps that start MCP servers themselves — add this to their MCP settings:\n`);
-    console.log(JSON.stringify({ mcpServers: { mycp: { command: launch.command, args: launch.args } } }, null, 2).replace(/^/gm, "  ") + "\n");
+    console.log(JSON.stringify({ mcpServers: { anymcp: { command: launch.command, args: launch.args } } }, null, 2).replace(/^/gm, "  ") + "\n");
   }
   console.log(`  If this is unexpected, another program is using port ${mcpPort}: choose others with --mcp-port / --ext-port.`);
 }
 
 async function main() {
   if (process.argv.includes("--help") || process.argv.includes("-h")) {
-    console.log(`MyCP bridge ${MYCP_VERSION}
-Usage: mycp-bridge [--stdio] [--mcp-port=${DEFAULT_MCP_PORT}] [--ext-port=${DEFAULT_EXT_PORT}] [--home=<dir>]
+    console.log(`AnyMCP bridge ${ANYMCP_VERSION}
+Usage: anymcp-bridge [--stdio] [--mcp-port=${DEFAULT_MCP_PORT}] [--ext-port=${DEFAULT_EXT_PORT}] [--home=<dir>]
   Starts the local bridge. It listens on 127.0.0.1 only.
   --stdio   Serve MCP over stdin/stdout, for apps that start MCP servers themselves (Claude Desktop, Cursor, ...).
             If a bridge is already running it forwards to it; otherwise it becomes the bridge.`);
@@ -79,7 +79,7 @@ Usage: mycp-bridge [--stdio] [--mcp-port=${DEFAULT_MCP_PORT}] [--ext-port=${DEFA
 
   if (process.argv.includes("--stdio")) {
     // stdout belongs to the protocol: every human-readable line goes to stderr
-    const log = (l: string) => process.stderr.write(`[mycp] ${l}\n`);
+    const log = (l: string) => process.stderr.write(`[anymcp] ${l}\n`);
     const { close } = await runStdio({ home, mcpPort, extPort, log, bridge: { stdioLaunch: stdioLaunch(passThrough) } });
     let closing = false;
     const stop = () => {
@@ -102,7 +102,7 @@ Usage: mycp-bridge [--stdio] [--mcp-port=${DEFAULT_MCP_PORT}] [--ext-port=${DEFA
   }
   let bridge: BridgeHandle;
   try {
-    bridge = await startBridge({ home, mcpPort, extPort, log: (l) => console.log(`[mycp] ${l}`), stdioLaunch: launch });
+    bridge = await startBridge({ home, mcpPort, extPort, log: (l) => console.log(`[anymcp] ${l}`), stdioLaunch: launch });
   } catch (e) {
     if ((e as NodeJS.ErrnoException).code !== "EADDRINUSE") throw e;
     explainRunningBridge(home, mcpPort, launch);
@@ -113,10 +113,10 @@ Usage: mycp-bridge [--stdio] [--mcp-port=${DEFAULT_MCP_PORT}] [--ext-port=${DEFA
   const paired = bridge.store.state.extension;
 
   console.log(`
-MyCP bridge ${MYCP_VERSION} is running. It listens on 127.0.0.1 only.
+AnyMCP bridge ${ANYMCP_VERSION} is running. It listens on 127.0.0.1 only.
 
   What this is: a small local program that lets your AI assistant (an MCP client) call the
-  tools you approved in the MyCP Extension. It never sees your cookies or passwords.
+  tools you approved in the AnyMCP Extension. It never sees your cookies or passwords.
 
   AI client endpoint : ${bridge.mcpUrl}
   Extension channel  : ${bridge.extUrl}
@@ -126,21 +126,21 @@ MyCP bridge ${MYCP_VERSION} is running. It listens on 127.0.0.1 only.
     console.log(`Step 1 — Pairing: this bridge is already paired with an extension (id ${paired.id}).`);
     console.log(`         To pair a different browser profile, delete ${home} and restart.\n`);
   } else {
-    console.log(`Step 1 — Pair the extension. In the MyCP side panel choose “Connect” and enter this code:`);
+    console.log(`Step 1 — Pair the extension. In the AnyMCP side panel choose “Connect” and enter this code:`);
     console.log(`           ${code.slice(0, 4)} ${code.slice(4)}      (single use, expires in 10 minutes)\n`);
   }
   console.log(`Step 2 — Connect your AI app.\n`);
   console.log(`  Claude Code (HTTP) — copy this command:\n`);
-  console.log(`  claude mcp add --transport http mycp ${bridge.mcpUrl} --header "Authorization: Bearer ${bridge.token()}"\n`);
-  console.log(`  (The token is a password for this bridge. Do not share it. Revoke it any time from MyCP → Settings.)\n`);
+  console.log(`  claude mcp add --transport http anymcp ${bridge.mcpUrl} --header "Authorization: Bearer ${bridge.token()}"\n`);
+  console.log(`  (The token is a password for this bridge. Do not share it. Revoke it any time from AnyMCP → Settings.)\n`);
   if (launch) {
     console.log(`  Claude Desktop, Cursor and other apps that start MCP servers themselves — add this to their MCP settings:\n`);
-    console.log(JSON.stringify({ mcpServers: { mycp: { command: launch.command, args: launch.args } } }, null, 2).replace(/^/gm, "  "));
-    console.log(`\n  (No password needed: the app starts MyCP on this computer and shares this browser connection.)\n`);
+    console.log(JSON.stringify({ mcpServers: { anymcp: { command: launch.command, args: launch.args } } }, null, 2).replace(/^/gm, "  "));
+    console.log(`\n  (No password needed: the app starts AnyMCP on this computer and shares this browser connection.)\n`);
   }
 
   const stop = async () => {
-    console.log("\n[mycp] shutting down…");
+    console.log("\n[anymcp] shutting down…");
     await bridge.close();
     process.exit(0);
   };
@@ -149,7 +149,7 @@ MyCP bridge ${MYCP_VERSION} is running. It listens on 127.0.0.1 only.
 }
 
 main().catch((e) => {
-  const msg = (e as NodeJS.ErrnoException).code === "EADDRINUSE" ? "A port is already in use. Is another MyCP bridge running? Use --mcp-port / --ext-port to choose others." : String(e);
-  console.error(`MyCP bridge could not start: ${msg}`);
+  const msg = (e as NodeJS.ErrnoException).code === "EADDRINUSE" ? "A port is already in use. Is another AnyMCP bridge running? Use --mcp-port / --ext-port to choose others." : String(e);
+  console.error(`AnyMCP bridge could not start: ${msg}`);
   process.exit(1);
 });

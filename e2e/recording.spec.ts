@@ -3,7 +3,7 @@
 // and an MCP client uses the result. Plus: sensitive fields are never recorded or stored.
 
 import { expect, test, type Page } from "@playwright/test";
-import { deriveReviewSummary } from "mycp-protocol";
+import { deriveReviewSummary } from "anymcp-protocol";
 import { buildDraft, type DraftSpec } from "../packages/extension/src/shared/draft";
 import type { TabCandidate } from "../packages/extension/src/shared/panel-api";
 import { startStack, waitForState, sleep, type Stack } from "./harness";
@@ -26,7 +26,7 @@ async function openTab(path: string): Promise<{ page: Page; tabId: number }> {
   return { page, tabId: tab.tabId };
 }
 
-test("recording never captures password, token, card or data-mycp-ignore fields — and none of it is stored", async () => {
+test("recording never captures password, token, card or data-anymcp-ignore fields — and none of it is stored", async () => {
   const { page, tabId } = await openTab("/account");
   expect((await s.call({ type: "record.start", tabId })).ok).toBe(true);
 
@@ -40,15 +40,16 @@ test("recording never captures password, token, card or data-mycp-ignore fields 
   await type("API token", "tok_live_abc123SECRET");
   await type("Card number", "4111111111111111");
   await type("Internal reference", "internal-xyz-PRIVATE");
+  await type("Legacy reference", "legacy-xyz-PRIVATE"); // inside the pre-release attribute data-mycp-ignore
 
-  const st = await waitForState(s, (x) => (x.recording?.steps.length ?? 0) >= 1 && (x.recording?.skippedSensitive ?? 0) >= 4);
+  const st = await waitForState(s, (x) => (x.recording?.steps.length ?? 0) >= 1 && (x.recording?.skippedSensitive ?? 0) >= 5);
   const labels = st.recording!.steps.map((x) => x.label);
   expect(labels).toEqual(["Display name"]); // the only non-sensitive field
-  expect(st.recording!.skippedSensitive).toBe(4);
+  expect(st.recording!.skippedSensitive).toBe(5);
 
   // scan EVERYTHING the extension persisted or holds in memory-storage, plus what the panel receives
   const dump = await s.panel.evaluate(async () => JSON.stringify({ local: await chrome.storage.local.get(null), session: await chrome.storage.session.get(null) }));
-  for (const secret of ["hunter2", "tok_live_abc123", "4111111111111111", "internal-xyz"]) expect(dump, `leaked ${secret}`).not.toContain(secret);
+  for (const secret of ["hunter2", "tok_live_abc123", "4111111111111111", "internal-xyz", "legacy-xyz"]) expect(dump, `leaked ${secret}`).not.toContain(secret);
   expect(JSON.stringify(st)).not.toContain("hunter2");
   // the user's own, non-sensitive typed example may exist ONLY in memory-only session storage, never in local storage
   const local = await s.panel.evaluate(async () => JSON.stringify(await chrome.storage.local.get(null)));
@@ -68,7 +69,7 @@ test("record → review → save → test → enable → an MCP client uses it, 
   await page.getByRole("button", { name: "Search" }).click();
   await page.getByRole("link", { name: "A-1012" }).click();
   await page.waitForURL(/\/orders\/A-1012$/);
-  await page.locator("[data-mycp-banner]").waitFor({ state: "attached" }); // the recorder is live on the NEW page
+  await page.locator("[data-anymcp-banner]").waitFor({ state: "attached" }); // the recorder is live on the NEW page
   await waitForState(s, (x) => x.recording?.status === "recording" && (x.recording?.steps.length ?? 0) >= 3);
 
   // pick what to return, and what proves it worked

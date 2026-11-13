@@ -1,4 +1,4 @@
-// End-to-end harness: REAL Chromium + the built MyCP Extension (e2e build) + the fixture site +
+// End-to-end harness: REAL Chromium + the built AnyMCP Extension (e2e build) + the fixture site +
 // the real bridge + the official MCP SDK client over HTTP. Nothing in the path is mocked.
 
 import { chromium, type BrowserContext, type Page, type Worker } from "@playwright/test";
@@ -6,9 +6,9 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
-import { startFixture, type Chaos, type FixtureHandle } from "mycp-fixture";
-import { makeDraftNoteTool, makeFindOrderTool } from "mycp-fixture/tools";
-import type { ResultEnvelope, ToolDefinition } from "mycp-protocol";
+import { startFixture, type Chaos, type FixtureHandle } from "anymcp-fixture";
+import { makeDraftNoteTool, makeFindOrderTool } from "anymcp-fixture/tools";
+import type { ResultEnvelope, ToolDefinition } from "anymcp-protocol";
 import { startBridge, type BridgeHandle } from "../packages/bridge/src/bridge";
 import { REQUEST_TAG, type PanelRequest, type PanelResponse } from "../packages/extension/src/shared/panel-api";
 import type { PanelState } from "../packages/extension/src/shared/types";
@@ -47,7 +47,7 @@ export interface StackOptions {
 export async function startStack(opts: StackOptions = {}): Promise<Stack> {
   const { pair = true, tools = ["find", "draft"], reconnectGraceMs = 3000 } = opts;
   const fixture = await startFixture({ port: 0, control: true });
-  const home = mkdtempSync(join(tmpdir(), "mycp-e2e-bridge-"));
+  const home = mkdtempSync(join(tmpdir(), "anymcp-e2e-bridge-"));
   const bridge = await startBridge({
     mcpPort: 0,
     extPort: 0,
@@ -55,13 +55,13 @@ export async function startStack(opts: StackOptions = {}): Promise<Stack> {
     reconnectGraceMs,
     cancelWaitMs: 1500,
     // what a packaged bridge reports, so the side panel shows its stdio settings entry
-    stdioLaunch: { command: process.execPath, args: [resolve(import.meta.dirname, "../packages/bridge/dist/mycp-bridge.mjs"), "--stdio"] },
+    stdioLaunch: { command: process.execPath, args: [resolve(import.meta.dirname, "../packages/bridge/dist/anymcp-bridge.mjs"), "--stdio"] },
   });
-  const profile = mkdtempSync(join(tmpdir(), "mycp-e2e-profile-"));
+  const profile = mkdtempSync(join(tmpdir(), "anymcp-e2e-profile-"));
 
-  // MYCP_E2E_BROWSER=chrome runs the SAME suite in the real, branded Chrome installed on this machine.
+  // ANYMCP_E2E_BROWSER=chrome runs the SAME suite in the real, branded Chrome installed on this machine.
   // Branded Chrome 137+ ignores --load-extension, so there the extension is loaded over the DevTools protocol.
-  const useRealChrome = process.env.MYCP_E2E_BROWSER === "chrome";
+  const useRealChrome = process.env.ANYMCP_E2E_BROWSER === "chrome";
   let context: BrowserContext;
   let extId: string;
   if (useRealChrome) {
@@ -109,7 +109,7 @@ export async function startStack(opts: StackOptions = {}): Promise<Stack> {
       return r.data;
     },
     async mcp(token = bridge.token()) {
-      const client = new Client({ name: "mycp-e2e-client", version: "0.0.0" });
+      const client = new Client({ name: "anymcp-e2e-client", version: "0.0.0" });
       await client.connect(new StreamableHTTPClientTransport(new URL(bridge.mcpUrl), { requestInit: { headers: { Authorization: `Bearer ${token}` } } }));
       return client;
     },
