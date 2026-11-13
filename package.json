@@ -1,0 +1,44 @@
+{
+  "name": "mycp-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MyCP: turn approved website workflows into reusable AI tools.",
+  "type": "module",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "build": "node scripts/build-all.mjs",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "bridge": "tsx packages/bridge/src/cli.ts",
+    "fixture": "tsx packages/fixture/src/server.ts",
+    "dev": "node scripts/dev.mjs",
+    "eval": "tsx packages/eval/src/run.ts",
+    "package": "node scripts/package-release.mjs",
+    "check": "npm run typecheck && npm test",
+    "eval:freeze": "tsx packages/eval/src/run.ts --freeze",
+    "eval:external": "tsx packages/eval/src/external.ts",
+    "demo:claude": "tsx scripts/demo-claude.ts",
+    "screenshots": "tsx scripts/screenshots.ts",
+    "spike:lna": "tsx scripts/lna-spike.ts",
+    "smoke:stdio": "tsx scripts/stdio-smoke.ts"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.65.0",
+    "@types/chrome": "^0.3.7",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/ws": "^8.18.1",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.23.0",
+    "typescript": "^5.9.0",
+    "vitest": "^5.1.0"
+  }
+}

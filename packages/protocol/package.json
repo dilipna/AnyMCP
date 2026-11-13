@@ -1,0 +1,14 @@
+{
+  "name": "mycp-protocol",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared schemas, policy and result types for MyCP.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./light": "./src/light.ts"
+  },
+  "dependencies": {
+    "zod": "^4.6.7"
+  }
+}

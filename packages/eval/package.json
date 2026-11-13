@@ -1,0 +1,11 @@
+{
+  "name": "mycp-eval",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "MyCP evaluation harness: frozen scenarios, real stack, exact denominators.",
+  "dependencies": {
+    "@modelcontextprotocol/client": "^2.4.0",
+    "mycp-protocol": "*"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "name": "mycp-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "MyCP Extension: Chrome MV3 extension (service worker, content script, side panel).",
+  "dependencies": {
+    "mycp-protocol": "*",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "zod": "^4.6.7"
+  }
+}

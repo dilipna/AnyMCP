@@ -1,0 +1,21 @@
+{
+  "name": "mycp-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "MyCP local bridge: MCP server (Streamable HTTP and stdio) plus authenticated WebSocket to the MyCP Extension.",
+  "bin": {
+    "mycp-bridge": "./dist/mycp-bridge.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/client": "^2.4.0",
+    "@modelcontextprotocol/node": "^2.1.2",
+    "@modelcontextprotocol/server": "^2.4.0",
+    "mycp-protocol": "*",
+    "ws": "^8.22.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "mycp-fixture": "*"
+  }
+}

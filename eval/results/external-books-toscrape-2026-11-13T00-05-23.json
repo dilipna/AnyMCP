@@ -1,0 +1,140 @@
+{
+  "scope": {
+    "site": "https://books.toscrape.com",
+    "access": "read-only GET navigation by URL; reads text; no forms, accounts or messages",
+    "pageLoadsApprox": 13,
+    "authorisation": "public sandbox whose stated purpose is to be scraped; no robots.txt restriction found (404)"
+  },
+  "env": {
+    "mycpVersion": "0.1.0",
+    "browser": "158.0.8127.18",
+    "os": "Windows_NT 10.0.26300",
+    "node": "v24.11.0",
+    "sourceTreeSha256": "226032b9895102e52a5d152928ffe3b724ea42c0ac8705710359cc8d1e2e6205",
+    "gitHead": null,
+    "startedAt": "2026-11-13T00:05:22.444Z"
+  },
+  "summary": {
+    "runs": 13,
+    "asExpected": 13
+  },
+  "rows": [
+    {
+      "case": "happy: A Light in the Attic (#1)",
+      "expected": "success, \"availability | price\" == \"In stock (22 available) | £51.77\"",
+      "status": "success",
+      "reason": "ok",
+      "ok": true,
+      "detail": "\"In stock (22 available) | £51.77\"",
+      "ms": 2339.2399000000005
+    },
+    {
+      "case": "happy: A Light in the Attic (#2)",
+      "expected": "success, \"availability | price\" == \"In stock (22 available) | £51.77\"",
+      "status": "success",
+      "reason": "ok",
+      "ok": true,
+      "detail": "\"In stock (22 available) | £51.77\"",
+      "ms": 1263.2528000000002
+    },
+    {
+      "case": "happy: Tipping the Velvet (#1)",
+      "expected": "success, \"availability | price\" == \"In stock (20 available) | £53.74\"",
+      "status": "success",
+      "reason": "ok",
+      "ok": true,
+      "detail": "\"In stock (20 available) | £53.74\"",
+      "ms": 1563.8066999999992
+    },
+    {
+      "case": "happy: Tipping the Velvet (#2)",
+      "expected": "success, \"availability | price\" == \"In stock (20 available) | £53.74\"",
+      "status": "success",
+      "reason": "ok",
+      "ok": true,
+      "detail": "\"In stock (20 available) | £53.74\"",
+      "ms": 1015.4290999999994
+    },
+    {
+      "case": "happy: Soumission (#1)",
+      "expected": "success, \"availability | price\" == \"In stock (20 available) | £50.10\"",
+      "status": "success",
+      "reason": "ok",
+      "ok": true,
+      "detail": "\"In stock (20 available) | £50.10\"",
+      "ms": 1566.5254999999997
+    },
+    {
+      "case": "happy: Soumission (#2)",
+      "expected": "success, \"availability | price\" == \"In stock (20 available) | £50.10\"",
+      "status": "success",
+      "reason": "ok",
+      "ok": true,
+      "detail": "\"In stock (20 available) | £50.10\"",
+      "ms": 1023.7533000000003
+    },
+    {
+      "case": "happy: Sharp Objects (#1)",
+      "expected": "success, \"availability | price\" == \"In stock (20 available) | £47.82\"",
+      "status": "success",
+      "reason": "ok",
+      "ok": true,
+      "detail": "\"In stock (20 available) | £47.82\"",
+      "ms": 1587.7605000000003
+    },
+    {
+      "case": "happy: Sharp Objects (#2)",
+      "expected": "success, \"availability | price\" == \"In stock (20 available) | £47.82\"",
+      "status": "success",
+      "reason": "ok",
+      "ok": true,
+      "detail": "\"In stock (20 available) | £47.82\"",
+      "ms": 1030.849100000003
+    },
+    {
+      "case": "happy: Sapiens: A Brief History of Humankind (#1)",
+      "expected": "success, \"availability | price\" == \"In stock (20 available) | £54.23\"",
+      "status": "success",
+      "reason": "ok",
+      "ok": true,
+      "detail": "\"In stock (20 available) | £54.23\"",
+      "ms": 1560.4112999999998
+    },
+    {
+      "case": "happy: Sapiens: A Brief History of Humankind (#2)",
+      "expected": "success, \"availability | price\" == \"In stock (20 available) | £54.23\"",
+      "status": "success",
+      "reason": "ok",
+      "ok": true,
+      "detail": "\"In stock (20 available) | £54.23\"",
+      "ms": 1026.5032000000028
+    },
+    {
+      "case": "wrong title for the page",
+      "expected": "precondition_failed (never success)",
+      "status": "precondition_failed",
+      "reason": "precondition_unmet",
+      "ok": true,
+      "detail": "Stopped before doing anything: expected that the heading named ‹title› is on the page, but the page does not match.",
+      "ms": 1024.5771999999997
+    },
+    {
+      "case": "page does not exist (HTTP 404)",
+      "expected": "precondition_failed (never success)",
+      "status": "precondition_failed",
+      "reason": "precondition_unmet",
+      "ok": true,
+      "detail": "Stopped before doing anything: expected that the heading named ‹title› is on the page, but the page does not match.",
+      "ms": 1244.2391000000025
+    },
+    {
+      "case": "ambiguous locator on a real page (£ appears several times)",
+      "expected": "precondition_failed / locator_ambiguous (stops, does not guess)",
+      "status": "precondition_failed",
+      "reason": "locator_ambiguous",
+      "ok": true,
+      "detail": "Step “Read the text of the text \"£\" into “price”” could not be completed: 4 elements match. MyCP stopped without guessing. The page may have changed; review or re-record the tool.",
+      "ms": 1034.2253999999994
+    }
+  ]
+}

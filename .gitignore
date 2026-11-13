@@ -1,0 +1,11 @@
+node_modules/
+dist/
+build/
+release/
+test-results/
+playwright-report/
+.mycp-test/
+*.log
+.DS_Store
+# Local bridge state (pairing secret + client token) must never be committed.
+.mycp/

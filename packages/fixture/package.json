@@ -1,0 +1,14 @@
+{
+  "name": "mycp-fixture",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Acme Support Portal: SYNTHETIC fixture website for MyCP development and evaluation.",
+  "exports": {
+    ".": "./src/server.ts",
+    "./tools": "./src/tools.ts"
+  },
+  "dependencies": {
+    "mycp-protocol": "*"
+  }
+}

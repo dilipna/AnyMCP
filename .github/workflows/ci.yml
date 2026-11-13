@@ -1,0 +1,47 @@
+# NOTE: written but NOT yet run on GitHub (this repository has no remote). See docs/release-checklist.md.
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install (exact lockfile)
+        run: npm ci
+      - name: Type check
+        run: npm run typecheck
+      - name: Unit + integration tests
+        run: npm test
+      - name: Install Playwright Chromium (Linux needs system libraries)
+        if: runner.os == 'Linux'
+        run: npx playwright install --with-deps chromium
+      - name: Install Playwright Chromium
+        if: runner.os != 'Linux'
+        run: npx playwright install chromium
+      - name: Browser tests (real Chromium + built extension + bridge + MCP client)
+        run: npm run test:e2e
+      - name: Build, package and prove the build is reproducible
+        run: npm run package -- --verify
+      - name: Keep the release artifacts
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mycp-release
+          path: release/
+      - name: Keep test output on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}
+          path: test-results/
