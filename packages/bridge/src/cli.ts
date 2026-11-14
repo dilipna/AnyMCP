@@ -2,11 +2,12 @@
 // `anymcp-bridge --stdio` — the same bridge for apps that launch MCP servers as local programs (see stdio.ts).
 
 import { existsSync, readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { DEFAULT_EXT_PORT, DEFAULT_MCP_PORT, ANYMCP_VERSION } from "anymcp-protocol";
 import { PAIRING_FILE, startBridge, type BridgeHandle } from "./bridge";
 import { listening, runStdio } from "./stdio";
+import { stdioLaunchFor, type Launch } from "./launch";
 import { defaultHome } from "./store";
 
 function arg(name: string): string | undefined {
@@ -18,10 +19,8 @@ function arg(name: string): string | undefined {
  * How another app should start THIS bridge over stdio: the packaged single file run by this same Node.js.
  * Null in a development run from TypeScript sources when no packaged bridge has been built.
  */
-function stdioLaunch(passThrough: string[]): { command: string; args: string[] } | null {
-  const self = fileURLToPath(import.meta.url);
-  const bundle = self.endsWith(".mjs") ? self : resolve(dirname(self), "../dist/anymcp-bridge.mjs");
-  return existsSync(bundle) ? { command: process.execPath, args: [bundle, "--stdio", ...passThrough] } : null;
+function stdioLaunch(passThrough: string[]): Launch | null {
+  return stdioLaunchFor(fileURLToPath(import.meta.url), { platform: process.platform, execPath: process.execPath, passThrough, exists: existsSync });
 }
 
 function readJson(path: string): Record<string, unknown> | null {
@@ -60,12 +59,17 @@ You do not need a second one.
 }
 
 async function main() {
+  if (process.argv.includes("--version") || process.argv.includes("-v")) {
+    console.log(ANYMCP_VERSION);
+    return;
+  }
   if (process.argv.includes("--help") || process.argv.includes("-h")) {
     console.log(`AnyMCP bridge ${ANYMCP_VERSION}
 Usage: anymcp-bridge [--stdio] [--mcp-port=${DEFAULT_MCP_PORT}] [--ext-port=${DEFAULT_EXT_PORT}] [--home=<dir>]
   Starts the local bridge. It listens on 127.0.0.1 only.
   --stdio   Serve MCP over stdin/stdout, for apps that start MCP servers themselves (Claude Desktop, Cursor, ...).
-            If a bridge is already running it forwards to it; otherwise it becomes the bridge.`);
+            If a bridge is already running it forwards to it; otherwise it becomes the bridge.
+  --version Print the version.`);
     return;
   }
   const home = arg("home") ?? defaultHome();
