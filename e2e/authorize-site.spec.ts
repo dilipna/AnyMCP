@@ -61,6 +61,42 @@ test.describe("test build", () => {
   });
 });
 
+test.describe("test build: the This site card", () => {
+  let s: Stack;
+  test.beforeAll(async () => {
+    s = await startStack({ pair: false });
+  });
+  test.afterAll(async () => {
+    await s?.close();
+  });
+
+  test("follows the active tab: not allowed → allow → allowed with no tools; gone on a non-website tab", async () => {
+    const p = s.panel;
+    await p.setViewportSize({ width: 420, height: 900 });
+    await p.reload();
+    const site = await s.context.newPage();
+    await site.goto(`${s.fixture.origin}/orders`);
+    await site.bringToFront();
+    const host = s.fixture.origin.replace(/^https?:\/\//, "");
+    const card = p.getByRole("region", { name: `This site: ${host}` });
+    await expect(card).toBeVisible();
+    await expect(card).toContainText("not allowed");
+    const r = await new AxeBuilder({ page: p }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    expect(r.violations.map((v) => `${v.id}: ${v.nodes[0]?.target.join(" ")}`)).toEqual([]);
+
+    await card.getByRole("button", { name: "Allow this site" }).click();
+    await waitForState(s, (x) => x.grants.some((g) => g.origin === s.fixture.origin));
+    await expect(card).toContainText("AnyMCP may use this site");
+    await expect(card).toContainText("No tools for this site yet.");
+    await expect(card.getByRole("button", { name: "Teach a task here" })).toBeVisible();
+
+    // the panel itself is not a website: the card steps aside
+    await p.bringToFront();
+    await expect(card).toHaveCount(0);
+    await site.close();
+  });
+});
+
 test("production build: Teach is not a dead end when Chrome hides every tab's address", async () => {
   const root = resolve(import.meta.dirname, "..");
   execFileSync(process.execPath, [resolve(root, "packages/extension/scripts/build.mjs"), "--target=prod"], { stdio: "ignore" });
@@ -75,6 +111,9 @@ test("production build: Teach is not a dead end when Chrome hides every tab's ad
     await site.goto(`${fixture.origin}/orders`);
     const panel = await ctx.newPage();
     await panel.goto(`chrome-extension://${extId}/sidepanel.html`);
+    // home screen, with the website tab in front: "This tab" says AnyMCP cannot see it and has no access
+    await site.bringToFront();
+    await expect(panel.getByRole("region", { name: "This tab" })).toContainText("cannot see which site this tab shows");
     await panel.getByRole("button", { name: "Teach", exact: true }).click();
 
     // the open website tab is invisible to the extension (no host access yet) ...

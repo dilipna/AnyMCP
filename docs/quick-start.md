@@ -58,7 +58,7 @@ In the side panel: **Settings → Show the client command**.
   app shares it. *Status: verified with Claude Code over stdio; Claude Desktop and Cursor not yet tested.*
 
 Ask your app to call **`anymcp_status`**: it says whether the browser is paired and connected and how many tools are
-enabled. The checklist's "Connect your AI app" step turns green after your app's first request.
+enabled. The checklist's "Connect your AI assistant" step turns green after your app's first request.
 
 ## 5. Allow a website
 

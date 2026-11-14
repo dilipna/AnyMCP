@@ -116,6 +116,15 @@ export interface TestOutcomeView {
   record: RunRecord;
 }
 
+/**
+ * What AnyMCP knows about the active tab. Chrome hides the address of tabs on sites the extension may not access,
+ * so "hidden" means: not allowed (or a browser page). AnyMCP never asks for broader access to find out.
+ */
+export type HereView =
+  | { kind: "site"; origin: string; allowed: boolean; anymcpTab: boolean }
+  | { kind: "hidden" }
+  | { kind: "other" };
+
 export interface PanelState {
   version: string;
   isTestBuild: boolean;
@@ -128,4 +137,6 @@ export interface PanelState {
   settings: Settings;
   recording: RecordingView | null;
   lastTest: TestOutcomeView | null;
+  /** The tab the person is looking at, as far as Chrome lets AnyMCP see it. */
+  here: HereView;
 }

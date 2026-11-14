@@ -18,15 +18,15 @@ export function setupSteps(state: PanelState, nav: { record: () => void; setting
     {
       title: "Start the bridge and pair this browser",
       done: bridgeOk,
+      // no button: when this step is open, the Connect steps are shown on this same screen, just above
       todo: c.paired
         ? "This browser is paired, but the bridge is not running. Start it again (anymcp-bridge, or npm run bridge in the project folder)."
-        : "Start the bridge on this computer (anymcp-bridge), then enter the 8-digit code it shows under Connect.",
-      ...(c.paired ? {} : { action: { label: "Open Connect", go: nav.settings } }),
+        : "Follow the Connect steps above: start the bridge on this computer, then enter the 8-digit code it shows.",
     },
     {
-      title: "Connect your AI app",
+      title: "Connect your AI assistant",
       done: !!c.clientName,
-      todo: "Add AnyMCP to your AI app (an MCP client) with the command or settings entry shown in Settings → Show the client command.",
+      todo: "Add AnyMCP to your AI assistant (an MCP client, such as Claude Code) with the command or settings entry in Settings → Show the client command.",
       action: { label: "Show how", go: nav.settings },
     },
     {
@@ -42,7 +42,7 @@ export function setupSteps(state: PanelState, nav: { record: () => void; setting
       action: { label: "Teach a workflow", go: nav.record },
     },
     {
-      title: "Ask your AI app to use it",
+      title: "Ask your AI assistant to use it",
       done: state.runs.some((r) => r.trigger === "mcp"),
       todo: "Ask your assistant to do the task. Each run appears under Runs with what happened and whether it was verified.",
     },
@@ -57,8 +57,8 @@ export function SetupChecklist({ state, nav }: { state: PanelState; nav: { recor
     <section className="card" aria-labelledby="setup-h">
       <h2 id="setup-h">Getting started</h2>
       <p className="muted">
-        {steps.filter((s) => s.done).length} of {steps.length} done. AnyMCP lets your AI app run website tasks you taught and approved; it does not call
-        an AI model itself.
+        {steps.filter((s) => s.done).length} of {steps.length} done. AnyMCP lets your AI assistant run website tasks you taught and approved; it does not
+        call an AI model itself.
       </p>
       <ol className="plain setup">
         {steps.map((s, i) => (

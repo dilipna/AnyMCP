@@ -11,7 +11,7 @@ import { ANYMCP_VERSION, newExecutionId, toolDefinitionHash, type ResultEnvelope
 import type { FromContent } from "../shared/messages";
 import { REQUEST_TAG, type PanelRequest, type PanelResponse, type TabCandidate } from "../shared/panel-api";
 import { isTrustedPanelSender } from "../shared/sender";
-import type { PanelState, TestOutcomeView } from "../shared/types";
+import type { HereView, PanelState, TestOutcomeView } from "../shared/types";
 import { ApprovalCenter } from "./approvals";
 import { BridgeClient, DEFAULT_BRIDGE_URL } from "./bridge-client";
 import { Orchestrator } from "./orchestrator";
@@ -57,8 +57,25 @@ const panelPorts = new Set<chrome.runtime.Port>();
 let broadcastTimer: ReturnType<typeof setTimeout> | null = null;
 let lastTest: TestOutcomeView | null = null;
 
+/** The active tab, as far as Chrome reveals it (only sites AnyMCP may access have a visible address). */
+async function hereView(grants: Record<string, unknown>): Promise<HereView> {
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+    if (!tab) return { kind: "other" };
+    const url = tab.url || tab.pendingUrl;
+    if (!url) return { kind: "hidden" };
+    const u = new URL(url);
+    if (u.protocol !== "https:" && u.protocol !== "http:") return { kind: "other" };
+    const owned = Object.values(await getOwnedTabs()).includes(tab.id ?? -1);
+    return { kind: "site", origin: u.origin, allowed: !!grants[u.origin], anymcpTab: owned };
+  } catch {
+    return { kind: "other" };
+  }
+}
+
 async function buildState(): Promise<PanelState> {
   const [tools, grants, runs, settings, recording] = await Promise.all([store.listToolRows(), store.getGrants(), store.getRuns(), store.getSettings(), recordingMgr.view()]);
+  const here = await hereView(grants);
   return {
     version: ANYMCP_VERSION,
     isTestBuild: IS_TEST,
@@ -71,6 +88,7 @@ async function buildState(): Promise<PanelState> {
     settings,
     recording,
     lastTest,
+    here,
   };
 }
 
@@ -161,7 +179,12 @@ chrome.runtime.onConnect.addListener((port) => {
   void buildState().then((state) => port.postMessage({ type: "state", state }));
 });
 
-chrome.tabs.onUpdated.addListener((tabId, info, tab) => void recordingMgr.onTabUpdated(tabId, info.status, tab.url));
+chrome.tabs.onUpdated.addListener((tabId, info, tab) => {
+  void recordingMgr.onTabUpdated(tabId, info.status, tab.url);
+  if (tab.active && (info.url || info.status === "complete")) broadcast(); // "This site" follows the active tab
+});
+chrome.tabs.onActivated.addListener(() => broadcast());
+chrome.windows.onFocusChanged.addListener(() => broadcast());
 chrome.tabs.onRemoved.addListener((tabId) => void recordingMgr.onTabRemoved(tabId));
 
 chrome.runtime.onMessage.addListener((msg: unknown, sender, sendResponse: (r: PanelResponse) => void) => {

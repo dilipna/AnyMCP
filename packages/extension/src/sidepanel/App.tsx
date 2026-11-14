@@ -6,6 +6,7 @@ import { Record } from "./screens/Record";
 import { Runs } from "./screens/Runs";
 import { Settings } from "./screens/Settings";
 import { Tools } from "./screens/Tools";
+import { HereCard } from "./Here";
 import { SetupChecklist } from "./Setup";
 import { Loading } from "./ui";
 
@@ -93,6 +94,7 @@ export function App() {
               </div>
             )}
             {!selected && <SetupChecklist state={state} nav={{ record: () => setView("record"), settings: () => setView("settings") }} />}
+            {!selected && <HereCard state={state} openTool={setSelected} goTeach={() => setView("record")} />}
             <Tools state={state} selected={selected} setSelected={setSelected} goRecord={() => setView("record")} />
           </>
         )}
