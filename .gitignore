@@ -11,3 +11,5 @@ playwright-report/
 .anymcp/
 # Pre-release name of the bridge state folder: never commit it either.
 .mycp/
+release-stage/
+release-stage-2/

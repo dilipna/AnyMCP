@@ -1,0 +1,5 @@
+# Line endings are pinned so packaged bytes do not depend on the checkout platform.
+* text=auto eol=lf
+*.png binary
+*.zip binary
+*.tgz binary

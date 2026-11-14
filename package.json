@@ -28,7 +28,8 @@
     "screenshots": "tsx scripts/screenshots.ts",
     "spike:lna": "tsx scripts/lna-spike.ts",
     "smoke:stdio": "tsx scripts/stdio-smoke.ts",
-    "eval:public": "tsx packages/eval/src/public-sites.ts"
+    "eval:public": "tsx packages/eval/src/public-sites.ts",
+    "package:check": "node scripts/verify-npm-package.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",

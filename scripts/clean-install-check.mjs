@@ -36,7 +36,8 @@ let ok =
   step("npm run typecheck", npm, ["run", "typecheck"]) &&
   step("npm test", npm, ["test"]) &&
   step("npm run build", npm, ["run", "build"]) &&
-  step("npm run package -- --verify (two clean builds, byte-identical)", npm, ["run", "package", "--", "--verify"]);
+  step("npm run package -- --verify (two clean builds, byte-identical)", npm, ["run", "package", "--", "--verify"]) &&
+  step("npm run package:check (install the npm tarball outside the checkout and run it)", npm, ["run", "package:check"]);
 
 if (ok) {
   // start the BUNDLED bridge exactly as documented and check it answers
