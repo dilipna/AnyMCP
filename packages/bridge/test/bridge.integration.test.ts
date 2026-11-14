@@ -344,6 +344,68 @@ describe("disconnection and interruption", () => {
   });
 });
 
+describe("malformed, oversized and misrouted input", () => {
+  it("an over-limit MCP request body is refused with 413, and the bridge keeps serving", async () => {
+    const status = await new Promise<number>((resolve, reject) => {
+      const req = httpRequest(
+        { host: "127.0.0.1", port: bridge.mcpPort, path: "/mcp", method: "POST", headers: { "content-type": "application/json", accept: "application/json, text/event-stream", authorization: `Bearer ${bridge.token()}` } },
+        (res) => {
+          res.resume();
+          resolve(res.statusCode ?? 0);
+        },
+      );
+      req.on("error", () => resolve(-1)); // a reset before any answer is NOT counted as a 413
+      req.on("timeout", () => reject(new Error("timeout")));
+      req.end(JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list", params: { pad: "x".repeat(1_200_000) } }));
+    });
+    expect(status).toBe(413);
+    const client = await mcpClient(bridge);
+    expect((await client.listTools()).tools.map((t) => t.name)).toContain("anymcp_status");
+  });
+
+  it("garbage and unknown messages from the paired extension are ignored; a run still completes", async () => {
+    const ext = await pairedExtension(bridge);
+    await ext.syncTools([makeFindOrderTool()]);
+    const raw = (ext as unknown as { ws: WebSocket }).ws;
+    raw.send("this is not json");
+    raw.send(JSON.stringify({ type: "no.such.message", x: 1 }));
+    raw.send(JSON.stringify({ type: "run.result", envelope: { nonsense: true } }));
+    const client = await mcpClient(bridge);
+    const pending = client.callTool({ name: "find_order", arguments: { order_id: "A-1042" } });
+    const req = await ext.waitFor("run.request");
+    ext.send({ type: "run.result", envelope: okEnvelope(req.executionId, { id: "find_order", version: 1 }, { found: true, order_id: "A-1042", customer: "Test Customer 42", status: "Shipped", total: 128.4, placed: "2026-10-03" }) });
+    expect(((await pending).structuredContent as unknown as ResultEnvelope).status).toBe("success");
+  });
+
+  it("an oversized WebSocket frame closes that connection only; the extension reconnects with its pairing", async () => {
+    const ext = await pairedExtension(bridge);
+    const raw = (ext as unknown as { ws: WebSocket }).ws;
+    const closed = new Promise<number>((r) => raw.once("close", (code: number) => r(code)));
+    raw.send("x".repeat(5 * 1024 * 1024)); // over the 4 MB limit
+    expect(await closed).toBe(1009); // "message too big"
+    const again = new FakeExtension(bridge);
+    await again.open();
+    await again.auth(ext.secret);
+    expect(bridge.hub.connected).toBe(true);
+  });
+
+  it("a result for a different execution id is not delivered to the waiting call (misrouted response)", async () => {
+    const ext = await pairedExtension(bridge);
+    await ext.syncTools([makeFindOrderTool()]);
+    const client = await mcpClient(bridge);
+    const pending = client.callTool({ name: "find_order", arguments: { order_id: "A-1042" } });
+    const req = await ext.waitFor("run.request");
+    const other = "run_00000000deadbeef";
+    ext.send({ type: "run.result", envelope: okEnvelope(other, { id: "find_order", version: 1 }, { found: true, order_id: "A-9999", customer: "Someone Else", status: "Shipped", total: 1, placed: "2026-10-01" }) });
+    const early = await Promise.race([pending.then(() => "resolved"), sleep(400).then(() => "still waiting")]);
+    expect(early).toBe("still waiting");
+    ext.send({ type: "run.result", envelope: okEnvelope(req.executionId, { id: "find_order", version: 1 }, { found: true, order_id: "A-1042", customer: "Test Customer 42", status: "Shipped", total: 128.4, placed: "2026-10-03" }) });
+    const env = (await pending).structuredContent as unknown as ResultEnvelope;
+    expect(env.executionId).toBe(req.executionId);
+    expect((env.output as { order_id: string }).order_id).toBe("A-1042");
+  });
+});
+
 describe("revocation", () => {
   it("full revocation unpairs the extension, rotates the MCP token and forgets tools", async () => {
     const ext = await pairedExtension(bridge);

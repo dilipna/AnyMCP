@@ -30,20 +30,36 @@ const MAX_BODY = 1_000_000;
  */
 export const connectionAbort = new AsyncLocalStorage<AbortSignal>();
 
+/** Past this, an over-limit upload is cut off instead of being read and discarded. */
+const DISCARD_LIMIT = 8 * MAX_BODY;
+
+/**
+ * Read a request body, or null if it is over MAX_BODY. An over-limit body is read and DISCARDED (up to a hard cap)
+ * rather than cut off at once: destroying the socket mid-upload makes the client see a bare connection reset and
+ * never the 413 that explains it.
+ */
 function readBody(req: IncomingMessage): Promise<string | null> {
   return new Promise((resolve) => {
     let size = 0;
+    let over = false;
     const chunks: Buffer[] = [];
     req.on("data", (c: Buffer) => {
       size += c.length;
+      if (over) {
+        if (size > DISCARD_LIMIT) req.destroy();
+        return;
+      }
       if (size > MAX_BODY) {
+        over = true;
+        chunks.length = 0;
         resolve(null);
-        req.destroy();
         return;
       }
       chunks.push(c);
     });
-    req.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+    req.on("end", () => {
+      if (!over) resolve(Buffer.concat(chunks).toString("utf8"));
+    });
     req.on("error", () => resolve(null));
   });
 }
@@ -116,7 +132,7 @@ export function createMcpHttpServer(o: McpHttpOptions): Server {
       if (req.method === "POST") {
         const raw = await readBody(req);
         if (raw === null) {
-          res.writeHead(413, { "content-type": "application/json" });
+          res.writeHead(413, { "content-type": "application/json", connection: "close" });
           res.end(JSON.stringify({ error: "request too large" }));
           return;
         }
