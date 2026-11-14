@@ -496,6 +496,21 @@ document.getElementById('find').addEventListener('acme-press', async () => {
       if (path === "/catalog" && req.method === "GET") return send(res, 200, catalogPage(url.searchParams.get("lang")));
       if ((path === "/app" || /^\/app\/p\/[a-z0-9-]+$/.test(path)) && req.method === "GET") return send(res, 200, appShell());
       if (path === "/settings" && req.method === "GET") return send(res, 200, settingsPage());
+      if (path === "/standings" && req.method === "GET") {
+        // a table written WITHOUT <thead>, as many real sites do: the browser puts the header row in <tbody>
+        return send(
+          res,
+          200,
+          page(
+            "Standings",
+            `<h1>League standings</h1>
+<table class="table"><tr><th>Team Name</th><th>Year</th><th>Wins</th></tr>
+<tr class="team"><td>Alpha Rovers</td><td>1990</td><td>44</td></tr>
+<tr class="team"><td>Beta United</td><td>1991</td><td>37</td></tr>
+<tr class="team"><td>Gamma City</td><td>1992</td><td>51</td></tr></table>`,
+          ),
+        );
+      }
       const m = /^\/orders\/([A-Za-z0-9-]+)$/.exec(path);
       if (m && req.method === "GET") {
         const o = state.orders.find((x) => x.id === m[1]);

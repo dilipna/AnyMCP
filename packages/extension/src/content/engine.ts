@@ -7,7 +7,7 @@
 //  - never click something that leaves the tool's allowed origins
 //  - the consequential click only happens through `commit`, which re-checks the approved binding first
 
-import { isSensitiveField, resolveText, type FieldDescriptor } from "anymcp-protocol/light";
+import { isCredentialQueryKey, isSensitiveField, resolveText, type FieldDescriptor } from "anymcp-protocol/light";
 import type { Condition, ExtractSource, Locator, NamedCondition, ReasonCode, Step, ValueRef } from "anymcp-protocol";
 import { PRIVATE_AREA, accessibleName, composedClosest, computeRole, deepQueryAll, fingerprintElement, isVisible, norm, resolveLocator, visibleText, type Args } from "./locator";
 
@@ -71,6 +71,36 @@ function readText(el: Element): string | { blocked: string } {
   }
   if (composedClosest(el, PRIVATE_AREA)) return { blocked: "That part of the page is marked as private." };
   return visibleText(el);
+}
+
+/** The link an element is, contains exactly once, or sits inside. */
+export function linkOf(el: Element): HTMLAnchorElement | HTMLAreaElement | null {
+  if ((el instanceof HTMLAnchorElement || el instanceof HTMLAreaElement) && el.hasAttribute("href")) return el;
+  const inner = deepQueryAll(el, "a[href],area[href]");
+  if (inner.length === 1) return inner[0] as HTMLAnchorElement;
+  return composedClosest(el, "a[href]") as HTMLAnchorElement | null;
+}
+
+/**
+ * The element's text and its link's absolute address. Only http(s) links; user names, passwords and query
+ * parameters that look like credentials (session ids, tokens) are removed before the address leaves the page.
+ */
+export function readLink(el: Element): { text: string; url: string } | { blocked: string } | null {
+  const text = readText(el);
+  if (typeof text !== "string") return text;
+  const a = linkOf(el);
+  if (!a) return null;
+  let u: URL;
+  try {
+    u = new URL(a.getAttribute("href") ?? "", location.href);
+  } catch {
+    return null;
+  }
+  if (u.protocol !== "https:" && u.protocol !== "http:") return null;
+  u.username = "";
+  u.password = "";
+  for (const key of [...new Set(u.searchParams.keys())]) if (isCredentialQueryKey(key)) u.searchParams.delete(key);
+  return { text, url: u.href };
 }
 
 function sameOriginHref(href: string, origins: string[]): boolean {
@@ -375,7 +405,13 @@ function doClick(ctx: RunContext, step: Extract<Step, { op: "click" }>): StepRes
 
 async function doWaitFor(ctx: RunContext, step: Extract<Step, { op: "waitFor" }>, watch: Watch, timeoutMs: number): Promise<StepResult> {
   let lastDetail = "";
+  // A site-declared "nothing found" or "signed out" page wins over a generic page-ready check: a search page often
+  // shows the same heading with and without results. (A site-declared FAILURE does not jump ahead: after a change
+  // was made, "the site said no" must not override a visible success, or it could wrongly claim nothing happened.)
+  const decisive: Watch = { sessionExpired: watch.sessionExpired, failure: [], empty: watch.empty };
   const hit = await pollUntil<StepResult>(() => {
+    const early = terminalNow(decisive, ctx.args);
+    if (early) return terminalFailure(early);
     const r = evalCondition(step.condition, ctx.args);
     lastDetail = r.detail;
     if (r.passed) return { ok: true };
@@ -407,7 +443,9 @@ function extractTable(source: Extract<ExtractSource, { type: "table" }>, args: A
     if (i < 0) return { ok: false, code: "locator_missing", detail: `Column “${col.header}” was not found. The page may have changed.` };
     colIndex[field] = i;
   }
-  const bodyRows = [...table.querySelectorAll("tbody tr")].length ? [...table.querySelectorAll("tbody tr")] : [...table.querySelectorAll("tr")].slice(1);
+  // Data rows: every row of THIS table except the header row. (A table written without <thead> gets an automatic
+  // <tbody> that also holds the header row, so "all tbody rows" would return the headings as the first record.)
+  const bodyRows = [...table.querySelectorAll("tr")].filter((tr) => tr.closest("table") === table && tr !== headerRow && !tr.closest("thead"));
   const rows: Record<string, string | number>[] = [];
   for (const tr of bodyRows.slice(0, source.maxRows)) {
     const cells = [...tr.children];
@@ -433,9 +471,16 @@ function doExtract(ctx: RunContext, step: Extract<Step, { op: "extract" }>): Ste
   if (src.type === "count") return r.problem ? { ok: true, value: 0 } : { ok: true, value: r.elements.length };
   if (src.type === "list") {
     if (r.problem || r.elements.length === 0) return { ok: false, code: "locator_missing", detail: "No list items were found.", matches: 0 };
-    const items: (string | number)[] = [];
+    const items: (string | number | { text: string; url: string })[] = [];
     for (const el of r.elements) {
       if (items.length >= src.maxItems) break;
+      if (src.as === "link") {
+        const link = readLink(el);
+        if (link && "blocked" in link) return { ok: false, code: "sensitive_field", detail: link.blocked };
+        if (!link) return { ok: false, code: "output_invalid", detail: `An item of “${step.into}” is not a link.` };
+        if (link.text) items.push(link);
+        continue;
+      }
       const text = readText(el);
       if (typeof text !== "string") return { ok: false, code: "sensitive_field", detail: text.blocked };
       if (!text) continue; // spacer / decorative items carry no value
@@ -453,6 +498,11 @@ function doExtract(ctx: RunContext, step: Extract<Step, { op: "extract" }>): Ste
     return { ok: false, code: "locator_missing", detail: "The expected element was not found.", matches: 0 };
   }
   if (r.elements.length > 1) return { ok: false, code: "locator_ambiguous", detail: `${r.elements.length} elements match.`, matches: r.elements.length };
+  if (src.as === "link") {
+    const link = readLink(r.elements[0]!);
+    if (link && "blocked" in link) return { ok: false, code: "sensitive_field", detail: link.blocked };
+    return link ? { ok: true, value: link } : { ok: false, code: "output_invalid", detail: `Expected a link for “${step.into}”.` };
+  }
   const text = readText(r.elements[0]!);
   if (typeof text !== "string") return { ok: false, code: "sensitive_field", detail: text.blocked };
   if (src.as === "number") {

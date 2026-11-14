@@ -81,7 +81,8 @@ export const ExtractSourceZ = z.discriminatedUnion("type", [
   z.strictObject({
     type: z.literal("text"),
     locator: LocatorZ,
-    as: z.enum(["string", "number"]).optional(),
+    /** "link" returns { text, url }: the element's text and the address of the link it is (or contains). */
+    as: z.enum(["string", "number", "link"]).optional(),
     /** If true, a missing element omits the field instead of stopping the run. Not allowed for required outputs. */
     optional: z.boolean().optional(),
   }),
@@ -99,7 +100,7 @@ export const ExtractSourceZ = z.discriminatedUnion("type", [
   z.strictObject({
     type: z.literal("list"),
     locator: LocatorZ,
-    as: z.enum(["string", "number"]).optional(),
+    as: z.enum(["string", "number", "link"]).optional(),
     maxItems: z.int().min(1).max(200),
   }),
 ]);

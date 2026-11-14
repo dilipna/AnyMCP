@@ -5,7 +5,7 @@
 // Outputs are compared with the fixture's own ground truth; writes are counted from the server's log.
 
 import { expect, test, type Page } from "@playwright/test";
-import { PRODUCTS, searchProducts } from "anymcp-fixture";
+import { PRODUCTS, productSlug, searchProducts } from "anymcp-fixture";
 import type { ResultEnvelope } from "anymcp-protocol";
 import { buildDraft, type DraftSpec } from "../packages/extension/src/shared/draft";
 import type { TabCandidate } from "../packages/extension/src/shared/panel-api";
@@ -78,6 +78,8 @@ test("single-page app: custom dropdown + Enter-to-search + list; start checks wa
   spec.title = "Find products in the app";
   spec.description = "Search the synthetic single-page app by words and category; returns the product names it lists.";
   spec.outputs[0]!.name = "products";
+  // every result is a link, so the list defaults to returning each one's text AND address (provenance)
+  expect(spec.outputs[0]!.as).toBe("link");
 
   const built = buildDraft(spec, 1);
   expect(built.errors).toEqual([]);
@@ -89,12 +91,13 @@ test("single-page app: custom dropdown + Enter-to-search + list; start checks wa
 
   const tested = await saveTestEnable(def, { choice: "Lighting", find_a_product: "lamp" });
   expect(tested.status, tested.message).toBe("success");
-  expect(tested.output).toEqual({ products: searchProducts({ term: "lamp", category: "Lighting", sort: "name" }).map((p) => p.name) });
+  const asLinks = (q: Parameters<typeof searchProducts>[0]) => searchProducts(q).map((p) => ({ text: p.name, url: `${s.fixture.origin}/app/p/${productSlug(p.name)}` }));
+  expect(tested.output).toEqual({ products: asLinks({ term: "lamp", category: "Lighting", sort: "name" }) });
 
   const client = await s.mcp();
   const env = await s.run(client, def.id, { choice: "Garden", find_a_product: "a" });
   expect(env.status, env.message).toBe("success");
-  expect(env.output).toEqual({ products: searchProducts({ term: "a", category: "Garden", sort: "name" }).map((p) => p.name) });
+  expect(env.output).toEqual({ products: asLinks({ term: "a", category: "Garden", sort: "name" }) });
   await client.close();
   await page.close();
 });

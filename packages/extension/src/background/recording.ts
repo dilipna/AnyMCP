@@ -188,7 +188,7 @@ export class RecordingManager {
       const sig: PickedSignalView = { id, kind: "success", locator: pick.locator, quality: pick.quality, preview: pick.preview };
       rec.signals.push(sig);
     } else if (pick.mode === "list") {
-      rec.outputs.push({ id, name: `list_${rec.outputs.length + 1}`, kind: "list", locator: pick.locator, quality: pick.quality, preview: pick.preview, as: "string", optional: false, use: "result", maxRows: 50 });
+      rec.outputs.push({ id, name: `list_${rec.outputs.length + 1}`, kind: "list", locator: pick.locator, quality: pick.quality, preview: pick.preview, as: pick.links ? "link" : "string", optional: false, use: "result", maxRows: 50 });
     } else if (pick.mode === "table") {
       const columns: NonNullable<PickedOutputView["columns"]> = {};
       for (const h of pick.headers ?? []) columns[h] = { header: h, as: "string" };

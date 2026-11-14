@@ -13,7 +13,7 @@
 
 import type { Locator, LocatorLeaf, Role } from "anymcp-protocol";
 import { isSensitiveField } from "anymcp-protocol/light";
-import { defaultButton, fieldDescriptor, isChecked, optionLabel, toggleKind } from "./engine";
+import { defaultButton, fieldDescriptor, isChecked, linkOf, optionLabel, toggleKind } from "./engine";
 import { showBanner, hideBanner } from "./banner";
 import { PRIVATE_AREA, accessibleName, composedClosest, composedParent, computeRole, deepQueryAll, isVisible, norm, resolveLocator, shadowRootOf, visibleText } from "./locator";
 
@@ -40,6 +40,8 @@ export interface PickResult {
   preview: string;
   headers?: string[];
   rows?: number;
+  /** For lists: every item is (or holds exactly one) link, so the default is to return text + address. */
+  links?: boolean;
 }
 
 const CONTAINER_ROLES: Role[] = ["form", "table", "region", "dialog", "main", "navigation"];
@@ -421,7 +423,8 @@ function finishPick(target: Element) {
     }
     const first = list.items.slice(0, 3).map((x) => `“${previewOf(x).slice(0, 30)}”`).join(", ");
     setPickMode(null);
-    onPickCb?.({ mode, locator: list.locator, quality: list.quality, preview: `${list.items.length} items: ${first}${list.items.length > 3 ? ", …" : ""}`, rows: list.items.length });
+    const links = list.items.every((x) => !!linkOf(x));
+    onPickCb?.({ mode, locator: list.locator, quality: list.quality, preview: `${list.items.length} items: ${first}${list.items.length > 3 ? ", …" : ""}`, rows: list.items.length, links });
     return;
   }
   const s = suggestLocator(target, mode === "success" ? "static-text" : "value");

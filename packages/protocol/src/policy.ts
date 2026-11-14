@@ -66,13 +66,8 @@ export function queryKeys(query: string): string[] {
   });
 }
 
-const CREDENTIAL_QUERY_KEY_RE =
-  /^(sid|phpsessid|jsessionid|session|sessionid|session_id|sess|auth|authorization|sig|signature|jwt|bearer|access_token|id_token|refresh_token|apikey|api_key|key|csrf|xsrf|csrf_token|nonce)$/i;
-
-/** True if a query-string key looks like it carries a credential that must not be saved in a tool definition. */
-export function isCredentialQueryKey(key: string): boolean {
-  return CREDENTIAL_QUERY_KEY_RE.test(key) || looksSensitive(key);
-}
+import { isCredentialQueryKey } from "./sensitive";
+export { isCredentialQueryKey };
 
 function refsOfText(t: TextRef | ValueRef | undefined, into: Set<string>) {
   if (t === undefined) return;
@@ -158,9 +153,9 @@ export function describeStep(s: Step): string {
     case "waitFor": return `Wait until ${describeCondition(s.condition)}`;
     case "assert": return `Check that ${describeCondition(s.condition)}`;
     case "extract":
-      if (s.source.type === "text") return `Read the text of ${describeLocator(s.source.locator)} into “${s.into}”${s.source.optional ? " (optional)" : ""}`;
+      if (s.source.type === "text") return `Read the ${s.source.as === "link" ? "text and link address" : "text"} of ${describeLocator(s.source.locator)} into “${s.into}”${s.source.optional ? " (optional)" : ""}`;
       if (s.source.type === "count") return `Count ${describeLocator(s.source.locator)} into “${s.into}”`;
-      if (s.source.type === "list") return `Read the text of every match of ${describeLocator(s.source.locator)} (up to ${s.source.maxItems}) into “${s.into}”`;
+      if (s.source.type === "list") return `Read the ${s.source.as === "link" ? "text and link address" : "text"} of every match of ${describeLocator(s.source.locator)} (up to ${s.source.maxItems}) into “${s.into}”`;
       return `Read up to ${s.source.maxRows} rows of ${describeLocator(s.source.locator)} into “${s.into}”`;
   }
 }

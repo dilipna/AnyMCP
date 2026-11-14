@@ -3,7 +3,7 @@
 
 import { describe, expect, it } from "vitest";
 import { renderEntry } from "anymcp-protocol";
-import { buildDraft, buildEntryQuery, parameterizeText, queryPartsFromSearch, type DraftSpec } from "../src/shared/draft";
+import { PATH_PART_PATTERN, buildDraft, buildEntryPath, buildEntryQuery, parameterizeText, queryPartsFromSearch, type DraftSpec } from "../src/shared/draft";
 
 const base = (over: Partial<DraftSpec> = {}): DraftSpec => ({
   id: "search_catalog",
@@ -182,6 +182,63 @@ describe("Enter key presses, self-saving fields and clicked choices", () => {
     expect(r.errors).toEqual([]);
     expect(r.definition!.input.properties.choice).toMatchObject({ enum: ["All", "Garden", "Kitchen"] });
     expect(r.definition!.steps.find((x) => x.op === "locate" && x.locator.by === "role" && x.locator.role === "option")).toMatchObject({ locator: { name: { param: "choice" } } });
+  });
+});
+
+describe("read-only page tools and link results", () => {
+  it("a tool with no recorded action reads the page it starts on; its start check is the success check", () => {
+    const s = base({ steps: [], entryQuery: [{ key: "q", value: "lamp", mode: "param", param: "term" }] });
+    const r = buildDraft(s, 1);
+    expect(r.errors).toEqual([]);
+    const d = r.definition!;
+    expect(d.entry).toEqual({ path: "/search", query: "q={term}" });
+    expect(d.steps.map((x) => x.op)).toEqual(["waitFor", "extract"]);
+    expect(d.preconditions).toEqual([{ id: "start_page_ready", condition: { kind: "exists", locator: { by: "role", role: "heading", name: "Results" } } }]);
+  });
+
+  it("still needs something to return and a success check", () => {
+    expect(buildDraft(base({ steps: [], outputs: [] }), 1).errors.join(" ")).toMatch(/at least one value/);
+    expect(buildDraft(base({ steps: [], signals: [] }), 1).errors.join(" ")).toMatch(/success check/);
+  });
+
+  it("link outputs are { text, url } objects, single or as a list", () => {
+    const s = base();
+    s.outputs = [
+      { id: "l", name: "results", kind: "list", locator: { by: "css", selector: "li > a" }, as: "link", optional: false, use: "result", maxRows: 10 },
+      { id: "t", name: "top", kind: "text", locator: { by: "testid", id: "top" }, as: "link", optional: false, use: "result" },
+    ];
+    const d = buildDraft(s, 1).definition!;
+    const link = { type: "object", properties: { text: { type: "string", maxLength: 2000 }, url: { type: "string", maxLength: 2000 } }, required: ["text", "url"], additionalProperties: false };
+    expect(d.output.properties.results).toMatchObject({ type: "array", items: link, maxItems: 10 });
+    expect(d.output.properties.top).toMatchObject(link);
+    expect(d.steps.filter((x) => x.op === "extract").map((x) => (x as { source: { as?: string } }).source.as)).toEqual(["link", "link"]);
+  });
+});
+
+describe("checks that contain numbers", () => {
+  it("warns when a success check includes a number that may change between runs", () => {
+    const s = base({ signals: [{ id: "g", kind: "success", locator: { by: "role", role: "heading", name: "Hockey Teams: Forms, Searching and Pagination 21 items" } }] });
+    expect(buildDraft(s, 1).warnings.join(" ")).toMatch(/contains a number/);
+    expect(buildDraft(base(), 1).warnings.join(" ")).not.toMatch(/contains a number/);
+  });
+});
+
+describe("parts of the start address as inputs", () => {
+  it("a chosen part is replaced as a whole part, constrained to URL-safe characters", () => {
+    const s = base({ steps: [], entryPath: "/catalogue/category/books/travel_2/index.html" });
+    s.params = [{ name: "category", description: "", type: "string", example: "travel_2", maxLength: 100, pattern: PATH_PART_PATTERN, fromPath: true }];
+    const r = buildDraft(s, 1);
+    expect(r.errors).toEqual([]);
+    expect(r.definition!.entry.path).toBe("/catalogue/category/books/{category}/index.html");
+    expect(r.definition!.input.properties.category).toMatchObject({ type: "string", pattern: PATH_PART_PATTERN });
+    expect(renderEntry(r.definition!.entry, { category: "mystery_3" })).toBe("/catalogue/category/books/mystery_3/index.html");
+  });
+
+  it("even a one-character part can be chosen (whole-part match, unlike text recognition)", () => {
+    expect(buildEntryPath("/js/page/2/", [{ name: "page", description: "", type: "string", example: "2", maxLength: 3, fromPath: true }])).toBe("/js/page/{page}/");
+    // without choosing it, a short typed value never rewrites the address by accident
+    expect(buildEntryPath("/js/page/2/", [{ name: "n", description: "", type: "string", example: "2", maxLength: 3 }])).toBe("/js/page/{n}/");
+    expect(buildEntryPath("/items/12/", [{ name: "n", description: "", type: "string", example: "2", maxLength: 3 }])).toBe("/items/12/");
   });
 });
 

@@ -32,7 +32,12 @@ export interface DraftParam {
   maxLength: number;
   /** The choices of a recorded dropdown. When present the input only accepts one of them. */
   options?: string[];
+  /** This input replaces one whole part of the start address (the part equal to `example`). */
+  fromPath?: boolean;
 }
+
+/** Characters allowed in an address part that became an input (the value is URL-encoded on use as well). */
+export const PATH_PART_PATTERN = "^[A-Za-z0-9._~-]{1,100}$";
 
 export interface DraftStep {
   seq: number;
@@ -67,7 +72,8 @@ export interface DraftOutput {
   name: string;
   kind: "text" | "table" | "list";
   locator: Locator;
-  as: "string" | "number";
+  /** "link" = the text plus the address of the link (provenance for each result). */
+  as: "string" | "number" | "link";
   optional: boolean;
   /** result = returned to the AI; approval = shown + bound in the approval but not returned; both = both */
   use: "result" | "approval" | "both";
@@ -99,6 +105,14 @@ export interface DraftSpec {
   signals: DraftSignal[];
   approvalText: string;
 }
+
+/** A link result: what it says and where it points. */
+const LINK_SCHEMA: SchemaSubset = {
+  type: "object",
+  properties: { text: { type: "string", maxLength: 2000 }, url: { type: "string", maxLength: 2000 } },
+  required: ["text", "url"],
+  additionalProperties: false,
+};
 
 const snake = (s: string, fallback: string): string => {
   const t = s
@@ -181,6 +195,23 @@ export function queryPartsFromSearch(search: string): DraftQueryPart[] {
   return out;
 }
 
+/**
+ * The start address as a template. Parts chosen as inputs ("fromPath") are replaced as WHOLE parts; other inputs'
+ * examples are recognised inside the remaining parts (e.g. a typed order id that appears in the address).
+ */
+export function buildEntryPath(path: string, params: DraftParam[]): string {
+  const pathParams = params.filter((p) => p.fromPath);
+  const others = params.filter((p) => !p.fromPath);
+  const parts = path.split("/").slice(1).map((seg) => {
+    const own = pathParams.find((p) => p.example === seg);
+    if (own) return `{${own.name}}`;
+    if (!seg) return seg;
+    const ref = parameterizeText(seg, others);
+    return typeof ref === "string" ? ref : `{${ref.param}}`;
+  });
+  return `/${parts.join("/")}`;
+}
+
 /** Render the kept query parts as a template: fixed values URL-encoded, inputs as {placeholders}. */
 export function buildEntryQuery(parts: DraftQueryPart[] | undefined, params: DraftParam[], errors: string[]): string | undefined {
   const pairs: string[] = [];
@@ -246,7 +277,8 @@ export function buildDraft(spec: DraftSpec, version: number): BuildResult {
       steps.push({ id: nextId(), op: "click", target: as, effect: s.effect });
     }
   }
-  if (steps.length === 0) errors.push("There are no steps. Record at least one action.");
+  // No recorded action is fine: a tool may simply read the page it starts on (for example a search address with
+  // the query in it). It still needs something to return and a success check (both enforced below).
 
   // ---- outputs ----
   const kind: "read" | "write" = commitFound ? "write" : "read";
@@ -267,12 +299,12 @@ export function buildDraft(spec: DraftSpec, version: number): BuildResult {
       continue;
     }
     if (o.kind === "text") {
-      outProps[name] = o.as === "number" ? { type: "number", description: o.description } : { type: "string", description: o.description, maxLength: 2000 } as SchemaSubset;
+      outProps[name] = o.as === "number" ? { type: "number", description: o.description } : o.as === "link" ? { ...LINK_SCHEMA, description: o.description } : ({ type: "string", description: o.description, maxLength: 2000 } as SchemaSubset);
       extracts.push({ id: nextId(), op: "extract", into: name, source: { type: "text", locator: loc, as: o.as, ...(o.optional ? { optional: true } : {}) } });
       if (!o.optional) outRequired.push(name);
     } else if (o.kind === "list") {
       const maxItems = o.maxRows ?? 50;
-      outProps[name] = { type: "array", description: o.description, items: o.as === "number" ? { type: "number" } : { type: "string", maxLength: 2000 }, maxItems };
+      outProps[name] = { type: "array", description: o.description, items: o.as === "number" ? { type: "number" } : o.as === "link" ? LINK_SCHEMA : { type: "string", maxLength: 2000 }, maxItems };
       extracts.push({ id: nextId(), op: "extract", into: name, source: { type: "list", locator: loc, as: o.as, maxItems } });
       outRequired.push(name);
     } else {
@@ -296,6 +328,14 @@ export function buildDraft(spec: DraftSpec, version: number): BuildResult {
   const cond = (id: string, loc: Locator): NamedCondition => ({ id, condition: { kind: "exists", locator: parameterizeLocator(loc, params) } as Condition });
   const bySignal = (k: SignalKind) => spec.signals.filter((s) => s.kind === k).map((s) => cond(snake(`${k}_${s.id}`, k), s.locator));
   const postconditions = bySignal("success");
+  // A check that contains a number (a result count, a date, a price) usually fails as soon as the number changes.
+  for (const sig of spec.signals) {
+    const text = locatorTexts(parameterizeLocator(sig.locator, params)).find((t) => /\d/.test(t));
+    if (text) {
+      const shown = text.length > 60 ? `${text.slice(0, 57)}…` : text;
+      warnings.push(`The check “${shown}” contains a number. If that number changes between runs (a count, a date, a price), the check fails and the tool stops. If so, mark a part of the page without it.`);
+    }
+  }
   if (postconditions.length === 0) errors.push("Add a success check: pick something on the page that appears only when the task worked.");
   const emptyWhen = bySignal("empty");
   const failureWhen = bySignal("error");
@@ -306,7 +346,8 @@ export function buildDraft(spec: DraftSpec, version: number): BuildResult {
   if (postconditions[0]) steps.push({ id: nextId(), op: "waitFor", condition: postconditions[0].condition, timeoutMs: 5000 });
   steps.push(...extracts);
 
-  const preconditions: NamedCondition[] = firstLocator ? [{ id: "start_page_ready", condition: { kind: "exists", locator: firstLocator } }] : [];
+  const startCheck: Locator | null = firstLocator ?? (postconditions[0]?.condition.kind === "exists" ? postconditions[0].condition.locator : null);
+  const preconditions: NamedCondition[] = startCheck ? [{ id: "start_page_ready", condition: { kind: "exists", locator: startCheck } }] : [];
 
   // ---- input schema ----
   const inProps: Record<string, SchemaSubset> = {};
@@ -314,8 +355,7 @@ export function buildDraft(spec: DraftSpec, version: number): BuildResult {
   const input: ObjectSchema = { type: "object", properties: inProps, required: params.map((p) => p.name), additionalProperties: false };
   const output: ObjectSchema = { type: "object", properties: outProps, ...(outRequired.length ? { required: outRequired } : {}), additionalProperties: false };
 
-  const entryPath = parameterizeText(spec.entryPath, params);
-  const entry = typeof entryPath === "string" ? entryPath : `/{${entryPath.param}}`;
+  const entry = buildEntryPath(spec.entryPath, params);
   const entryQuery = buildEntryQuery(spec.entryQuery, params, errors);
 
   const definition = {
@@ -364,6 +404,14 @@ function defaultApprovalText(spec: DraftSpec): string {
       : `Click “${label}”`;
   const inputs = spec.params.map((p) => `${p.name}={${p.name}}`).join(", ");
   return (inputs ? `${what} with ${inputs}` : what).slice(0, 300);
+}
+
+/** The fixed texts a locator looks for (names, labels, texts; inputs excluded). */
+export function locatorTexts(l: Locator | LocatorLeaf): string[] {
+  const leaf = l as LocatorLeaf;
+  const own = leaf.by === "role" ? leaf.name : leaf.by === "label" || leaf.by === "text" ? leaf.text : leaf.by === "field" ? leaf.label : undefined;
+  const mine = typeof own === "string" ? [own.replace(/\{[a-z][a-z0-9_]*\}/g, "")] : [];
+  return "within" in l && l.within ? [...mine, ...locatorTexts(l.within)] : mine;
 }
 
 /** If a recorded locator was only PARTLY replaced by an input (the input's example is inside a longer text), its name. */

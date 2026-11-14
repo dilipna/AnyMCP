@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { deriveReviewSummary, describeLocator, isCredentialQueryKey } from "anymcp-protocol";
-import { buildDraft, parameterizeLocator, partlyParameterized, type DraftOutput, type DraftParam, type DraftQueryPart, type DraftSignal, type DraftSpec, type DraftStep, type SignalKind } from "../../shared/draft";
+import { PATH_PART_PATTERN, buildDraft, buildEntryPath, parameterizeLocator, partlyParameterized, type DraftOutput, type DraftParam, type DraftQueryPart, type DraftSignal, type DraftSpec, type DraftStep, type SignalKind } from "../../shared/draft";
 import type { TabCandidate } from "../../shared/panel-api";
 import type { PanelState, RecordedStepView } from "../../shared/types";
 import { call } from "../api";
@@ -197,7 +197,7 @@ function LiveRecording({ state, onSpec }: { state: PanelState; onSpec: (s: Draft
         {rec.status !== "stopped" ? (
           <button type="button" className="btn danger" onClick={() => void call({ type: "record.stop" })}>Stop recording</button>
         ) : (
-          <button type="button" className="btn primary" disabled={rec.steps.length === 0} onClick={() => void toReview()}>Review the tool →</button>
+          <button type="button" className="btn primary" disabled={rec.steps.length === 0 && rec.outputs.length === 0} onClick={() => void toReview()}>Review the tool →</button>
         )}
         <button type="button" className="btn" onClick={() => void call({ type: "record.discard" })}>Discard</button>
       </div>
@@ -265,6 +265,21 @@ function Editor({ initial, onDone }: { initial: DraftSpec; onDone: (savedId: str
       parts[i] = next;
       return { ...s, params, entryQuery: parts };
     });
+  /** Make one part of the start address an input (or fixed again). */
+  const togglePathPart = (seg: string, idx: number) =>
+    setSpec((sp) => {
+      const existing = sp.params.find((p) => p.fromPath && p.example === seg);
+      if (existing) return { ...sp, params: sp.params.filter((p) => p !== existing) };
+      const segs = sp.entryPath.split("/").filter(Boolean);
+      const base = (snake(segs[idx - 1] ?? "") || "part").replace(/s$/, "") || "part";
+      const taken = new Set(sp.params.map((p) => p.name));
+      let name = base;
+      for (let n = 2; taken.has(name); n++) name = `${base}_${n}`;
+      return {
+        ...sp,
+        params: [...sp.params, { name, description: `Part of the start address (you used “${seg}”)`, type: "string", example: seg, maxLength: 100, pattern: PATH_PART_PATTERN, fromPath: true }],
+      };
+    });
   /** Would turning this click's text into an input actually change what AnyMCP looks for? */
   const canBeInput = (s: DraftStep) =>
     !!s.label && JSON.stringify(parameterizeLocator(s.locator, [{ name: "probe", description: "", type: "string", example: s.label, maxLength: 200 }])) !== JSON.stringify(s.locator);
@@ -327,7 +342,22 @@ function Editor({ initial, onDone }: { initial: DraftSpec; onDone: (savedId: str
 
       <div className="card">
         <h3>Start page</h3>
-        <p className="mono" style={{ wordBreak: "break-all" }}>{originLabel(spec.origin)}{spec.entryPath}</p>
+        <p className="mono" style={{ wordBreak: "break-all" }}>{originLabel(spec.origin)}{buildEntryPath(spec.entryPath, spec.params)}</p>
+        {spec.entryPath.split("/").filter(Boolean).length > 0 && (
+          <div className="stack" style={{ gap: 4 }}>
+            <small className="muted">Should part of the address change on each run (an order number, a category)? Choose it to make it an input.</small>
+            <div className="row" role="group" aria-label="Parts of the start address">
+              {spec.entryPath.split("/").filter(Boolean).map((seg, idx) => {
+                const on = spec.params.some((p) => p.fromPath && p.example === seg);
+                return (
+                  <button key={`${idx}-${seg}`} type="button" className={`btn small ${on ? "primary" : ""}`} aria-pressed={on} onClick={() => togglePathPart(seg, idx)}>
+                    {seg.length > 24 ? `${seg.slice(0, 22)}…` : seg}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
         {(spec.entryQuery ?? []).length === 0 ? (
           <small className="muted">Every run starts here, in a tab AnyMCP opens itself.</small>
         ) : (
@@ -468,13 +498,13 @@ function Editor({ initial, onDone }: { initial: DraftSpec; onDone: (savedId: str
             </div>
             {o.kind === "list" && (
               <div className="row">
-                <select aria-label="Type of each item" value={o.as} onChange={(e) => setOutput(i, { as: e.target.value as "string" | "number" })}><option value="string">Each item is text</option><option value="number">Each item is a number</option></select>
+                <select aria-label="Type of each item" value={o.as} onChange={(e) => setOutput(i, { as: e.target.value as DraftOutput["as"] })}><option value="string">Each item is text</option><option value="number">Each item is a number</option><option value="link">Each item is a link (text and address)</option></select>
                 <label className="row">At most <input type="number" min={1} max={200} style={{ width: 70 }} aria-label="Most items to return" value={o.maxRows ?? 50} onChange={(e) => setOutput(i, { maxRows: Math.max(1, Math.min(200, Number(e.target.value) || 1)) })} /> items</label>
               </div>
             )}
             {o.kind === "text" && (
               <div className="row">
-                <select aria-label="Type" value={o.as} onChange={(e) => setOutput(i, { as: e.target.value as "string" | "number" })}><option value="string">Text</option><option value="number">Number</option></select>
+                <select aria-label="Type" value={o.as} onChange={(e) => setOutput(i, { as: e.target.value as DraftOutput["as"] })}><option value="string">Text</option><option value="number">Number</option><option value="link">Link (text and address)</option></select>
                 <label className="row"><input type="checkbox" checked={o.optional} onChange={(e) => setOutput(i, { optional: e.target.checked })} /> May be missing</label>
               </div>
             )}

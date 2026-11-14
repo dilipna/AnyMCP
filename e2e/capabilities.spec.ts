@@ -134,6 +134,47 @@ test("record dropdown + checkbox + option + shadow-DOM button + list, then run i
   await page.close();
 });
 
+test("a read-only page tool (no recorded action) reads a table written without <thead> correctly", async () => {
+  const spec: DraftSpec = {
+    id: "league_standings",
+    title: "League standings",
+    description: "Reads the synthetic standings table. Read-only; nothing is clicked or typed.",
+    origin: s.fixture.origin,
+    entryPath: "/standings",
+    params: [],
+    steps: [],
+    outputs: [
+      {
+        id: "t",
+        name: "teams",
+        kind: "table",
+        locator: { by: "css", selector: "table.table" },
+        as: "string",
+        optional: false,
+        use: "result",
+        maxRows: 10,
+        columns: { "Team Name": { header: "Team Name", as: "string" }, Year: { header: "Year", as: "number" }, Wins: { header: "Wins", as: "number" } },
+      },
+    ],
+    signals: [{ id: "h", kind: "success", locator: { by: "role", role: "heading", name: "League standings" } }],
+    approvalText: "",
+  };
+  const built = buildDraft(spec, 1);
+  expect(built.errors).toEqual([]);
+  expect(built.definition!.steps.map((x) => x.op)).toEqual(["waitFor", "extract"]);
+  expect((await s.call({ type: "tool.save", definition: built.definition!, source: "recorded" })).ok).toBe(true);
+  const r = (await s.call<{ envelope: ResultEnvelope }>({ type: "tool.test", id: spec.id, version: 1, args: {} })) as { data: { envelope: ResultEnvelope } };
+  expect(r.data.envelope.status, r.data.envelope.message).toBe("success");
+  // the header row is NOT returned as data
+  expect(r.data.envelope.output).toEqual({
+    teams: [
+      { team_name: "Alpha Rovers", year: 1990, wins: 44 },
+      { team_name: "Beta United", year: 1991, wins: 37 },
+      { team_name: "Gamma City", year: 1992, wins: 51 },
+    ],
+  });
+});
+
 test("the start address matters: without its query string the page is different and the run stops safely", async () => {
   // a hand-made tool whose start address has no ?lang=en: the precondition (the search box) is not met
   const spec: DraftSpec = {

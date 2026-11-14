@@ -13,6 +13,14 @@ export function looksSensitive(s: string | null | undefined): boolean {
   return !!s && SENSITIVE_WORDS_RE.test(normalizeName(s));
 }
 
+const CREDENTIAL_QUERY_KEY_RE =
+  /^(sid|phpsessid|jsessionid|session|sessionid|session_id|sess|auth|authorization|sig|signature|jwt|bearer|access_token|id_token|refresh_token|apikey|api_key|key|csrf|xsrf|csrf_token|nonce)$/i;
+
+/** True if a query-string key looks like it carries a credential (never saved in a tool, stripped from returned links). */
+export function isCredentialQueryKey(key: string): boolean {
+  return CREDENTIAL_QUERY_KEY_RE.test(key) || looksSensitive(key);
+}
+
 export interface FieldDescriptor {
   type?: string | null;
   autocomplete?: string | null;
