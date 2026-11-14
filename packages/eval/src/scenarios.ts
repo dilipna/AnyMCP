@@ -6,7 +6,7 @@ import type { Client } from "@modelcontextprotocol/client";
 import type { ResultEnvelope } from "anymcp-protocol";
 import { waitForState, sleep, type Stack } from "../../../e2e/harness";
 
-export const PROTOCOL_VERSION = 1;
+export const PROTOCOL_VERSION = 2; // v2: rename only (import from anymcp-protocol); scenarios identical to v1
 
 export interface Observation {
   envs: ResultEnvelope[];

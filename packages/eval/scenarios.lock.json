@@ -1,6 +1,6 @@
 {
-  "protocolVersion": 1,
-  "scenariosSha256": "960d33140ddf678621a77d694fee27952e1058fb0d83949f037cf27c04a2e1d6",
+  "protocolVersion": 2,
+  "scenariosSha256": "ddbd573a8ea797c9837360bebfd5342b09b76b173bddf25a4b70e780abbe190a",
   "scenarios": 28,
-  "frozenAt": "2026-11-12T03:28:06.519Z"
+  "frozenAt": "2026-11-14T06:10:25.539Z"
 }

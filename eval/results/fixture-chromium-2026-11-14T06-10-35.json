@@ -1,18 +1,18 @@
 {
   "env": {
-    "protocolVersion": 1,
-    "mycpVersion": "0.1.0",
-    "scenariosSha256": "960d33140ddf678621a77d694fee27952e1058fb0d83949f037cf27c04a2e1d6",
-    "sourceTreeSha256": "bc63677b90e9df71a37cb7ecd31dec1952636ed4f77026031abf0a163120fc02",
-    "sourceFiles": 100,
-    "gitHead": null,
-    "gitDirty": null,
+    "protocolVersion": 2,
+    "anymcpVersion": "0.1.0",
+    "scenariosSha256": "ddbd573a8ea797c9837360bebfd5342b09b76b173bddf25a4b70e780abbe190a",
+    "sourceTreeSha256": "b60f2190bd50d1e44d82d48d23ad7a33d060746f1fc9cd1a523428b9151972c5",
+    "sourceFiles": 108,
+    "gitHead": "02983df6ec8a5c6bf8abed97dd0f6a587f0059df",
+    "gitDirty": true,
     "browser": "Playwright Chromium 158.0.8127.18",
     "os": "Windows_NT 10.0.26300 x64",
     "node": "v24.11.0",
     "cpu": "12th Gen Intel(R) Core(TM) i7-12700H",
-    "startedAt": "2026-11-13T18:37:14.091Z",
-    "durationSeconds": 447,
+    "startedAt": "2026-11-14T06:10:35.681Z",
+    "durationSeconds": 471,
     "partial": false,
     "site": "synthetic fixture (Acme Support Portal)"
   },
@@ -36,10 +36,10 @@
       "recovered": "—",
       "latencyMs": {
         "n": 30,
-        "min": 506.4809000000023,
-        "median": 609.3207000000002,
-        "p95": 699.5977999999996,
-        "max": 752.6746999999996
+        "min": 532.5879999999997,
+        "median": 678.3885000000009,
+        "p95": 754.2790999999997,
+        "max": 762.0720999999994
       }
     },
     {
@@ -369,10 +369,10 @@
   ],
   "writeLatencyMs": {
     "n": 10,
-    "min": 209.77510000002803,
-    "median": 275.6809999999823,
-    "p95": 344.5368000000017,
-    "max": 344.5368000000017
+    "min": 199.67280000000028,
+    "median": 227.1928000000189,
+    "p95": 272.66480000002775,
+    "max": 272.66480000002775
   },
   "toolCreation": {
     "recordedSteps": 3,
@@ -380,7 +380,7 @@
     "reviewEdits": 7,
     "userActionsTotal": 16,
     "testStatus": "success",
-    "scriptedWallClockMs": 2492,
+    "scriptedWallClockMs": 2478,
     "note": "scripted by Playwright, one operator, n = 1. Not a usability study."
   },
   "failures": [],
@@ -395,7 +395,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 752.6746999999996,
+      "latencyMs": 762.0720999999994,
       "failures": []
     },
     {
@@ -408,7 +408,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 594.3428000000004,
+      "latencyMs": 685.9904000000006,
       "failures": []
     },
     {
@@ -421,7 +421,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 591.0938999999998,
+      "latencyMs": 626.2151000000013,
       "failures": []
     },
     {
@@ -434,7 +434,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 584.1864999999998,
+      "latencyMs": 602.4156000000003,
       "failures": []
     },
     {
@@ -447,7 +447,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 597.1391999999996,
+      "latencyMs": 684.2671000000009,
       "failures": []
     },
     {
@@ -460,7 +460,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 575.1983999999993,
+      "latencyMs": 668.4509999999991,
       "failures": []
     },
     {
@@ -473,7 +473,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 609.3207000000002,
+      "latencyMs": 636.9813000000013,
       "failures": []
     },
     {
@@ -486,7 +486,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 640.6967000000004,
+      "latencyMs": 686.6976999999988,
       "failures": []
     },
     {
@@ -499,7 +499,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 604.1813999999995,
+      "latencyMs": 694.9137999999984,
       "failures": []
     },
     {
@@ -512,7 +512,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 592.785899999999,
+      "latencyMs": 609.7687000000005,
       "failures": []
     },
     {
@@ -525,7 +525,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 651.1679999999997,
+      "latencyMs": 680.9959999999992,
       "failures": []
     },
     {
@@ -538,7 +538,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 593.6985999999997,
+      "latencyMs": 638.7875000000022,
       "failures": []
     },
     {
@@ -551,7 +551,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 597.008600000001,
+      "latencyMs": 680.9828000000016,
       "failures": []
     },
     {
@@ -564,7 +564,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 506.4809000000023,
+      "latencyMs": 633.6677000000018,
       "failures": []
     },
     {
@@ -577,7 +577,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 618.9134999999987,
+      "latencyMs": 657.8389999999999,
       "failures": []
     },
     {
@@ -590,7 +590,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 607.8099000000002,
+      "latencyMs": 675.8824000000022,
       "failures": []
     },
     {
@@ -603,7 +603,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 595.4121000000014,
+      "latencyMs": 639.7392999999975,
       "failures": []
     },
     {
@@ -616,7 +616,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 600.9233999999997,
+      "latencyMs": 532.5879999999997,
       "failures": []
     },
     {
@@ -629,7 +629,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 610.2351000000017,
+      "latencyMs": 644.9562000000005,
       "failures": []
     },
     {
@@ -642,7 +642,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 612.8914000000004,
+      "latencyMs": 693.8774000000012,
       "failures": []
     },
     {
@@ -655,7 +655,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 595.0650999999998,
+      "latencyMs": 647.8021000000008,
       "failures": []
     },
     {
@@ -668,7 +668,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 625.9291999999987,
+      "latencyMs": 680.0070999999989,
       "failures": []
     },
     {
@@ -681,7 +681,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 619.836800000001,
+      "latencyMs": 683.6311000000023,
       "failures": []
     },
     {
@@ -694,7 +694,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 645.6961999999985,
+      "latencyMs": 690.3829000000005,
       "failures": []
     },
     {
@@ -707,7 +707,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 675.425299999999,
+      "latencyMs": 678.3885000000009,
       "failures": []
     },
     {
@@ -720,7 +720,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 688.0224999999991,
+      "latencyMs": 754.2790999999997,
       "failures": []
     },
     {
@@ -733,7 +733,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 615.752199999999,
+      "latencyMs": 730.2970000000023,
       "failures": []
     },
     {
@@ -746,7 +746,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 632.9804000000004,
+      "latencyMs": 744.6751000000004,
       "failures": []
     },
     {
@@ -759,7 +759,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 670.2743999999984,
+      "latencyMs": 707.8652000000002,
       "failures": []
     },
     {
@@ -772,7 +772,7 @@
       "unapproved": 0,
       "overClaim": false,
       "recovered": null,
-      "latencyMs": 699.5977999999996,
+      "latencyMs": 616.9072000000015,
       "failures": []
     },
     {

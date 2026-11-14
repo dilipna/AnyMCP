@@ -10,7 +10,7 @@ the catalogue means bumping `protocolVersion`, re-freezing, and reporting the ne
 * It measures AnyMCP's **behaviour at its own boundaries** (permission checks, approvals, failure handling,
   honest outcome reporting) against a **synthetic fixture website** that this project controls.
 * It does **not** show that AnyMCP works on any real website. External sites are reported in a *separate*
-  document with their own scope (`docs/external-site-report.md`). Fixture results are never mixed into it.
+  document with their own scope (`docs/public-site-report.md`). Fixture results are never mixed into it.
 * The fixture is a **development suite**, not a held-out test set. It was used while building AnyMCP, so
   results on it must not be described as held-out or as generalisation evidence. No held-out set exists yet.
 * "Zero failures observed" means exactly that — zero in the stated number of runs — never "guaranteed safe".
@@ -87,6 +87,13 @@ bundled Chromium or the real branded Chrome (`ANYMCP_E2E_BROWSER=chrome`).
 3. Latency numbers are for this machine and this fixture; they describe AnyMCP's overhead on a trivial local site and say nothing about real sites.
 4. Any change to scenarios, oracle logic or definitions after the first headline run requires a new `protocolVersion`.
 5. Results are committed under `eval/results/` together with the protocol version and hashes.
+
+## Protocol versions
+
+| Version | Change | Comparable with |
+|---|---|---|
+| 1 | first frozen catalogue (28 scenarios) | — |
+| 2 | product renamed MyCP → AnyMCP: the catalogue's only change is its import line (`mycp-protocol` → `anymcp-protocol`). Scenarios, oracles and run counts are identical. Bumped because rule 4 requires it for any change to the file. | v1, in substance |
 
 ## Instrument corrections made before the freeze
 

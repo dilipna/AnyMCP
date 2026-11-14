@@ -1,22 +1,22 @@
-# MyCP evaluation results — synthetic fixture
+# AnyMCP evaluation results — synthetic fixture
 
 > Fixture only. These numbers say nothing about compatibility with any real website. The fixture is a development suite, not a held-out set. See `docs/evaluation-protocol.md`.
 
 ## Environment
 
-* **protocolVersion**: `1`
-* **mycpVersion**: `0.1.0`
-* **scenariosSha256**: `960d33140ddf678621a77d694fee27952e1058fb0d83949f037cf27c04a2e1d6`
-* **sourceTreeSha256**: `bc63677b90e9df71a37cb7ecd31dec1952636ed4f77026031abf0a163120fc02`
-* **sourceFiles**: `100`
-* **gitHead**: `null`
-* **gitDirty**: `null`
+* **protocolVersion**: `2`
+* **anymcpVersion**: `0.1.0`
+* **scenariosSha256**: `ddbd573a8ea797c9837360bebfd5342b09b76b173bddf25a4b70e780abbe190a`
+* **sourceTreeSha256**: `b60f2190bd50d1e44d82d48d23ad7a33d060746f1fc9cd1a523428b9151972c5`
+* **sourceFiles**: `108`
+* **gitHead**: `02983df6ec8a5c6bf8abed97dd0f6a587f0059df`
+* **gitDirty**: `true`
 * **browser**: `Playwright Chromium 158.0.8127.18`
 * **os**: `Windows_NT 10.0.26300 x64`
 * **node**: `v24.11.0`
 * **cpu**: `12th Gen Intel(R) Core(TM) i7-12700H`
-* **startedAt**: `2026-11-13T18:37:14.091Z`
-* **durationSeconds**: `447`
+* **startedAt**: `2026-11-14T06:10:35.681Z`
+* **durationSeconds**: `471`
 * **partial**: `false`
 * **site**: `synthetic fixture (Acme Support Portal)`
 
@@ -70,8 +70,8 @@ No failing run was observed in 170 runs. That is an observation about these 170 
 
 | path | n | min ms | median ms | p95 ms | max ms |
 |---|---|---|---|---|---|
-| read: `find_order` (MCP call → result) | 30 | 506 | 609 | 700 | 753 |
-| write: approve click → result | 10 | 210 | 276 | 345 | 345 |
+| read: `find_order` (MCP call → result) | 30 | 533 | 678 | 754 | 762 |
+| write: approve click → result | 10 | 200 | 227 | 273 | 273 |
 
 ## Tool-creation effort
 
@@ -80,7 +80,7 @@ No failing run was observed in 170 runs. That is an observation about these 170 
 * **reviewEdits**: 7
 * **userActionsTotal**: 16
 * **testStatus**: success
-* **scriptedWallClockMs**: 2492
+* **scriptedWallClockMs**: 2478
 * **note**: scripted by Playwright, one operator, n = 1. Not a usability study.
 
 ## Failures
