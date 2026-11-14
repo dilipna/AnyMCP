@@ -1,4 +1,4 @@
-# NOTE: written but NOT yet run on GitHub (this repository has no remote). See docs/release-checklist.md.
+# Not run yet: nothing has been pushed to GitHub. The first push will be the first run. See docs/release-checklist.md.
 name: CI
 on:
   push:
@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -33,6 +33,8 @@ jobs:
         run: npm run test:e2e
       - name: Build, package and prove the build is reproducible
         run: npm run package -- --verify
+      - name: Install the npm tarball outside the checkout and run it (HTTP + stdio)
+        run: npm run package:check
       - name: Keep the release artifacts
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
