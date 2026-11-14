@@ -5,12 +5,12 @@ AnyMCP does **not** claim to work on every website. This is what is implemented 
 ## Tested
 
 * **Where:** `http://127.0.0.1:<port>` — the synthetic *Acme Support Portal* fixture (this repository).
-* **Browsers:** Playwright Chromium 158 and branded Google Chrome 157.0.8103.50 on Windows 11, via the DevTools
+* **Browsers:** Playwright Chromium 158 and branded Google Chrome 157.0.8103.52 on Windows 11, via the DevTools
   protocol (Chrome 137+ ignores `--load-extension`; manual "Load unpacked" works).
 * **MCP clients:** the official TypeScript SDK client over HTTP (tests/evaluation) and over **stdio**
   (`anymcp-bridge --stdio`, spawned as a separate process); Claude Code 2.1.207 — see
   [demo-script.md](demo-script.md) for what was and was not exercised. Claude Desktop and Cursor were **not** tested.
-* **External sites:** read-only checks recorded in [external-site-report.md](external-site-report.md). Nothing else.
+* **External sites:** read-only checks recorded in [public-site-report.md](public-site-report.md). Nothing else.
 
 ## What a tool can do
 

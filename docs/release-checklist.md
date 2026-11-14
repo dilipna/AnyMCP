@@ -1,66 +1,59 @@
-# Release checklist — AnyMCP 0.1.0 (release candidate)
+# Release checklist — AnyMCP 0.1.0 (developer beta)
 
-**Overall: release candidate for local use. NOT published, NOT submitted to the Chrome Web Store, NOT approved.**
-Each line is one of: **VERIFIED** (we ran it; evidence given) · **UNVERIFIED** (written/not run, or only partly) ·
-**OWNER** (needs a decision, an account, a payment or someone else). Re-run the evidence command to re-check.
+**Overall: developer beta, committed locally. NOT pushed, NOT published to npm, NOT submitted to the Chrome Web
+Store.** Labels: **Verified end to end** · **Verified locally** · **Mock-tested** · **Prepared but untested** ·
+**Blocked** · **Owner** (needs a decision, an account or someone else). Re-run the command to re-check.
 
-## The ten gates
+## Gates
 
 | # | Gate | Status | Evidence / what is missing |
 |---|---|---|---|
-| 1 | **Clean installation** — a fresh checkout builds and starts the documented components | **VERIFIED on this Windows machine** (see *Clean-install result* below) | `scripts/clean-install-check.mjs`. **Not** verified on macOS/Linux locally; CI workflow exists but has **never run** (no remote). |
-| 2 | **Core workflow** — a supported MCP client invokes an approved tool and gets a verified structured result | **VERIFIED** with the official SDK client over HTTP (61 e2e tests, both browsers) and over **stdio** (`stdio.integration.test.ts`, `npm run smoke:stdio` on the packaged bridge), **and** with Claude Code via `scripts/demo-claude.ts` — see `eval/results/demo-claude-*.json` for exactly what happened. Claude Desktop / Cursor: **not tested** | The demo's model wording is non-deterministic; it is a labelled demonstration, not part of the evaluation numbers. |
-| 3 | **Tool creation** — record, review, test, enable, revoke | **VERIFIED**, UI-driven end to end | `e2e/ui-journey.spec.ts` (only clicks/typing), `e2e/recording.spec.ts`, `e2e/capabilities.spec.ts` (dropdown, checkbox, radio, shadow-DOM button, list, query-string start page; replayed via MCP with different inputs against fixture ground truth; also passes in real Chrome 157) |
-| 4 | **Permission enforcement** — disallowed origins, tools, unapproved actions rejected by code | **VERIFIED** | `e2e/permissions.spec.ts` (ungranted origin, mid-run redirect, tampered definition, policy-violating write, revocation paths); `packages/bridge` integration tests (401/403/pairing/WS origin); `sender.test.ts` |
-| 5 | **Failure handling** — scenarios give appropriate outcomes without false success | **VERIFIED on the synthetic fixture** | `e2e/failures.spec.ts`, `e2e/resilience.spec.ts`; frozen evaluation in `eval/results/` with exact denominators. Fixture-only: says nothing about real sites. |
-| 6 | **Usability** — onboarding, errors, recovery understandable without MCP knowledge | **PARTLY VERIFIED** | Plain-language copy reviewed by the author from screenshots; axe WCAG A/AA clean (light+dark); keyboard tests. **No user test was run** — no real person outside the author has used it. **OWNER:** a small usability session (5 people) before any public release. |
-| 7 | **Packaging** — production extension and bridge versioned, reproducible, documented | **VERIFIED** | `npm run package -- --verify` builds twice from scratch and requires byte-identical ZIP + bridge (see result below). |
-| 8 | **Store preparation** — manifest permissions, privacy disclosures, screenshots, listing match actual behaviour | **PARTLY VERIFIED** | `store/listing.md`, `docs/privacy-policy.md` drafted from the code; permission list generated into `release/permissions-summary.json` from the real manifest. Screenshots are **renders** of the panel page, not window captures. **OWNER:** legal review of the policy, hosting URL, contact, dashboard answers, real window screenshots, name clearance. |
-| 9 | **Evidence** — public claims link to reproducible artifacts and state limitations | **VERIFIED** | README claims → tests/results; `docs/known-limitations.md`; `docs/comparison.md` tags every cell V-doc/V-code/M/U. |
-| 10 | **Ownership** — docs explain the important decisions well enough to defend them | **VERIFIED by existence**, not by an interview | `docs/decisions.md`, `docs/architecture.md`, `docs/threat-model.md`, and "five questions" in the handoff. |
+| 1 | Clean installation: a fresh copy installs, tests, builds, packages and starts | **Verified locally** (Windows 11, Node 24.11) | `node scripts/clean-install-check.mjs`: npm ci, typecheck, tests, build, reproducible package, npm install-and-run check, bridge `/health`, all PASS on 2026-11-14. macOS/Linux: **Prepared but untested** (CI workflow never ran; nothing pushed). |
+| 2 | Core workflow: an MCP client calls an approved tool and gets a verified result | **Verified end to end** | Claude Code 2.1.207 over HTTP and over stdio on public sandboxes (`eval/results/public-sites-*`); SDK client in 64 browser tests. Claude Desktop: **Blocked** (not installed). Cursor: **Blocked** (interface not operable here). |
+| 3 | Tool creation: authorize a site, record, review, test, enable, revoke | **Verified end to end** (recording on public sites) / **Verified locally** (UI-only journey) | `eval:public`; `e2e/ui-journey.spec.ts`, `recording.spec.ts`, `capabilities.spec.ts`, `webapps.spec.ts`, `authorize-site.spec.ts`. Chrome's own permission prompt: **Prepared but untested** (cannot be automated). |
+| 4 | Permission enforcement | **Verified locally** | `permissions.spec.ts` (ungranted site, mid-run redirect, tampered or policy-violating definition, revocation); bridge integration tests (401, Host/Origin, pairing, oversized/malformed/misrouted input); production-build test proves site authorization is reachable. |
+| 5 | Failure handling without false success | **Verified locally** (fixture) | fixture evaluation protocol v2: 170/170 correct, 0 false success, 0 unapproved, 105/105 recovered (`eval/results/fixture-chromium-2026-11-14T06-10-35.*`). Real-site writes: none tested. |
+| 6 | Usability | **Owner** | Getting-started checklist, plain-language errors, axe WCAG A/AA clean (light and dark, 420 px). **No person outside development has used it.** Sheet: `docs/first-time-user-test.md`. |
+| 7 | Packaging | **Verified locally** | `npm run package -- --verify`: extension ZIP, bridge file and npm tarball byte-identical across two clean builds; `npm run package:check`: tarball installs outside the checkout with no dependencies and runs (HTTP + stdio). |
+| 8 | Store preparation | **Prepared but untested** | `store/listing.md` (permission justifications), `docs/privacy-policy.md` (draft). Missing: screenshots (list in `docs/quick-start.md`), hosted policy URL, contact, naming decision. |
+| 9 | Evidence: claims link to reproducible results and state limits | **Verified locally** | README → `docs/public-site-report.md`, `docs/compatibility.md`, `eval/results/`; `docs/known-limitations.md`. |
+| 10 | Licence and attribution | **Verified locally** | MIT `LICENSE`; each artifact carries LICENSE + third-party notices for what it bundles. |
 
-## Verified (with command)
+## Verified commands (2026-11-14)
 
-| Claim | Command |
-|---|---|
-| Types check | `npm run typecheck` |
-| Unit + integration tests pass | `npm test` |
-| Browser tests pass in Playwright Chromium | `npm run test:e2e` |
-| Browser tests pass in the real, branded Chrome on this machine | `ANYMCP_E2E_BROWSER=chrome npm run test:e2e` |
-| Extension reaches the loopback bridge in real Chrome 157 (no Local Network Access block) | `npm run spike:lna` (and `-- --headed`) |
-| Frozen evaluation, fixture | `npm run eval` → `eval/results/fixture-*.md` |
-| External read-only check | `npm run eval:external` → `eval/results/external-books-toscrape-*.md` |
-| Reproducible build | `npm run package -- --verify` |
-| Single-page apps, Enter-to-search, custom dropdowns, self-saving settings with approval | `e2e/webapps.spec.ts` (both browsers) |
-| stdio transport: forwarding, tool-list updates, takeover, clean exit, pairing file | `packages/bridge/test/stdio.integration.test.ts`; `npm run smoke:stdio` |
-| Accessibility (automated), incl. live recording and review editor | `e2e/a11y.spec.ts` |
+| Check | Command | Result |
+|---|---|---|
+| Types | `npm run typecheck` | clean |
+| Unit + integration | `npm test` | 129/129 |
+| Browser suite, Playwright Chromium 158 | `npm run test:e2e` | 64/64 |
+| Browser suite, Google Chrome 157.0.8103.52 | `ANYMCP_E2E_BROWSER=chrome npm run test:e2e` | 64/64 |
+| Fixture evaluation (protocol v2) | `npm run eval` | 170/170 correct |
+| Public sandboxes + Claude Code | `npm run eval:public -- --with-claude` | 7/7 SDK runs equal an independent reading; revocation 3/3; Claude Code HTTP ✓, stdio ✓ |
+| Reproducible package | `npm run package -- --verify` | byte-identical |
+| npm tarball outside the checkout | `npm run package:check` | 7/7 checks |
+| Packaged bridge over stdio | `npm run smoke:stdio` | PASS |
+| Clean checkout | `node scripts/clean-install-check.mjs` | PASSED |
 
-## Unverified (honest list)
+## Not verified (honest list)
 
-* CI on GitHub (never run). macOS and Linux locally. Edge/Firefox. Chrome versions other than 157/158.
-* Any real website beyond one read-only sandbox. Any login-protected site. Any real write workflow.
-* Recording inside **closed** shadow roots; custom (ARIA) dropdowns beyond "two clicks"; sites whose dropdowns/checkboxes save on change (warned, not approval-gated — known-limitations 9a).
-* The Chrome **permission prompt** for "Allow this site" (cannot be automated; test builds pre-grant loopback hosts).
-* The docked **side panel** in a real window (tests render the same page in a tab).
-* Behaviour with Chrome enterprise policies (`LocalNetworkAccessBlockedForUrls`, extension allow/block lists).
-* MCP clients other than the SDK client (HTTP + stdio) and Claude Code — in particular Claude Desktop and Cursor have not been tried.
-* Long-running stability, memory use, many tools (>20), large pages.
-* Screen-reader behaviour; right-to-left or non-English UI.
-* One intermittent browser-test failure seen once (docs/known-limitations.md #17), cause unproven.
+* macOS, Linux, Node 20–23, other Chromium browsers; CI has never run.
+* Claude Desktop, Cursor and other MCP clients.
+* Chrome's "allow this site" prompt and the docked side panel in a real window.
+* Any signed-in website, any write on a real website, any site beyond the three sandboxes.
+* Long-running stability, many tools, very large pages; screen readers; non-English UI.
 * Security: no external review, no fuzzing.
 
-## Owner-required (shortest list first)
+## Owner actions (shortest first)
 
-1. **Decide the name.** Do a proper trademark search — a Class 42 "ANYMCP" registration was reported by third-party sites and **not** verified at the USPTO (`docs/naming-check.md`). Nothing may be published under the name until resolved.
-2. **Choose a licence** (none chosen) and a vulnerability-disclosure address; add `SECURITY.md`.
-3. **Chrome Web Store:** developer account (fee, 2-step verification), host the privacy policy, fill the privacy-practices tab, upload `release/anymcp-extension-0.1.0.zip`, add real screenshots. Expect review questions about the localhost companion and optional broad host permissions.
-4. **Legal review** of `docs/privacy-policy.md`.
-5. **Commit the work** (the repo was initialised but has **no commits**; evaluation results are stamped with a source-tree hash instead of a git revision until then).
-6. **Run it yourself once on your own sites** (read-only first) before anyone else uses it; add the first real-site entry to `docs/supported-capabilities.md`.
-7. Push to a remote so CI runs; fix whatever it finds on a clean machine.
-8. A small **usability session** and, ideally, an independent security review.
+1. **Naming decision.** An unrelated npm package `anymcp` (similar purpose, first published 2026-06) already exists.
+   No trademark search has been done for "AnyMCP". Decide whether to keep the name before publishing anything.
+2. **Security contact:** add an address or enable GitHub private vulnerability reporting (`SECURITY.md`).
+3. **Push** the local commits to `github.com/dilipna/AnyMCP` so CI runs on macOS/Linux/Windows.
+4. **Run the first-time-user test** with 3–5 people; try Claude Desktop or Cursor with the manual test in the sheet.
+5. **Screenshots** (list in `docs/quick-start.md`), host the privacy policy, review it.
+6. **Publish** `@dilipna/anymcp-bridge` (needs an npm account) and, later, submit the extension (developer account).
 
 ## Not done on purpose
 
-Publishing, deploying, buying anything, contacting anyone, uploading private data, creating accounts on external
-sites, submitting forms, sending messages, importing tools from outside the extension, autonomous repair.
+Pushing, publishing, deploying, buying anything, contacting anyone, uploading private data, signing in to sites,
+submitting forms, sending messages, importing tools from outside the extension, autonomous repair.

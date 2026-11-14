@@ -1,5 +1,37 @@
 # Architecture
 
+## The request path
+
+```
+MCP client (your AI app; supplies the model)
+   │  MCP: Streamable HTTP, stateless, 127.0.0.1:47820 + bearer token
+   │   or stdio: the app starts `anymcp-bridge --stdio`, which becomes the bridge or forwards to the running one over that HTTP endpoint
+   ▼
+AnyMCP bridge = THE MCP SERVER (Node, packages/bridge)
+   │  validates arguments against the tool's schema, one run at a time, dedupes, answers honestly if the extension goes silent
+   │  WebSocket 127.0.0.1:47821, Origin must be the extension, first pairing code then HMAC proof per connection
+   ▼
+AnyMCP extension service worker (packages/extension/src/background)
+   │  re-checks: tool enabled, exact tested version (definition hash), policy, site allowed (AnyMCP grant AND Chrome permission), arguments
+   │  opens/reuses a tab it owns on the tool's site; injects the content script there only
+   ▼
+content script in the allowed page: one step at a time; reads values; approval re-checked right before a data-changing action
+   │
+   ▼
+result envelope → extension → bridge → MCP client: status, reason, actionMayHaveOccurred, retry guidance, verification, output, source
+```
+
+* **Who is the MCP server:** the bridge. The extension cannot listen for connections, so it cannot be one.
+* **Who calls a model:** nobody in AnyMCP. The MCP client (your AI app) brings the model and decides when to call a tool.
+* **How tools are defined:** only in the extension, by recording a task and reviewing it (no import, no AI generation).
+  A tool is data in a closed vocabulary of seven operations (`packages/protocol/src/tool.ts`).
+* **How tools are discovered:** when a tool is enabled, the extension sends the bridge a *manifest* (id, title,
+  description, input and output JSON Schema, origins, whether approval is required): never the steps. The bridge lists
+  manifests as MCP tools, plus `anymcp_status` and `anymcp_get_run`. Disabling a tool or removing its site removes it.
+* **Where rules are enforced:** arguments in the bridge *and* again in the extension; enabled/version/site/policy in
+  the extension; "exactly one element" and sensitive-field refusals in the content script; approval binding in the
+  extension and re-checked in the page immediately before the action. MCP tool annotations are hints only.
+
 ## Components
 
 | Component | Where | Responsibility | Trusted with |
@@ -12,7 +44,7 @@
 | **Fixture** | `packages/fixture` | Synthetic "Acme Support Portal" with failure injection and a ground-truth write log. | — |
 
 The two connections are separate on purpose: **MCP (assistant ⇄ bridge)** is HTTP on 127.0.0.1 with a
-bearer token; **extension ⇄ bridge** is an authenticated WebSocket. A compromise or mistake on one does
+bearer token (or stdio through a forwarder that uses that same endpoint); **extension ⇄ bridge** is an authenticated WebSocket. A compromise or mistake on one does
 not grant the other.
 
 ## The tool definition (data, not code)
@@ -106,7 +138,8 @@ declared `maxAttempts` for reads, only before any consequential step.
 * Extension `chrome.storage.session` (memory only): the owned tab id, un-acknowledged results, and an
   in-progress recording (which may hold the example values you typed). Cleared when the browser closes.
 * Bridge `~/.anymcp/state.json` (owner-only on POSIX; user-profile ACL on Windows): pairing secret, MCP token,
-  redacted run records.
+  redacted run records. While no browser is paired, `~/.anymcp/pairing.json` holds the current one-time pairing code
+  (removed once paired and when the bridge stops). A pre-release `~/.mycp` state is copied once on first start.
 * Nothing else is stored. No screenshots, no page contents. Optional diagnostics (off by default) store
   a short outline of control names with digits masked and never field values.
 

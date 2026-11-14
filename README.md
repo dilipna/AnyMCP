@@ -1,118 +1,126 @@
 # AnyMCP
 
-**Turn approved website workflows into reusable AI tools.**
-Teach a workflow, review its permissions, and let your AI assistant run it with verified results.
+*Teach a website task once, review it, and let your AI app run it as an MCP tool.*
 
-AnyMCP is a Chrome extension (**AnyMCP Extension**) plus a small local program (the **bridge**). You teach
-the extension a task on a website once — "find an order", "save a draft note" — review exactly what it
-can read and change, test it, and enable it. Your AI assistant (any MCP client, such as Claude Code) can
-then call it as a typed tool. Every call returns a structured result that says **whether the task really
-worked**, and AnyMCP stops and says so when it is not sure.
+**AnyMCP lets your AI app use website tasks that you teach once in your own Chrome and approve: a Chrome extension
+records the task, and a small local bridge offers it to your AI app as an MCP tool.**
 
-> **Status: release candidate for local use.** It is not published, has not been submitted to the Chrome
-> Web Store, and has been verified only against a synthetic fixture site plus the read-only checks listed
-> in [docs/external-site-report.md](docs/external-site-report.md). See [What AnyMCP does not do](#what-anymcp-does-not-do).
+> **Status: developer beta.** Not published to the Chrome Web Store or npm. Verified on Windows 11 with Chromium 158
+> and Chrome 157, a synthetic test site, and three public scraping sandboxes. It is not production software, has not
+> had a security review, and does not work on every website. See [docs/compatibility.md](docs/compatibility.md).
 
-## Why this exists (and what is *not* new)
+## The problem
 
-Browser-automation servers for AI assistants already exist, and some also record workflows into typed
-tools — see the checked comparison in [docs/comparison.md](docs/comparison.md). AnyMCP does not claim to be
-the first, the most capable, or "state of the art". What it commits to, and tests, is narrower:
+AI apps that speak the [Model Context Protocol](https://modelcontextprotocol.io) (MCP) can call tools, but most
+websites offer no API, and letting a model drive your browser freely is unpredictable and hard to review.
+AnyMCP sits in between: **you** show the extension a task once on a site you choose, review exactly what the
+resulting tool may read and change, test it, and enable it. Your AI app can then call it like any other MCP tool
+and gets back a structured result that says whether the task really worked.
 
-1. **Reviewed tools in your own signed-in Chrome.** A tool is plain data in a closed seven-operation
-   vocabulary (find, fill, click, press Enter, wait, extract, assert) — never downloaded or generated code. You review a
-   summary *derived from the structure* ("runs only on…", "reads…", "may change…", "needs approval…",
-   "success means…"), test the exact version, and only then enable it.
-2. **Honest outcomes.** Distinct statuses: `success`, `empty` (a verified empty result), `unknown_outcome`
-   ("the action may or may not have happened — check the website"), `interrupted` (safe to retry), and more.
-   A click or a successful page load is never proof. An uncertain write is **never** replayed automatically.
-3. **Per-run approval for changes**, shown in the browser, bound to that one run — tool version, target
-   element, arguments and the page values you were shown. If any of them changes, the approval is withdrawn.
+## What it is (and is not)
 
-## How it fits together
+| Part | What it does |
+|---|---|
+| **AnyMCP extension** (Chrome, MV3) | Where tools are recorded, reviewed, tested, enabled and run, in a tab of your own signed-in browser. It is the source of truth for tools, allowed sites and approvals. |
+| **AnyMCP bridge** (Node.js program on your computer) | **The MCP server.** Your AI app connects to it over **HTTP** (127.0.0.1, bearer token) or **stdio** (the app starts it). It relays calls to the extension over an authenticated local WebSocket. Needed because an extension cannot be an MCP server by itself. |
+| **Your AI app** (an MCP client, e.g. Claude Code) | Discovers the enabled tools, calls them, and uses the results. **It supplies the model.** AnyMCP calls no AI model and needs no account or API key. |
+
+**Not** included: an "extension only" mode, automatic tool generation by AI, a hosted service, or a promise that any
+website becomes a reliable API. A tool is a fixed, reviewed recipe (seven operations: find, fill, click, press Enter,
+wait, read, check). If the site changes, the tool stops and says so instead of guessing.
+
+## How a call flows
 
 ```
- AI assistant (MCP client)
-        │  MCP over HTTP, loopback only, bearer token            ← connection 1
-        ▼
-  AnyMCP bridge (Node, 127.0.0.1)  ── validates args, enforces one-run-at-a-time, dedupes, reports honestly
-        │  authenticated WebSocket (pairing code → HMAC)         ← connection 2 (separate)
-        ▼
-  AnyMCP Extension (Chrome MV3)  ── source of truth for tools, permissions, approvals; runs steps in a tab it owns
-        ▼
-  the website (your normal, signed-in session — cookies never leave the browser)
+ AI app (MCP client)           e.g. Claude Code: "list the books in the mystery category"
+      │  MCP over HTTP (127.0.0.1 + bearer token)  or  stdio (the app starts the bridge)
+      ▼
+ AnyMCP bridge (MCP server)    checks arguments against the tool's schema, one run at a time
+      │  authenticated WebSocket (127.0.0.1, paired with a one-time code)
+      ▼
+ AnyMCP extension              tool enabled? site still allowed? definition unchanged?
+      │  opens/reuses a tab it owns, on that site only
+      ▼
+ the website you allowed       the steps run; the result is read from the page and verified
+      │
+      ▼  structured result: status, verification, the values read (marked untrusted), source address
+ back to the AI app            (and to its model provider, under that provider's policy)
 ```
 
-Details: [docs/architecture.md](docs/architecture.md) · [docs/threat-model.md](docs/threat-model.md) ·
-[docs/decisions.md](docs/decisions.md).
+Details: [docs/architecture.md](docs/architecture.md) · data handling: [docs/privacy-policy.md](docs/privacy-policy.md).
 
-## Install and run (Windows, macOS, Linux)
+## Demonstrated use case
 
-Requirements: **Node.js ≥ 20.19**, **Chrome ≥ 116**. No account, API key or paid service is needed.
+Read-only lookups on public pages, recorded through the real recorder and then called from MCP clients
+([report](docs/public-site-report.md), raw results in [eval/results/](eval/results/)):
+
+* **"Books in a category"** on `books.toscrape.com`: the category is part of the address; every result comes back
+  as `{ text, url }` with the book's link. Claude Code (HTTP) returned the right titles and exact URLs.
+* **"Search hockey team seasons"** on `scrapethissite.com`: a search whose words are in the address; results are
+  table rows. Claude Code returned the right rows over **stdio** through the packaged bridge.
+* **"Quotes on a page"** on `quotes.toscrape.com/js/`: the page draws its content with JavaScript after loading.
+
+All seven SDK-client runs equalled an independent reading of the same page. That shows these pages work today; it
+says nothing about other sites.
+
+## Quick start (from source, about 10 minutes)
+
+Requirements: **Chrome ≥ 116**, **Node.js ≥ 20.19**, git. No account or paid service.
 
 ```bash
-git clone <this repository> anymcp && cd anymcp
+git clone https://github.com/dilipna/AnyMCP anymcp && cd anymcp
 npm ci
-npm run build            # builds the extension (packages/extension/dist/prod) and the bridge bundle
-npm run bridge           # starts the bridge; prints a pairing code and your client command
+npm run build          # builds the extension (packages/extension/dist/prod) and the bridge
+npm run bridge         # starts the bridge; prints a pairing code and how to connect your AI app
 ```
 
-1. **Load the extension:** open `chrome://extensions`, turn on *Developer mode*, choose *Load unpacked*, and
-   select `packages/extension/dist/prod`. Click the AnyMCP toolbar icon to open the side panel.
-2. **Pair:** in the side panel enter the 8-digit code the bridge printed. (Single use; expires in 10 minutes.)
-3. **Connect your assistant:** the side panel (*Settings → Show the client command*) and the bridge terminal
-   both show what to paste:
-   * **Claude Code** (and other apps that connect over HTTP):
-     `claude mcp add --transport http anymcp http://127.0.0.1:47820/mcp --header "Authorization: Bearer <token>"`
-   * **Apps that start MCP servers themselves** (stdio): an `mcpServers` entry that runs
-     `node <path>/anymcp-bridge.mjs --stdio`. No token is needed. The app then starts AnyMCP for you; if a bridge is
-     already running it shares it, so several apps can use one browser connection.
-4. **Teach a tool:** open the website, then *Teach → choose the tab → Allow this site → Start recording*.
-   Do the task once, use *Pick a value* / *Mark a message*, stop, review, save, test, enable.
+1. **Install the extension:** `chrome://extensions` → *Developer mode* → *Load unpacked* →
+   `packages/extension/dist/prod`. Click the AnyMCP toolbar icon to open the side panel.
+2. **Pair:** in the side panel enter the 8-digit code the bridge printed.
+3. **Connect your AI app:** *Settings → Show the client command*. Claude Code: run the printed
+   `claude mcp add --transport http anymcp … --header "Authorization: Bearer …"`. Apps that start MCP servers
+   themselves (stdio): paste the printed `mcpServers` entry.
+4. **Allow a website:** *Teach → Allow a website* → paste its address (e.g. `https://books.toscrape.com`) →
+   confirm Chrome's prompt.
+5. **Try a read-only task:** open the site, *Start recording*, *Pick a list* on the results, *Mark a message* on
+   something that proves the page loaded, stop, review, test, enable. Then ask your AI app to use the tool.
 
-Try it without any real website: `npm run dev` starts the synthetic **Acme Support Portal** fixture and the
-bridge together (see [docs/demo-script.md](docs/demo-script.md)).
+The home screen's **Getting started** checklist shows which of these steps are done. Step by step:
+[docs/quick-start.md](docs/quick-start.md). Something wrong: [docs/troubleshooting.md](docs/troubleshooting.md).
 
-Trouble? [docs/troubleshooting.md](docs/troubleshooting.md).
+**Stop / update / uninstall:** Ctrl+C stops the bridge (a stdio bridge stops when its app quits). Update with
+`git pull && npm ci && npm run build`, then reload the extension. Uninstall: remove the extension, remove `anymcp`
+from your AI app's MCP settings, delete `~/.anymcp` (pairing secret and client token).
+
+## Safety model in one paragraph
+
+You allow sites one at a time (Chrome asks you to confirm); a tool only runs on its own site, only when enabled,
+and only the exact version you tested. Tools that change data ask for approval **in the browser on every run**,
+bound to the exact action and page values; a write is never repeated automatically, and an uncertain one is
+reported as `unknown_outcome`. Password and payment fields are never recorded, read or filled. Page text returned
+to your AI app is marked untrusted. Details and the limits of all this: [docs/threat-model.md](docs/threat-model.md).
 
 ## Commands
 
 | command | does |
 |---|---|
-| `npm run build` | build extension (prod) + bridge bundle |
-| `npm run bridge` | run the local bridge |
-| `npm run dev` | fixture site + bridge + e2e extension build for development |
-| `npm test` | unit and integration tests (protocol, policy, bridge, approvals) |
-| `npm run test:e2e` | browser tests: real Chromium + built extension + bridge + MCP client |
-| `ANYMCP_E2E_BROWSER=chrome npm run test:e2e` | the same suite in your real, branded Chrome |
-| `npm run eval` | frozen evaluation (see [docs/evaluation-protocol.md](docs/evaluation-protocol.md)) |
-| `npm run package` | reproducible, versioned extension ZIP + bridge bundle in `release/` |
-| `npm run smoke:stdio` | after `npm run build`: drive the packaged bridge over stdio with the official MCP SDK client |
+| `npm run build` | build the extension (production) and the bridge |
+| `npm run bridge` | run the bridge from source |
+| `npm test` | unit and integration tests |
+| `npm run test:e2e` | browser tests: real Chromium + built extension + bridge + MCP client (`ANYMCP_E2E_BROWSER=chrome` for branded Chrome) |
+| `npm run eval` | frozen evaluation on the synthetic fixture |
+| `npm run eval:public` | read-only validation on three public sandboxes (`-- --with-claude` also drives Claude Code) |
+| `npm run package` | reproducible extension ZIP + npm package of the bridge in `release/` (nothing is published) |
+| `npm run package:check` | install the packed bridge outside the checkout and run it |
 
-## What AnyMCP does not do
+## Documentation
 
-* **It does not work on every website.** It handles pages built from standard buttons, links, text fields,
-  dropdowns, checkboxes, option buttons, lists and tables in the top document, including web components (shadow
-  DOM). Not supported: iframes, rich-text editors, file uploads, CAPTCHAs, drag-and-drop, canvas-only apps,
-  multi-factor prompts. It never signs in for you. → [docs/supported-capabilities.md](docs/supported-capabilities.md)
-* **It cannot promise exactly-once side effects.** Browsers and networks can re-send requests (observed
-  during development). AnyMCP never re-clicks or re-submits on its own and verifies results by re-reading the
-  page. → [docs/known-limitations.md](docs/known-limitations.md)
-* **It cannot stop an AI model from being fooled by text on a web page.** It returns page text as *data*,
-  labelled untrusted, and guarantees only that AnyMCP's own permission boundaries cannot be widened by it.
-* **It is not security-audited, and it makes no claim of perfect reliability or complete security.**
-* **It is not on the Chrome Web Store.** A store-ready package and listing draft exist (`store/`); approval
-  is not claimed and cannot be until Google grants it.
+[docs/index.md](docs/index.md) lists everything. Most useful: [compatibility](docs/compatibility.md) ·
+[known limitations](docs/known-limitations.md) · [architecture](docs/architecture.md) ·
+[privacy policy draft](docs/privacy-policy.md) · [security](SECURITY.md) · [naming check](docs/naming-check.md).
 
-## Evidence
+## Licence
 
-Every claim above is backed by a test or a measurement you can re-run:
-[docs/release-checklist.md](docs/release-checklist.md) separates what is **verified**, **unverified** and
-**owner-required**. Evaluation results (with exact denominators, environment and failures) are in `eval/results/`.
-
-## Name
-
-"AnyMCP" is the product name chosen by the project owner. A public-name check found conflicts (an existing npm
-package, a registered-looking Class 42 mark that was not verified at the USPTO, several products using the
-acronym). All packages here are `private`. Read [docs/naming-check.md](docs/naming-check.md) before any
-publication or store listing.
+MIT for the original code ([LICENSE](LICENSE)). Bundled third-party code keeps its own licences; `npm run package`
+writes the notices into each artifact. "AnyMCP" was renamed from the pre-release name "MyCP"; an unrelated npm
+package named `anymcp` already exists (see the naming check).

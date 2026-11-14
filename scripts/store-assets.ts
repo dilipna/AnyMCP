@@ -39,7 +39,7 @@ p{font-size:22px;line-height:1.45;margin:0;color:#dbe6ff;max-width:560px}
 const promo = `<!doctype html><meta charset="utf-8"><style>
 body{margin:0;width:440px;height:280px;font-family:system-ui,"Segoe UI",sans-serif;color:#fff;background:linear-gradient(135deg,#0b57d0,#14213d);display:flex;flex-direction:column;justify-content:center;padding:0 34px;gap:12px}
 img{width:64px;height:64px} h1{margin:0;font-size:34px;font-weight:800} p{margin:0;font-size:17px;line-height:1.35;color:#dbe6ff}</style>
-<img src="${icon}"><h1>AnyMCP Extension</h1><p>Turn approved website workflows into reusable AI tools.</p>`;
+<img src="${icon}"><h1>AnyMCP Extension</h1><p>Teach a website task once, review it, and let your AI app run it as an MCP tool.</p>`;
 
 for (const s of slides) if (!existsSync(raw(s.src))) throw new Error(`missing ${raw(s.src)} — run: npm run screenshots`);
 const browser = await chromium.launch();

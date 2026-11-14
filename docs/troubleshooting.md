@@ -13,6 +13,14 @@
    Chrome 157 with default settings we measured no prompt — see `scripts/lna-spike.ts`.) An enterprise policy
    (`LocalNetworkAccessBlockedForUrls`) can block it; ask your administrator.
 
+## "Teach" lists no tabs / I cannot find my site
+
+Chrome only tells AnyMCP the address of a tab on a site you have allowed, so a site you have not allowed yet never
+appears in the list. Use **Teach → Allow a website**: paste the site's address (for example
+`https://books.toscrape.com`), press **Allow this site**, confirm Chrome's prompt, then open or reload the site in a
+tab. Plain `http://` is accepted only for `localhost` / `127.0.0.1`. Tabs that AnyMCP itself uses to run tools are not
+offered for recording.
+
 ## Pairing fails
 
 * *"That pairing code is not correct."* Enter the 8 digits exactly as the bridge printed them (spaces are fine).
@@ -33,6 +41,13 @@
   whether the browser is paired and connected and how many tools are enabled. The app's MCP log shows the bridge's
   messages (they go to stderr). To disconnect such an app, remove `anymcp` from its MCP settings: *Disconnect the AI
   client* rotates the HTTP token, which these apps do not use.
+
+## A tool worked once, then stops with "page does not match"
+
+Look at the tool's **How success is verified** section. A check that contains a number (a result count such as
+"21 items", a date, a price) only matches when that number is the same; the review screen warns about this. Re-record
+and mark a part of the page without numbers. Tools that find elements by layout (CSS, flagged "may break if the site
+changes") stop when the site's markup changes; re-record them.
 
 ## A run says "Stopped safely" / `precondition_failed`
 

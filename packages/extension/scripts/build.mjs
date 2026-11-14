@@ -92,7 +92,7 @@ const manifest = {
   name: target === "e2e" ? "AnyMCP Extension (test build)" : "AnyMCP Extension",
   short_name: "AnyMCP",
   version,
-  description: "Turn approved website workflows into reusable AI tools. You review permissions and approve every change.",
+  description: "Teach a website task once, review it, and let your AI app run it as an MCP tool. Needs the local AnyMCP bridge.",
   minimum_chrome_version: "116",
   icons: { 16: "icons/icon-16.png", 32: "icons/icon-32.png", 48: "icons/icon-48.png", 128: "icons/icon-128.png" },
   action: { default_title: "AnyMCP", default_icon: { 16: "icons/icon-16.png", 32: "icons/icon-32.png" } },

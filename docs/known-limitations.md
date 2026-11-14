@@ -51,6 +51,15 @@ boundaries of what was built and verified.
 14. **English only.**
 15. **Windows file permissions** for `~/.anymcp/state.json` rely on the user-profile ACL (no `chmod`).
 
+9f. **Many real sites offer no semantic handles.** On all three public sandboxes tested, the recorder had to use CSS
+    selectors for the results (flagged "may break if the site changes"). Such tools stop when the markup changes.
+9g. **Some sites refuse automated browsing.** Wikipedia answered HTTP 429 and its robots.txt disallows `/w/`. AnyMCP
+    runs in your browser but in a tab it opens itself; respect each site's terms and robots rules.
+9h. **Link addresses are returned as found** on the page (absolute, http/https only), with user info and
+    credential-looking query parameters (session ids, tokens, keys) removed. Other tracking parameters are kept.
+9i. **Lists and tables are read from the current page only.** There is no "next page" loop (by design: tools have no
+    loops).
+
 ## Evidence
 
 16. **Fixture-only evaluation.** One synthetic site written by the same author as the tool definitions. It is a
@@ -68,4 +77,5 @@ boundaries of what was built and verified.
 
 ## Naming and publication
 
-20. The name "AnyMCP" has public conflicts (see naming-check.md). Nothing here has been published.
+20. The name "AnyMCP" has a live conflict: an unrelated npm package `anymcp` does something similar (see
+    naming-check.md). Nothing here has been published.

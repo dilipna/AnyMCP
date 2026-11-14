@@ -19,12 +19,13 @@ it's that I review what it's allowed to do, and it tells me honestly whether it 
 
 ## 0:20 — Connect (20 s)
 
-Side panel → type the pairing code → **Connected**. "Two separate links: the assistant talks to a local bridge,
+Side panel → type the pairing code → **Bridge connected**; the **Getting started** checklist ticks step 1. "Two separate links: the assistant talks to a local bridge,
 the bridge talks to this extension, and everything stays on this computer."
 
 ## 0:40 — Teach a workflow (45 s)
 
-*Teach* → choose the portal tab → **Allow this site** (Chrome's own prompt) → **Start recording**.
+*Teach* → **Allow a website** → `http://127.0.0.1:4173` → **Allow this site** (Chrome's own prompt; Chrome only
+lets AnyMCP see a tab's address once its site is allowed) → the portal tab appears → **Start recording**.
 In the page: click *Order ID*, type `A-1012`, click *Search*, click the order link.
 Panel: **Pick a value** on the *status*, **Pick a value** on the *customer*, **Mark a message** on the order id.
 **Stop recording → Review the tool.**
@@ -32,7 +33,7 @@ Say: "Everything I typed became an input, so no typed value is saved."
 
 ## 1:25 — Review, test, enable (40 s)
 
-Show the **At a glance** grid: *runs only on* the portal, *reads* 2 values, *may change* "typing only", *approval* not needed.
+Show the **At a glance** grid: *runs only on* the portal, *reads* 2 values, *may change* "Fills in fields only", *approval* not needed.
 Open **How success is verified**: "It must see the order id on the page equal to the one asked for — a click isn't proof."
 Name it, **Save**, open it, **Run test** with `A-1013`. Point at the verified result. **Enable for my AI assistant.**
 
@@ -51,6 +52,14 @@ exact action, the customer and status read from the page, "this one run only".
 
 Close: "If AnyMCP can't tell what happened it says **unknown outcome** and never repeats the action. Revoke everything is one button."
 
+## Variant on a public site (read-only, no fixture)
+
+Allow `https://books.toscrape.com`, open a category page, **Start recording**, **Pick a list** on one title (it
+matches all 20, as links), **Mark a message** on the yellow demo-site warning, stop, and in review press the
+`travel_2` part of **Start page** to make the category an input. Test, enable, then ask the AI app: "List the books
+in the mystery_3 category with links." Each result has its URL. Say: "This shows these pages work today. It does not
+mean every site will."
+
 ## Automated variant (real client, no human)
 
 `npx tsx scripts/demo-claude.ts [--chrome]` drives Claude Code (`claude -p`) against the bridge and the fixture
@@ -64,3 +73,4 @@ demonstration, not part of the evaluation numbers.
 * Panel says **Bridge offline** → the bridge isn't running (see troubleshooting.md).
 * The prompt didn't appear → the tool is not enabled, or the site isn't allowed (Settings → Allowed sites).
 * Chrome shows nothing after **Allow this site** → click the button again; the prompt needs a click inside the panel.
+* The tab is not listed under **Teach** → its site is not allowed yet: use **Allow a website** first.
