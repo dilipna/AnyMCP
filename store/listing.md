@@ -1,7 +1,7 @@
 # Chrome Web Store listing — DRAFT (not submitted, not approved)
 
-> Nothing here has been submitted, and no approval exists. Before submitting, decide the name: an unrelated npm
-> package called `anymcp` already exists (`docs/naming-check.md`). Items in [BRACKETS] are owner tasks.
+> Nothing here has been submitted, and no approval exists. The owner decided to keep the name "AnyMCP" although an
+> unrelated npm package called `anymcp` exists (`docs/naming-check.md`). Items in [BRACKETS] are owner tasks.
 
 ## Item
 

@@ -77,5 +77,5 @@ boundaries of what was built and verified.
 
 ## Naming and publication
 
-20. The name "AnyMCP" has a live conflict: an unrelated npm package `anymcp` does something similar (see
-    naming-check.md). Nothing here has been published.
+20. The name "AnyMCP" has a live conflict: an unrelated npm package `anymcp` does something similar. The owner kept
+    the name; the bridge is prepared as `@dilipna/anymcp-bridge` (see naming-check.md). Nothing has been published.

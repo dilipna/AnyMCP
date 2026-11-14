@@ -31,7 +31,7 @@ pushed). Commits use the owner's GitHub no-reply identity.
 | Clean checkout | `node scripts/clean-install-check.mjs` | PASSED |
 
 ## Next (needs the owner — see docs/release-checklist.md)
-1. Naming decision (unrelated npm `anymcp` exists; no trademark search done). 2. Security contact. 3. Push → CI.
+1. ~~Naming~~ decided: keep AnyMCP (npm `@dilipna/anymcp-bridge`). 2. Security contact. 3. Push → CI.
 4. First-time-user test incl. Claude Desktop/Cursor. 5. Screenshots, hosted privacy policy. 6. Publish npm, then store.
 
 ## Decisions that matter (docs/decisions.md)

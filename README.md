@@ -122,5 +122,6 @@ to your AI app is marked untrusted. Details and the limits of all this: [docs/th
 ## Licence
 
 MIT for the original code ([LICENSE](LICENSE)). Bundled third-party code keeps its own licences; `npm run package`
-writes the notices into each artifact. "AnyMCP" was renamed from the pre-release name "MyCP"; an unrelated npm
-package named `anymcp` already exists (see the naming check).
+writes the notices into each artifact. "AnyMCP" was renamed from the pre-release name "MyCP". It is not related to
+the npm package named `anymcp`; this project's bridge will be published as `@dilipna/anymcp-bridge`
+(see the [naming check](docs/naming-check.md)).

@@ -45,8 +45,8 @@ Store.** Labels: **Verified end to end** · **Verified locally** · **Mock-teste
 
 ## Owner actions (shortest first)
 
-1. **Naming decision.** An unrelated npm package `anymcp` (similar purpose, first published 2026-06) already exists.
-   No trademark search has been done for "AnyMCP". Decide whether to keep the name before publishing anything.
+1. ~~Naming decision~~ **decided 2026-11-14: keep "AnyMCP"** (publish the bridge as `@dilipna/anymcp-bridge`; an
+   unrelated npm package `anymcp` exists; a trademark search is still advisable, see `docs/naming-check.md`).
 2. **Security contact:** add an address or enable GitHub private vulnerability reporting (`SECURITY.md`).
 3. **Push** the local commits to `github.com/dilipna/AnyMCP` so CI runs on macOS/Linux/Windows.
 4. **Run the first-time-user test** with 3–5 people; try Claude Desktop or Cursor with the manual test in the sheet.
