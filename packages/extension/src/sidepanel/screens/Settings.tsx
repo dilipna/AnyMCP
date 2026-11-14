@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { TabCandidate } from "../../shared/panel-api";
 import type { PanelState } from "../../shared/types";
 import { call } from "../api";
+import { AllowSiteForm } from "../AllowSite";
 import { Banner, originLabel } from "../ui";
 import { Connect } from "./Connect";
 
@@ -49,6 +50,12 @@ function AllowedSites({ state }: { state: PanelState }) {
         </ul>
       )}
       {err && <Banner tone="bad">{err}</Banner>}
+      <details>
+        <summary>Allow a website</summary>
+        <div style={{ marginTop: 8 }}>
+          <AllowSiteForm idPrefix="settings" onAllowed={load} />
+        </div>
+      </details>
       {candidates.length > 0 && (
         <details>
           <summary>Allow a site you have open</summary>

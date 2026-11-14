@@ -4,7 +4,8 @@ import { buildDraft, parameterizeLocator, partlyParameterized, type DraftOutput,
 import type { TabCandidate } from "../../shared/panel-api";
 import type { PanelState, RecordedStepView } from "../../shared/types";
 import { call } from "../api";
-import { Banner, Empty, Field, originLabel } from "../ui";
+import { AllowSiteForm } from "../AllowSite";
+import { Banner, Field, originLabel } from "../ui";
 import { ReviewCard } from "./Tools";
 
 const snake = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "").replace(/^[0-9]+/, "").slice(0, 40);
@@ -33,9 +34,13 @@ const SIGNAL_LABEL: Record<SignalKind, string> = {
 // ----------------------------------------------------------------------------------- tab picker
 function TabPicker() {
   const [tabs, setTabs] = useState<TabCandidate[] | null>(null);
+  const [hidden, setHidden] = useState(0);
   const [err, setErr] = useState<string | null>(null);
 
-  const load = () => void call<TabCandidate[]>({ type: "tabs.candidates" }).then((r) => r.ok && setTabs(r.data ?? []));
+  const load = () => {
+    void call<TabCandidate[]>({ type: "tabs.candidates" }).then((r) => r.ok && setTabs(r.data ?? []));
+    void call<number>({ type: "tabs.hidden" }).then((r) => r.ok && setHidden(r.data ?? 0));
+  };
   useEffect(() => {
     load();
     window.addEventListener("focus", load);
@@ -69,29 +74,43 @@ function TabPicker() {
         </ul>
       </div>
       {err && <Banner tone="bad">{err}</Banner>}
-      {tabs === null ? (
-        <p className="muted">Looking at your open tabs…</p>
-      ) : tabs.length === 0 ? (
-        <Empty title="No web pages open">Open the website you want to teach, then come back to this panel.</Empty>
-      ) : (
-        <ul className="plain">
-          {tabs.map((t) => (
-            <li key={t.tabId} className="card flat">
-              <div className="row between">
-                <div style={{ minWidth: 0 }}>
-                  <strong style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</strong>
-                  <small className="muted">{originLabel(t.origin)}</small>
+
+      <div className="card">
+        <h3>Tabs on sites you allowed</h3>
+        {tabs === null ? (
+          <p className="muted">Looking at your open tabs…</p>
+        ) : tabs.length === 0 ? (
+          <p className="muted">None yet. Allow the website below, then open it in a tab.</p>
+        ) : (
+          <ul className="plain">
+            {tabs.map((t) => (
+              <li key={t.tabId} className="card flat">
+                <div className="row between">
+                  <div style={{ minWidth: 0 }}>
+                    <strong style={{ display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.title}</strong>
+                    <small className="muted">{originLabel(t.origin)}</small>
+                  </div>
+                  {t.allowed ? (
+                    <button type="button" className="btn primary small" onClick={() => void start(t.tabId)}>Start recording</button>
+                  ) : (
+                    <button type="button" className="btn small" onClick={() => void allow(t.origin)}>Allow this site</button>
+                  )}
                 </div>
-                {t.allowed ? (
-                  <button type="button" className="btn primary small" onClick={() => void start(t.tabId)}>Start recording</button>
-                ) : (
-                  <button type="button" className="btn small" onClick={() => void allow(t.origin)}>Allow this site</button>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+              </li>
+            ))}
+          </ul>
+        )}
+        {hidden > 0 && (
+          <small className="muted">
+            {hidden} other tab{hidden === 1 ? " is" : "s are"} open on sites you have not allowed. Chrome does not show AnyMCP their addresses until you allow the site.
+          </small>
+        )}
+      </div>
+
+      <div className="card">
+        <h3>Allow a website</h3>
+        <AllowSiteForm idPrefix="teach" onAllowed={load} />
+      </div>
     </div>
   );
 }

@@ -26,7 +26,7 @@ test("connect and pair using the on-screen steps only", async () => {
   // the right code (spaces allowed) pairs
   await p.getByLabel("Pairing code").fill(`${s.bridge.pairingCode().slice(0, 4)} ${s.bridge.pairingCode().slice(4)}`);
   await p.getByRole("button", { name: "Pair", exact: true }).click();
-  await expect(p.getByText("Connected", { exact: true }).first()).toBeVisible({ timeout: 10_000 });
+  await expect(p.getByText("Bridge connected", { exact: true }).first()).toBeVisible({ timeout: 10_000 });
   expect((await s.state()).conn.paired).toBe(true);
 });
 

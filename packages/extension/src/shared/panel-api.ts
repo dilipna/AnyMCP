@@ -29,6 +29,8 @@ export type PanelRequest =
   | { type: "settings.update"; settings: Partial<Settings> }
   | { type: "tab.show" }
   | { type: "tabs.candidates" }
+  /** How many tabs in this window are on sites AnyMCP may not access (Chrome hides their address from it). */
+  | { type: "tabs.hidden" }
   | { type: "record.start"; tabId: number }
   | { type: "record.stop" }
   | { type: "record.discard" }

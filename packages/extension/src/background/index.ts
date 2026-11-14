@@ -323,6 +323,10 @@ async function handlePanel(req: PanelRequest): Promise<PanelResponse> {
       }
       return ok(out);
     }
+    case "tabs.hidden": {
+      const tabs = await chrome.tabs.query({ currentWindow: true });
+      return ok(tabs.filter((t) => !t.url && !t.pendingUrl).length);
+    }
     case "record.start": {
       if (orchestrator.active) return fail("Wait for the running tool to finish before recording.");
       if (Object.values(await getOwnedTabs()).includes(req.tabId)) return fail("That is a tab AnyMCP uses to run tools. Open the website in a tab of your own and record there.");

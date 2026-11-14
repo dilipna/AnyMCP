@@ -6,6 +6,7 @@ import { Record } from "./screens/Record";
 import { Runs } from "./screens/Runs";
 import { Settings } from "./screens/Settings";
 import { Tools } from "./screens/Tools";
+import { SetupChecklist } from "./Setup";
 import { Loading } from "./ui";
 
 type View = "tools" | "record" | "runs" | "settings";
@@ -32,7 +33,13 @@ export function App() {
 
   const c = state.conn;
   const connPill =
-    c.state === "connected" ? { cls: "ok", text: "Connected" } : c.state === "connecting" ? { cls: "warn", text: "Connecting…" } : c.state === "unpaired" ? { cls: "", text: "Not connected" } : { cls: "bad", text: "Bridge offline" };
+    c.state === "connected"
+      ? { cls: "ok", text: "Bridge connected" }
+      : c.state === "connecting"
+        ? { cls: "warn", text: "Connecting to bridge…" }
+        : c.state === "unpaired"
+          ? { cls: "", text: "Bridge not paired" }
+          : { cls: "bad", text: "Bridge offline" };
   const awaiting = !!state.approval;
 
   return (
@@ -85,6 +92,7 @@ export function App() {
                 <button type="button" className="btn small" onClick={() => void call({ type: "reconnect" })}>Reconnect now</button>
               </div>
             )}
+            {!selected && <SetupChecklist state={state} nav={{ record: () => setView("record"), settings: () => setView("settings") }} />}
             <Tools state={state} selected={selected} setSelected={setSelected} goRecord={() => setView("record")} />
           </>
         )}
