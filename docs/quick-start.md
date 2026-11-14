@@ -63,7 +63,7 @@ enabled. The checklist's "Connect your AI assistant" step turns green after your
 ## 5. Allow a website
 
 AnyMCP can only use sites you allow, one at a time, and Chrome only lets it see the address of a tab once the site
-is allowed.
+is allowed. The home screen's **This site** card always says where you stand on the tab in front of you.
 
 **Teach → Allow a website** → paste the site's address, for example `https://books.toscrape.com` (a public sandbox
 made for scraping practice) → **Allow this site** → confirm Chrome's prompt. It is allowed on every page of that site

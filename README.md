@@ -85,7 +85,8 @@ npm run bridge         # starts the bridge; prints a pairing code and how to con
 5. **Try a read-only task:** open the site, *Start recording*, *Pick a list* on the results, *Mark a message* on
    something that proves the page loaded, stop, review, test, enable. Then ask your AI app to use the tool.
 
-The home screen's **Getting started** checklist shows which of these steps are done. Step by step:
+The home screen's **Getting started** checklist shows which of these steps are done, and its **This site** card
+says what AnyMCP may do on the tab you are looking at (or that it cannot see that site at all). Step by step:
 [docs/quick-start.md](docs/quick-start.md). Something wrong: [docs/troubleshooting.md](docs/troubleshooting.md).
 
 **Stop / update / uninstall:** Ctrl+C stops the bridge (a stdio bridge stops when its app quits). Update with
