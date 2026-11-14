@@ -86,3 +86,26 @@ Each entry: the decision, the alternatives rejected, the reason, and the cost.
 ### D13. Defaults that favour doing less
 * One run at a time; busy ⇒ refuse. Reads may retry (declared, bounded, pre-commit); writes never.
   Tools disabled on any edit until re-tested. Unknown things are reported as unknown.
+
+### D14. A site is allowed from an address the person types, not from tab access
+* **Rejected:** the `tabs` permission (Chrome warns "read your browsing history"); `activeTab` (its grant when the
+  side panel opens from the toolbar could not be verified in automation); declared content scripts on all sites.
+* **Why:** Chrome hides a tab's address from an extension without host access, so the production build could not
+  offer "sites you have open" at all (this was a real defect, masked in tests by pre-granted localhost). Naming the
+  site explicitly is the smallest permission, and it is the person's clear choice of one exact origin.
+* **Cost:** one extra step (paste the address, confirm Chrome's prompt). The "This site" card explains which tabs
+  AnyMCP cannot see and why.
+
+### D15. Results carry their source; read-only page tools are allowed
+* **Why:** a tool's output is only useful to an AI app if it can be checked. Every envelope has the page's origin and
+  path; list and value results can also carry each item's link (`{ text, url }`), with user info and
+  credential-looking query parameters removed. A tool may have no recorded action and only read the page it opens
+  (a search address with the query in it): these were the most reliable tools on real sites.
+* **Cost:** link URLs keep other query parameters (tracking ones included), as found on the page.
+
+### D16. stdio is a forwarder onto the one HTTP bridge
+* **Why:** apps that launch MCP servers each start their own process, but only one process can own the browser
+  connection. `--stdio` becomes the bridge, forwards to the running one, or takes over when it stops, and only
+  retries a call that certainly did not run. Every tool is served by the same HTTP handler.
+* **Cost:** a second process hop for stdio apps; a stdio app reads the token from `~/.anymcp` (same trust boundary as
+  any program of the user).

@@ -344,6 +344,25 @@ describe("disconnection and interruption", () => {
   });
 });
 
+describe("many tools", () => {
+  it("40 enabled tools are all listed with their schemas, and a call reaches the right one", async () => {
+    const ext = await pairedExtension(bridge);
+    const base = makeFindOrderTool();
+    const defs = Array.from({ length: 40 }, (_, i) => ({ ...base, id: `find_order_${String(i).padStart(2, "0")}`, title: `Find order ${i}` }));
+    await ext.syncTools(defs);
+    const client = await mcpClient(bridge);
+    const { tools } = await client.listTools();
+    const mine = tools.filter((t) => t.name.startsWith("find_order_"));
+    expect(mine).toHaveLength(40);
+    expect(mine.every((t) => t.inputSchema && t.outputSchema)).toBe(true);
+    const pending = client.callTool({ name: "find_order_37", arguments: { order_id: "A-1042" } });
+    const req = await ext.waitFor("run.request");
+    expect(req.toolId).toBe("find_order_37");
+    ext.send({ type: "run.result", envelope: okEnvelope(req.executionId, { id: "find_order_37", version: 1 }, { found: true, order_id: "A-1042", customer: "Test Customer 42", status: "Shipped", total: 128.4, placed: "2026-10-03" }) });
+    expect(((await pending).structuredContent as unknown as ResultEnvelope).tool.id).toBe("find_order_37");
+  });
+});
+
 describe("malformed, oversized and misrouted input", () => {
   it("an over-limit MCP request body is refused with 413, and the bridge keeps serving", async () => {
     const status = await new Promise<number>((resolve, reject) => {

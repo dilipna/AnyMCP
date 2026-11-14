@@ -6,7 +6,7 @@
 records the task, and a small local bridge offers it to your AI app as an MCP tool.**
 
 > **Status: developer beta.** Not published to the Chrome Web Store or npm. Verified on Windows 11 with Chromium 158
-> and Chrome 157, a synthetic test site, and three public scraping sandboxes. It is not production software, has not
+> and Chrome 157, on a synthetic test site and three public scraping sandboxes, with Claude Code as a real client. It is not production software, has not
 > had a security review, and does not work on every website. See [docs/compatibility.md](docs/compatibility.md).
 
 ## The problem

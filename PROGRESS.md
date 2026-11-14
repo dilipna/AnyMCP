@@ -23,10 +23,10 @@ pushed). Commits use the owner's GitHub no-reply identity.
 ## Verified (2026-11-14; re-run to confirm)
 | Check | Command | Result |
 |---|---|---|
-| Typecheck / unit + integration | `npm run typecheck` / `npm test` | clean / 129 pass |
-| Browser suite | `npm run test:e2e` (Chromium 158) and `ANYMCP_E2E_BROWSER=chrome` (Chrome 157.0.8103.52) | 64/64 each |
+| Typecheck / unit + integration | `npm run typecheck` / `npm test` | clean / 133 pass |
+| Browser suite | `npm run test:e2e` (Chromium 158) and `ANYMCP_E2E_BROWSER=chrome` (Chrome 157.0.8103.52) | 65/65 each |
 | Fixture evaluation | `npm run eval` | 170/170, 0 false success, 0 unapproved |
-| Public sites | `npm run eval:public -- --with-claude` | 7/7 equal independent reading; Claude Code HTTP + stdio ✓ |
+| Public sites | `npm run eval:public -- --with-claude` (Chromium) and `-- --chrome` | 7/7 equal independent reading in both; Claude Code HTTP + stdio ✓ |
 | Packaging | `npm run package -- --verify`, `npm run package:check` | reproducible; tarball installs and runs outside the checkout |
 | Clean checkout | `node scripts/clean-install-check.mjs` | PASSED |
 

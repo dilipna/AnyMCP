@@ -1,8 +1,9 @@
 # Public-site validation report
 
 **Scope:** three public sandboxes published for scraping practice, a few inputs each, on 2026-11-14, Windows 11,
-Playwright Chromium 158. Read-only: pages are opened by address and read; no form is submitted, no account used, no
-message sent. About 25 page loads, paced. Raw results: `eval/results/public-sites-2026-11-14T05-49-41.{md,json}`.
+Playwright Chromium 158 (with Claude Code) and, separately, Google Chrome 157.0.8103.52 (SDK client only). Read-only: pages are opened by address and read; no form is submitted, no account used, no
+message sent. About 25 page loads, paced. Raw results: `eval/results/public-sites-2026-11-14T05-49-41.{md,json}` (Chromium + Claude Code) and
+`eval/results/public-sites-2026-11-14T06-45-27.{md,json}` (Chrome).
 Re-run with `npm run eval:public` (add `-- --with-claude` to include Claude Code).
 
 **What this shows:** the whole workflow (record → review → test → enable → call from an MCP client) works on these
@@ -31,6 +32,7 @@ automated. In the product, the person uses **Allow a website** and confirms Chro
 | quotes.toscrape.com/js | content drawn by JavaScript after load; page number in the path | `quotes_page` | CSS `span.text` | page 3 (10), page 5 (10) | yes, 20/20 |
 
 * Removing each site removed its tool from the client (3/3).
+* The same 7 runs and 3 revocations also passed in branded Google Chrome 157.0.8103.52.
 * **Claude Code** (`claude -p`, version 2.1.207): `books_in_category` over **HTTP** returned the right two titles
   with their exact URLs; `hockey_team_search` over **stdio** (packaged bridge, forwarding) returned the right rows.
   The bridge recorded the callers as "claude-code" and "claude-code (via stdio)".
