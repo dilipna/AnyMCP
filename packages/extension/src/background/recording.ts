@@ -162,7 +162,7 @@ export class RecordingManager {
       if (same) rec.steps[rec.steps.length - 1] = step;
       else insertInOrder(rec.steps, step);
     } else if (event.t === "press") {
-      insertInOrder(rec.steps, { seq: event.seq, kind: "press", label: event.targetLabel, locator: event.locator, quality: event.quality, effect: "ui" });
+      insertInOrder(rec.steps, { seq: event.seq, kind: "press", label: event.targetLabel, locator: event.locator, quality: event.quality, effect: event.effectGuess ?? "ui" });
     } else {
       insertInOrder(rec.steps, {
         seq: event.seq,

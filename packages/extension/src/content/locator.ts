@@ -22,6 +22,11 @@ export type Args = Record<string, unknown>;
  */
 export const PRIVATE_AREA = "[data-anymcp-ignore],[data-mycp-ignore]";
 
+/** The root of a rich text box: an editable element (contenteditable) that is not inside another editable one. */
+export function isEditableRoot(el: Element): el is HTMLElement {
+  return el instanceof HTMLElement && el.isContentEditable && !(el.parentElement?.isContentEditable ?? false);
+}
+
 export const norm = (s: string | null | undefined): string => (s ?? "").replace(/\s+/g, " ").trim();
 
 // ---- shadow-aware DOM helpers -----------------------------------------------
@@ -109,7 +114,7 @@ const ROLE_SET = new Set<string>([
 const IMPLICIT_SELECTOR: Record<Role, string> = {
   button: "button,input[type=button],input[type=submit],input[type=reset],input[type=image]",
   link: "a[href],area[href]",
-  textbox: "input,textarea",
+  textbox: 'input,textarea,[contenteditable]:not([contenteditable="false"])',
   searchbox: "input[type=search]",
   checkbox: "input[type=checkbox]",
   radio: "input[type=radio]",
@@ -143,6 +148,7 @@ export function roleSelector(role: Role): string {
 export function computeRole(el: Element): Role | null {
   const explicit = norm(el.getAttribute("role")).split(" ")[0];
   if (explicit && ROLE_SET.has(explicit)) return explicit as Role;
+  if (isEditableRoot(el)) return "textbox"; // a rich text box behaves as a text box
   const tag = el.tagName.toLowerCase();
   if (tag === "input") {
     const type = ((el as HTMLInputElement).type || "text").toLowerCase();
@@ -239,6 +245,10 @@ export function accessibleName(el: Element, role: Role | null = computeRole(el))
     const ph = norm(el.getAttribute("placeholder"));
     if (ph) return ph;
   }
+  if (isEditableRoot(el)) {
+    const ph = norm(el.getAttribute("aria-placeholder") ?? el.getAttribute("data-placeholder"));
+    if (ph) return ph;
+  }
   if (el instanceof HTMLImageElement) return norm(el.alt);
   if (role && NAME_FROM_CONTENT.has(role)) {
     const t = visibleText(el);
@@ -284,8 +294,9 @@ function resolveLeaf(leaf: LocatorLeaf, args: Args, root: ParentNode): ResolveRe
     case "label": {
       const text = resolveText(leaf.text, args);
       if (text === undefined) return { elements: [], problem: "param_missing" };
-      const controls = deepQueryAll(root, "input,textarea,select").filter((el) => {
+      const controls = deepQueryAll(root, "input,textarea,select,[contenteditable]").filter((el) => {
         if (!isVisible(el)) return false;
+        if (el.hasAttribute("contenteditable") && !isEditableRoot(el)) return false;
         const labels = [...((el as HTMLInputElement).labels ?? [])].map((l) => norm(l.textContent));
         const aria = norm(el.getAttribute("aria-label"));
         return [...labels, aria].some((l) => l && nameMatches(l, text, leaf.exact));

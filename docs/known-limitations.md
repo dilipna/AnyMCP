@@ -59,6 +59,11 @@ boundaries of what was built and verified.
     credential-looking query parameters (session ids, tokens, keys) removed. Other tracking parameters are kept.
 9i. **Lists and tables are read from the current page only.** There is no "next page" loop (by design: tools have no
     loops).
+9j. **Rich text boxes.** Text is entered as plain text (no formatting) and replaces what was there. AnyMCP offers it to
+    the site's editor first (`beforeinput`); an editor that ignores that event, accepts only real (trusted) key events,
+    or handles the event without cancelling it (which could insert the text twice) is not supported. Enter in a rich
+    text box is recorded as **changing data** (it often sends a message), so it needs approval until you mark it as
+    "Searches or moves on".
 
 ## Evidence
 

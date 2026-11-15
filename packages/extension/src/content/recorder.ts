@@ -15,7 +15,7 @@ import type { Locator, LocatorLeaf, Role } from "anymcp-protocol";
 import { isSensitiveField } from "anymcp-protocol/light";
 import { defaultButton, fieldDescriptor, isChecked, linkOf, optionLabel, toggleKind } from "./engine";
 import { showBanner, hideBanner } from "./banner";
-import { PRIVATE_AREA, accessibleName, composedClosest, composedParent, computeRole, deepQueryAll, isVisible, norm, resolveLocator, shadowRootOf, visibleText } from "./locator";
+import { PRIVATE_AREA, accessibleName, composedClosest, isEditableRoot, composedParent, computeRole, deepQueryAll, isVisible, norm, resolveLocator, shadowRootOf, visibleText } from "./locator";
 
 export type PickMode = "text" | "table" | "list" | "success" | null;
 
@@ -30,7 +30,7 @@ export interface SuggestedLocator {
 export type RecordedEvent =
   | { t: "input"; seq: number; locator: Locator; quality: SuggestedLocator["quality"]; fieldLabel: string; example: string; control: InputControl; options?: string[] }
   | { t: "click"; seq: number; locator: Locator; quality: SuggestedLocator["quality"]; targetLabel: string; effectGuess: "ui" | "navigate"; viaEnter?: boolean; options?: string[] }
-  | { t: "press"; seq: number; locator: Locator; quality: SuggestedLocator["quality"]; targetLabel: string; key: "Enter" }
+  | { t: "press"; seq: number; locator: Locator; quality: SuggestedLocator["quality"]; targetLabel: string; key: "Enter"; effectGuess?: "ui" | "commit" }
   | { t: "skipped"; seq: number; reason: "sensitive_field" };
 
 export interface PickResult {
@@ -240,18 +240,26 @@ const isTextField = (el: Element): el is HTMLInputElement | HTMLTextAreaElement 
   el instanceof HTMLTextAreaElement || (el instanceof HTMLInputElement && !["checkbox", "radio", "file", "hidden", "submit", "button", "reset", "image"].includes(el.type));
 
 /** Remember what a field held before the user touched it, so merely tabbing through a pre-filled field records nothing. */
+/** A field the person types into: a text box or a rich text box. */
+const isTypable = (el: Element): el is HTMLElement => isTextField(el) || isEditableRoot(el);
+const valueOf = (el: HTMLElement | HTMLSelectElement): string => (isEditableRoot(el) ? el.innerText.replace(/\n+$/, "") : (el as HTMLInputElement).value);
+
 function handleFocusIn(ev: Event) {
   if (!ev.isTrusted || !active) return;
   const el = deepTarget(ev);
-  if (el && (isTextField(el) || el instanceof HTMLSelectElement) && !lastValue.has(el) && !isSensitiveField(fieldDescriptor(el))) lastValue.set(el, el.value);
+  if (el && (isTypable(el) || el instanceof HTMLSelectElement) && !lastValue.has(el) && !isSensitiveField(fieldDescriptor(el))) lastValue.set(el, valueOf(el));
 }
 
 /** Record the current value of a text field or dropdown. Sensitive fields are counted, never captured. */
 function captureInput(el: Element | null) {
-  if (!el || !(isTextField(el) || el instanceof HTMLSelectElement)) return;
+  if (!el || !(isTypable(el) || el instanceof HTMLSelectElement)) return;
   if (isSensitiveField(fieldDescriptor(el))) return skipSensitive(el);
-  if (lastValue.get(el) === el.value) return; // Enter + change + blur would otherwise record the same value several times
-  lastValue.set(el, el.value);
+  const value = valueOf(el);
+  if (lastValue.get(el) === value) return; // Enter + change + blur would otherwise record the same value several times
+  // the page clearing a box after an action (a sent message, a saved note) is not something the person did
+  const was = lastValue.get(el);
+  lastValue.set(el, value);
+  if (value === "" && was) return;
   const s = suggestLocator(el);
   const fieldLabel = accessibleName(el) || "field";
   if (el instanceof HTMLSelectElement) {
@@ -262,7 +270,7 @@ function captureInput(el: Element | null) {
     emit({ t: "input", seq: nextSeq(), locator: s.locator, quality: s.quality, fieldLabel, example: optionLabel(chosen).slice(0, 200), control: "select", ...(options.length >= 1 && options.length <= 100 ? { options: [...new Set(options)] } : {}) });
     return;
   }
-  emit({ t: "input", seq: nextSeq(), locator: s.locator, quality: s.quality, fieldLabel, example: el.value.slice(0, 200), control: "text" });
+  emit({ t: "input", seq: nextSeq(), locator: s.locator, quality: s.quality, fieldLabel, example: value.slice(0, 200), control: "text" });
 }
 
 function handleChange(ev: Event) {
@@ -358,6 +366,16 @@ function handleClick(ev: MouseEvent) {
 function handleKeydown(ev: KeyboardEvent) {
   if (!ev.isTrusted || !active || pickMode || ev.key !== "Enter" || ev.isComposing) return;
   const el = deepTarget(ev);
+  if (el && isEditableRoot(el)) {
+    if (ev.shiftKey) return; // Shift+Enter: a new line
+    if (isSensitiveField(fieldDescriptor(el)) || composedClosest(el, PRIVATE_AREA)) return;
+    captureInput(el);
+    const s = suggestLocator(el);
+    // In a rich text box Enter often SENDS (chats, comments). Treat it as changing data until the person says it
+    // only adds a new line: that way it needs approval rather than running unasked.
+    emit({ t: "press", seq: nextSeq(), locator: s.locator, quality: s.quality, targetLabel: accessibleName(el) || "text box", key: "Enter", effectGuess: "commit" });
+    return;
+  }
   // in a <textarea> Enter is a new line, not an action
   if (!(el instanceof HTMLInputElement) || !isTextField(el)) return;
   if (isSensitiveField(fieldDescriptor(el)) || composedClosest(el, PRIVATE_AREA)) return;

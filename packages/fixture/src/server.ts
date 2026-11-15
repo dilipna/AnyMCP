@@ -84,6 +84,44 @@ async function renderDetail(s) {
 setTimeout(route, RENDER_DELAY_MS);
 `;
 
+const COMPOSE_SCRIPT = String.raw`
+// A tiny editor that keeps its OWN model, as rich editors do: it applies only beforeinput events and re-renders from
+// the model, so text put into the box any other way never reaches the model (or the preview).
+const reply = document.getElementById('reply');
+const preview = document.querySelector('[data-testid="reply-preview"]');
+let model = '';
+function caretToEnd(el) { const r = document.createRange(); r.selectNodeContents(el); r.collapse(false); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); }
+function render() { reply.textContent = model; preview.textContent = model; caretToEnd(reply); }
+reply.addEventListener('beforeinput', (e) => {
+  e.preventDefault();
+  const sel = window.getSelection();
+  const everything = !!model && !!sel && sel.toString() === reply.textContent;
+  const base = everything ? '' : model;
+  if (e.inputType === 'insertText' || e.inputType === 'insertReplacementText') model = base + (e.data || '');
+  else if (e.inputType === 'insertFromPaste') model = base + (e.dataTransfer ? e.dataTransfer.getData('text/plain') : '');
+  else if (e.inputType === 'insertParagraph' || e.inputType === 'insertLineBreak') model = base + '\n';
+  else if (e.inputType.indexOf('delete') === 0) model = everything ? '' : model.slice(0, -1);
+  render();
+});
+
+// A chat box: Enter SENDS (Shift+Enter would add a line). The server logs every message it accepts.
+const chat = document.getElementById('chat');
+const list = document.querySelector('[data-testid="messages"]');
+const chatStatus = document.getElementById('chat-status');
+chat.addEventListener('keydown', async (e) => {
+  if (e.key !== 'Enter' || e.shiftKey) return;
+  e.preventDefault();
+  const text = chat.innerText.trim();
+  if (!text) return;
+  chatStatus.textContent = '';
+  const r = await fetch('/api/chat', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text }) });
+  if (!r.ok) { chatStatus.textContent = 'Not sent'; return; }
+  const li = document.createElement('li'); li.textContent = text; list.appendChild(li);
+  chat.textContent = '';
+  chatStatus.textContent = 'Sent to #support';
+});
+`;
+
 const SETTINGS_SCRIPT = String.raw`
 const status = document.getElementById('settings-status');
 async function save(patch) {
@@ -200,6 +238,8 @@ export interface FixtureState {
   settings: { frequency: "Never" | "Daily" | "Weekly"; digest: boolean };
   /** Ground truth: every settings write the server accepted. */
   settingsLog: { at: string; patch: Record<string, unknown> }[];
+  /** Ground truth: every chat message the server accepted on /compose. */
+  chatLog: { at: string; text: string }[];
   requestLog: { at: string; method: string; path: string }[];
 }
 
@@ -216,7 +256,7 @@ export interface FixtureHandle {
 export async function startFixture(opts: { port?: number; control?: boolean; host?: string } = {}): Promise<FixtureHandle> {
   const host = opts.host ?? "127.0.0.1";
   const freshSettings = (): FixtureState["settings"] => ({ frequency: "Never", digest: false });
-  const state: FixtureState = { chaos: { ...DEFAULT_CHAOS }, orders: makeOrders(), drafts: {}, writeLog: [], requestLog: [], settings: freshSettings(), settingsLog: [] };
+  const state: FixtureState = { chaos: { ...DEFAULT_CHAOS }, orders: makeOrders(), drafts: {}, writeLog: [], requestLog: [], settings: freshSettings(), settingsLog: [], chatLog: [] };
   const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
   const labels = () =>
@@ -429,6 +469,28 @@ document.getElementById('find').addEventListener('acme-press', async () => {
       SETTINGS_SCRIPT,
     );
 
+  /** Two rich text boxes (contenteditable): an editor with its own model, and a chat box where Enter sends. */
+  const composePage = () =>
+    page(
+      "Inbox",
+      `<h1>Support inbox</h1>
+<section aria-label="Reply draft">
+  <h2>Reply</h2>
+  <div id="reply" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Reply" data-placeholder="Write a reply…"
+       style="min-height:3em;border:1px solid #8a94a3;border-radius:4px;padding:6px;background:#fff"></div>
+  <p>Preview: <span data-testid="reply-preview"></span></p>
+</section>
+<section aria-label="Team chat">
+  <h2>Team chat</h2>
+  <p>Channel: <strong data-testid="channel">#support</strong></p>
+  <ul aria-label="Messages" data-testid="messages"></ul>
+  <div id="chat" contenteditable="true" aria-label="Message #support"
+       style="min-height:2em;border:1px solid #8a94a3;border-radius:4px;padding:6px;background:#fff"></div>
+  <div role="status" id="chat-status"></div>
+</section>`,
+      COMPOSE_SCRIPT,
+    );
+
   const expiredPage = () =>
     page(
       "Session expired",
@@ -446,7 +508,7 @@ document.getElementById('find').addEventListener('acme-press', async () => {
       if (path.startsWith("/__control/")) {
         if (!opts.control) return send(res, 404, "not found", "text/plain");
         if (path === "/__control/state" && req.method === "GET") {
-          return json(res, 200, { chaos: state.chaos, drafts: state.drafts, writeLog: state.writeLog, settings: state.settings, settingsLog: state.settingsLog });
+          return json(res, 200, { chaos: state.chaos, drafts: state.drafts, writeLog: state.writeLog, settings: state.settings, settingsLog: state.settingsLog, chatLog: state.chatLog });
         }
         if (path === "/__control/chaos" && req.method === "POST") {
           const body = JSON.parse((await readBody(req)) || "{}") as Partial<Chaos> & { reset?: boolean };
@@ -456,6 +518,7 @@ document.getElementById('find').addEventListener('acme-press', async () => {
             state.writeLog = [];
             state.settings = freshSettings();
             state.settingsLog = [];
+            state.chatLog = [];
             state.requestLog = [];
             state.orders = makeOrders();
             delete body.reset;
@@ -496,6 +559,7 @@ document.getElementById('find').addEventListener('acme-press', async () => {
       if (path === "/catalog" && req.method === "GET") return send(res, 200, catalogPage(url.searchParams.get("lang")));
       if ((path === "/app" || /^\/app\/p\/[a-z0-9-]+$/.test(path)) && req.method === "GET") return send(res, 200, appShell());
       if (path === "/settings" && req.method === "GET") return send(res, 200, settingsPage());
+      if (path === "/compose" && req.method === "GET") return send(res, 200, composePage());
       if (path === "/standings" && req.method === "GET") {
         // a table written WITHOUT <thead>, as many real sites do: the browser puts the header row in <tbody>
         return send(
@@ -531,6 +595,13 @@ document.getElementById('find').addEventListener('acme-press', async () => {
       if (one && req.method === "GET") {
         const p = PRODUCTS.find((x) => productSlug(x.name) === one[1]);
         return p ? json(res, 200, p) : json(res, 404, { error: "no such product" });
+      }
+      if (path === "/api/chat" && req.method === "POST") {
+        const body = JSON.parse((await readBody(req)) || "{}") as { text?: string };
+        const text = String(body.text ?? "").trim();
+        if (!text || text.length > 500) return json(res, 422, { error: "message must be 1-500 characters" });
+        state.chatLog.push({ at: new Date().toISOString(), text });
+        return json(res, 200, { ok: true });
       }
       if (path === "/api/settings" && req.method === "POST") {
         const body = JSON.parse((await readBody(req)) || "{}") as Partial<FixtureState["settings"]>;

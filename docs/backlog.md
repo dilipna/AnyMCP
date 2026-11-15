@@ -8,7 +8,7 @@ defect"; these are normal prototype limits.
 | # | Item | User problem | Evidence of need | Benefit | Cost | Now / defer |
 |---|---|---|---|---|---|---|
 | 1 | Real-site validation on 2–3 permitted read-only sites | "Does it work on my site?" is unanswerable from a fixture | Fixture-only evaluation (own limitation #16); one external read-only check exists | Honest compatibility list | S–M (needs owner permission per site) | **Defer — owner-required** |
-| 2 | ~~`<select>`, checkbox/radio~~ **done** (record + replay + e2e); contenteditable still open | Many forms use them | contenteditable not supported (documented) | Wider coverage | M | contenteditable: defer until a real site needs it |
+| 2 | ~~`<select>`, checkbox/radio, contenteditable~~ **done** (record + replay + e2e; rich text as plain text) | Many forms use them | — | Wider coverage | — | Formatting (bold, lists) not planned |
 | 3 | Read-resume after a service-worker restart | A suspended read is reported `interrupted`; the client must retry | Observed by design (resilience e2e) | Fewer retries | M (needs argument persistence in memory-only storage + resume rules) | Defer: retry-by-client is safe and simple |
 | 4 | ~~stdio shim for the bridge~~ **done**: `anymcp-bridge --stdio` (becomes / forwards to / takes over the bridge) | Clients that only spawn stdio servers | — | More clients | — | Verified with the SDK client over stdio; not yet with Claude Desktop or Cursor themselves |
 | 5 | Idempotency keys for write tools | Browser/network re-sends can duplicate a write | Observed: Chromium re-sent a POST 3× (docs/known-limitations #1) | Safer writes on sites that support it | M, site-specific | Defer: needs a real site that supports keys |

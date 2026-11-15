@@ -9,7 +9,7 @@
 
 import { isCredentialQueryKey, isSensitiveField, resolveText, type FieldDescriptor } from "anymcp-protocol/light";
 import type { Condition, ExtractSource, Locator, NamedCondition, ReasonCode, Step, ValueRef } from "anymcp-protocol";
-import { PRIVATE_AREA, accessibleName, composedClosest, computeRole, deepQueryAll, fingerprintElement, isVisible, norm, resolveLocator, visibleText, type Args } from "./locator";
+import { PRIVATE_AREA, accessibleName, composedClosest, isEditableRoot, computeRole, deepQueryAll, fingerprintElement, isVisible, norm, resolveLocator, visibleText, type Args } from "./locator";
 
 export interface Watch {
   sessionExpired: NamedCondition[];
@@ -55,7 +55,7 @@ export function fieldDescriptor(el: Element): FieldDescriptor {
     id: el.id || null,
     label: labels || null,
     ariaLabel: el.getAttribute("aria-label"),
-    placeholder: el.getAttribute("placeholder"),
+    placeholder: el.getAttribute("placeholder") ?? el.getAttribute("aria-placeholder") ?? el.getAttribute("data-placeholder"),
     anymcpIgnore: !!composedClosest(el, PRIVATE_AREA),
   };
 }
@@ -65,6 +65,7 @@ function isFormField(el: Element): el is HTMLInputElement | HTMLTextAreaElement 
 }
 
 function readText(el: Element): string | { blocked: string } {
+  if (isEditableRoot(el) && isSensitiveField(fieldDescriptor(el))) return { blocked: "That text box looks like a password or payment field, so AnyMCP will not read it." };
   if (isFormField(el)) {
     if (isSensitiveField(fieldDescriptor(el))) return { blocked: "That field looks like a password or payment field, so AnyMCP will not read it." };
     return norm(el.value);
@@ -292,7 +293,7 @@ const NOT_TEXT_INPUT = new Set(["button", "submit", "reset", "image", "file", "h
 
 /** Returns an error string if AnyMCP must refuse to fill this element. */
 export function fillRefusal(el: Element): string | null {
-  if (isFormField(el) && isSensitiveField(fieldDescriptor(el))) return "That field looks like a password or payment field, so AnyMCP will not fill it.";
+  if ((isFormField(el) || isEditableRoot(el)) && isSensitiveField(fieldDescriptor(el))) return "That field looks like a password or payment field, so AnyMCP will not fill it.";
   if (composedClosest(el, PRIVATE_AREA)) return "That part of the page is marked as private.";
   return null;
 }
@@ -309,7 +310,45 @@ async function doFill(ctx: RunContext, step: Extract<Step, { op: "fill" }>): Pro
 }
 
 /** Set a text box, dropdown, checkbox or option. A failure says whether the page may already have changed. */
+/**
+ * Replace the text of a rich text box through the browser's own text insertion, so the site's editor receives the
+ * same beforeinput/input events as typing (editors that keep their own model ignore direct DOM changes). Verified by
+ * reading the box back.
+ */
+async function fillEditable(el: HTMLElement, value: string): Promise<StepResult> {
+  if (el.getAttribute("aria-disabled") === "true" || el.getAttribute("aria-readonly") === "true") return { ok: false, code: "precondition_unmet", detail: "That text box cannot be edited." };
+  el.scrollIntoView({ block: "center" });
+  el.focus();
+  const doc = el.ownerDocument;
+  const sel = doc.getSelection();
+  if (sel) {
+    const range = doc.createRange();
+    range.selectNodeContents(el);
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+  // 1. Offer the change to the site's editor first, as typing does. Editors that keep their own model (Lexical, Slate
+  //    and others) apply `beforeinput` themselves and cancel it. execCommand alone would NOT reach them: Chrome does not
+  //    fire beforeinput for it, so the text would appear on screen while the editor's model stayed empty.
+  const inputType = value === "" ? "deleteContentBackward" : "insertText";
+  const offered = new InputEvent("beforeinput", { bubbles: true, cancelable: true, composed: true, inputType, data: value === "" ? null : value });
+  const handledByEditor = !el.dispatchEvent(offered);
+  // 2. Nobody handled it: perform the browser's default action (it also fires `input` for simpler editors).
+  if (!handledByEditor) {
+    // execCommand is deprecated, but it is still the one way to insert text with the browser's own editing behaviour
+    const inserted = value === "" ? doc.execCommand("delete", false) : doc.execCommand("insertText", false, value);
+    if (!inserted) {
+      el.textContent = value;
+      el.dispatchEvent(new InputEvent("input", { bubbles: true, composed: true, inputType, data: value === "" ? null : value }));
+    }
+  }
+  const kept = await pollUntil(() => (norm(el.innerText) === norm(value) ? true : undefined), 1000, 50);
+  if (!kept) return { ok: false, code: "precondition_unmet", detail: "The text box did not keep the text (the site's editor may have changed it).", acted: true };
+  return { ok: true };
+}
+
 async function fillElement(el: Element, value: string): Promise<StepResult> {
+  if (isEditableRoot(el)) return fillEditable(el, value);
   if (el instanceof HTMLSelectElement) return fillSelect(el, value);
   const toggle = toggleKind(el);
   if (toggle) return fillToggle(el, toggle, value);
@@ -343,11 +382,14 @@ export function defaultButton(form: HTMLFormElement): HTMLElement | null {
 
 /** Returns an error string if AnyMCP must refuse to press a key in this element. */
 export function pressRefusal(el: Element, origins: string[]): string | null {
-  if (!(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) || (el instanceof HTMLInputElement && NOT_TEXT_INPUT.has(el.type))) return "Keys can only be pressed in a text box.";
+  const editable = isEditableRoot(el);
+  if (!editable && (!(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) || (el instanceof HTMLInputElement && NOT_TEXT_INPUT.has(el.type)))) return "Keys can only be pressed in a text box.";
   const refusal = fillRefusal(el);
   if (refusal) return refusal;
-  if (el.disabled) return "That field is disabled.";
-  const form = el.form;
+  if (editable) return el.getAttribute("aria-disabled") === "true" ? "That text box is disabled." : null; // no form: the page handles Enter itself
+  const field = el as HTMLInputElement | HTMLTextAreaElement;
+  if (field.disabled) return "That field is disabled.";
+  const form = field.form;
   if (form) {
     const def = defaultButton(form);
     if (def) {
@@ -363,7 +405,7 @@ export function pressRefusal(el: Element, origins: string[]): string | null {
  * the key events AnyMCP does exactly what the browser would have done: click the form's default button, or submit a
  * form that has no button and at most one text field. Nothing happens if the page cancelled the key.
  */
-function pressEnter(el: HTMLInputElement | HTMLTextAreaElement): StepResult {
+function pressEnter(el: HTMLElement): StepResult {
   el.scrollIntoView({ block: "center" });
   el.focus();
   const init = { key: "Enter", code: "Enter", keyCode: 13, which: 13, bubbles: true, cancelable: true, composed: true } as KeyboardEventInit;
@@ -388,7 +430,7 @@ function doPress(ctx: RunContext, step: Extract<Step, { op: "press" }>): StepRes
   if ("fail" in b) return b.fail;
   const refusal = pressRefusal(b.el, ctx.origins);
   if (refusal) return { ok: false, code: refusal.includes("website") ? "wrong_origin" : "precondition_unmet", detail: refusal };
-  return pressEnter(b.el as HTMLInputElement | HTMLTextAreaElement);
+  return pressEnter(b.el as HTMLElement);
 }
 
 /** Plain click for ui/navigate effects. Commit clicks go through `commit` only. */
@@ -562,6 +604,7 @@ function alreadySet(el: Element, value: string): boolean {
   }
   const toggle = toggleKind(el);
   if (toggle) return (value === "true" || value === "false") && isChecked(el) === (value === "true");
+  if (isEditableRoot(el)) return norm(el.innerText) === norm(value);
   return (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) && el.value === value;
 }
 
@@ -599,7 +642,7 @@ export async function commit(ctx: RunContext, target: string, fields: { id: stri
     (r.el as HTMLElement).click();
     return { ok: true };
   }
-  if (action.type === "press") return pressEnter(r.el as HTMLInputElement | HTMLTextAreaElement);
+  if (action.type === "press") return pressEnter(r.el as HTMLElement);
   const value = resolveText(action.value, ctx.args);
   if (value === undefined) return { ok: false, code: "schema_violation", detail: "A needed parameter was not supplied." };
   return fillElement(r.el, value);

@@ -55,8 +55,9 @@ Evidence labels used below:
 | Shadow DOM (web components) | Verified locally (open roots); closed roots: replay only, recording unverified |
 | Search via the address (query string), parts of the address as inputs | Verified end to end |
 | Enter-to-search without a button; custom (ARIA) dropdowns | Verified locally (fixture) |
+| Rich text boxes (`contenteditable`): an editor with its own model; a chat box where Enter sends (approval required) | Verified locally (fixture) |
 | Changes that need approval (Save buttons, settings that save by themselves) | Verified locally (fixture); **no real-site write was tested** |
-| iframes, rich-text editors, file upload/download, drag-and-drop, canvas apps, CAPTCHAs, sign-in, multi-tab flows, pagination loops | Not supported |
+| iframes, rich-text formatting, file upload/download, drag-and-drop, canvas apps, CAPTCHAs, sign-in, multi-tab flows, pagination loops | Not supported |
 
 The precise list of operations and refusals is in [supported-capabilities.md](supported-capabilities.md); the plain
 list of limits is in [known-limitations.md](known-limitations.md).

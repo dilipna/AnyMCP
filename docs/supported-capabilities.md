@@ -17,7 +17,7 @@ AnyMCP does **not** claim to work on every website. This is what is implemented 
 | capability | supported |
 |---|---|
 | Find an element | by role + accessible name, form label, `data-testid`, a label/value pair (`th`/`td`, `dt`/`dd`), exact/partial text, or (last resort, flagged fragile) a CSS selector; optionally inside one named container. Must match exactly one **visible** element. Searches inside **shadow DOM** (open roots, and closed roots of custom elements via `chrome.dom.openOrClosedShadowRoot`), including text passed through `<slot>`. |
-| Fill | text `<input>` and `<textarea>` (sets the value, fires `input`/`change`, verifies it stuck); **`<select>`** (by the visible option text, falling back to the option value; refuses duplicate names, disabled options and multi-selects); **checkbox / switch / radio**, native or ARIA (`true`/`false`; sets the *state*: already correct is a no-op, never a blind toggle; verifies the state changed) |
+| Fill | text `<input>` and `<textarea>` (sets the value, fires `input`/`change`, verifies it stuck); **`<select>`** (by the visible option text, falling back to the option value; refuses duplicate names, disabled options and multi-selects); **checkbox / switch / radio**, native or ARIA (`true`/`false`; sets the *state*: already correct is a no-op, never a blind toggle; verifies the state changed); **rich text boxes** (`contenteditable`): the text is offered to the site's editor first (a `beforeinput` event, which editors that keep their own model apply themselves), otherwise inserted with the browser's own editing command; replaced as plain text and verified by reading the box back |
 | Click | `<button>`, `<a href>`, `<summary>`, `input[type=submit/button]`, role button/link/tab/option/menuitem, custom dropdown openers (`role=combobox`, `aria-haspopup`); same-origin only. A clicked item can be made an **input** ("which result/choice to click"); for options, its allowed values are the neighbouring choices |
 | Press Enter | in a text box; does what the browser would (default button / one-field form submit) unless the page cancels the key; for search boxes in web apps that have no button |
 | Changes that save by themselves | a dropdown, checkbox, switch, option or text field can be marked "saves by itself": it becomes the tool's one data-changing step, with approval every run; if it already has the requested value nothing is done (`no_change_needed`) |
@@ -33,7 +33,8 @@ AnyMCP does **not** claim to work on every website. This is what is implemented 
 ## Not supported (will not work, or is refused)
 
 * **iframes**, **popups / new windows**, **file uploads/downloads**, **drag-and-drop**, **canvas/WebGL-only UIs**,
-  **contenteditable / rich-text editors**, **multi-select lists**, **hover-only menus**, **date/colour/range pickers**.
+  **rich-text formatting** (bold, lists, links: text goes in as plain text), editors that only accept trusted
+  (real) key events, **multi-select lists**, **hover-only menus**, **date/colour/range pickers**.
 * **Recording inside CLOSED shadow roots is not verified.** Replay finds elements there, but whether the recorder sees
   typed text inside a closed root depends on how the component forwards events. Open roots are tested end to end.
 * **Custom (non-native) dropdowns** are recorded as two clicks (open, then the option). The option can be made an
@@ -52,5 +53,6 @@ AnyMCP does **not** claim to work on every website. This is what is implemented 
 
 AnyMCP computes a simplified accessible name: `aria-labelledby`, `aria-label`, associated `<label>`, `placeholder`
 (inputs only), `alt`, then visible text for roles whose name comes from content. It also treats `alert` and
-`status` text as their name (ARIA does not). A locator that works in AnyMCP may not match another tool's idea of
-the same role/name.
+`status` text as their name (ARIA does not), treats the root of a rich text box (`contenteditable`) as a `textbox`
+even without a role, and uses its `aria-placeholder` / `data-placeholder` as a name. A locator that works in AnyMCP
+may not match another tool's idea of the same role/name.

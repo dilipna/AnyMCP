@@ -44,8 +44,8 @@
 > * AnyMCP calls no AI model and has no account. Results go to the AI app you connect, which may send them to its
 >   model provider under its own policy.
 > * It does not work on every website. It handles standard pages: buttons, links, text boxes, dropdowns, checkboxes,
->   lists and tables, including pages drawn by JavaScript and web components. It does not support iframes, rich-text
->   editors, file uploads, CAPTCHAs or sign-in. If a site changes, a tool stops instead of guessing.
+>   rich text boxes (as plain text), lists and tables, including pages drawn by JavaScript and web components. It does
+>   not support iframes, file uploads, CAPTCHAs or sign-in. If a site changes, a tool stops instead of guessing.
 > * Developer beta: not audited, not production software.
 >
 > AnyMCP is independent, open-source software (MIT) and is not affiliated with Google or Anthropic.
