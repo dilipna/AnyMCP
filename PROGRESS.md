@@ -4,8 +4,10 @@ Product: **AnyMCP** (extension display name "AnyMCP Extension", formerly "MyCP")
 it, and let your AI app run it as an MCP tool." Chrome MV3 extension + local bridge (the MCP server). Developer beta.
 Priorities: honest execution > permission boundaries > recovery > simple install > evaluation > polish > extras.
 
-Repository: local commits on `main`; remote `origin` = https://github.com/dilipna/AnyMCP (empty when checked; nothing
-pushed). Commits use the owner's GitHub no-reply identity.
+Repository: https://github.com/dilipna/AnyMCP (public; `main` pushed 2026-11-15, after one history rewrite that dropped
+pre-rename panel images, so commit ids before that date changed: map in `docs/evaluation-protocol.md`). Do not rewrite
+public history. Commits use the owner's GitHub no-reply identity. Private vulnerability reporting is on. GitHub Pages
+serves `docs/` at https://dilipna.github.io/AnyMCP/ (privacy policy: `/privacy-policy`).
 
 ## Layout
 - `packages/protocol` — zod schemas (ToolDefinition: 7 ops locate/fill/click/press/waitFor/extract/assert), policy,
@@ -21,7 +23,7 @@ pushed). Commits use the owner's GitHub no-reply identity.
 - `e2e/` — Playwright: real Chromium or branded Chrome + built extension + bridge + MCP SDK client.
 - `scripts/` — build-all, package-release (ZIP + npm tarball), verify-npm-package, clean-install-check, stdio-smoke, demo-claude.
 
-## Verified (2026-11-14; re-run to confirm)
+## Verified (2026-11-14 unless dated; re-run to confirm)
 | Check | Command | Result |
 |---|---|---|
 | Typecheck / unit + integration | `npm run typecheck` / `npm test` | clean / 136 pass |
@@ -30,10 +32,13 @@ pushed). Commits use the owner's GitHub no-reply identity.
 | Public sites | `npm run eval:public -- --with-claude` (Chromium) and `-- --chrome` | 7/7 equal independent reading in both; Claude Code HTTP + stdio ✓ |
 | Packaging | `npm run package -- --verify`, `npm run package:check` | reproducible; tarball installs and runs outside the checkout |
 | Clean checkout | `node scripts/clean-install-check.mjs` | PASSED |
+| CI 2026-11-15 | GitHub Actions run 43759300324 (macOS 26 arm64, Ubuntu 26.04 Node 24 + 20.19, Windows Server 2025) | all green; artifacts byte-identical on every job and to the local build |
 
 ## Next (needs the owner — see docs/release-checklist.md)
-1. ~~Naming~~ decided: keep AnyMCP (npm `@dilipna/anymcp-bridge`). 2. Security contact. 3. Push → CI.
-4. First-time-user test incl. Claude Desktop/Cursor. 5. Screenshots, hosted privacy policy. 6. Publish npm, then store.
+Done 2026-11-15: naming, security contact (private reporting), push + green CI, hosted privacy policy.
+1. `npm login` (owner), then publish `release/dilipna-anymcp-bridge-0.1.0.tgz` and update quick-start/README/listing
+   ("not published yet"). 2. First-time-user test incl. Claude Desktop/Cursor. 3. Real docked-panel screenshots; a
+   lawyer's look at the policy. 4. Chrome Web Store submission (owner's developer account).
 
 ## Decisions that matter (docs/decisions.md)
 - Extension is the source of truth for tools; the bridge only gets manifests. Nothing is fetched remotely.
@@ -48,4 +53,6 @@ requests got a bare reset instead of 413 · tables without `<thead>` returned th
 with a live count matched only one search (now warned) · AnyMCP's own run tab offered for recording · failed second
 bridge start overwrote the real pairing code · eval used a missing/stale build · slot text invisible to
 `checkVisibility()` · checkbox step recorded after the next click · bridge timer wrote to a deleted state dir after
-shutdown · mechanical rename turned facts about "MyCP" into false claims about "AnyMCP" in two docs (fixed).
+shutdown · mechanical rename turned facts about "MyCP" into false claims about "AnyMCP" in two docs (fixed) · lockfile
+from npm 11.6 lacked entries npm 11.19 requires (CI `npm ci` failed everywhere) · ArrowDown on a `<select>` opens the
+menu on macOS (3 tests) · store promo tile clipped its text (no border-box).

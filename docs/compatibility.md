@@ -3,7 +3,8 @@
 Evidence labels used below:
 
 * **Verified end to end:** the full path (MCP client → bridge → extension → website → result) was run and checked.
-* **Verified locally:** run and checked on this machine, but not the full path, or only on the synthetic fixture.
+* **Verified locally:** run and checked on this machine or in CI (GitHub Actions), but not the full path, or only on
+  the synthetic fixture.
 * **Mock-tested:** covered by tests that replace a real component (for example a fake extension).
 * **Prepared but untested:** built or documented, never run in that setting.
 * **Blocked:** could not be run here; the reason is given.
@@ -13,8 +14,9 @@ Evidence labels used below:
 | What | Status | Evidence / note |
 |---|---|---|
 | Windows 11, Node 24.11 | Verified end to end | all suites, public-site run, clean-checkout install |
-| macOS, Linux | Prepared but untested | CI workflow (`.github/workflows/ci.yml`) targets Ubuntu, macOS and Windows; it has never run (nothing pushed) |
-| Node 20.19 – 23 | Prepared but untested | `engines: >=20.19`; only Node 24.11 was run here (running Node 20.19 locally was blocked by this environment's permission rules); CI includes Node 20.19 on Ubuntu |
+| macOS 26.7 (arm64), Ubuntu 26.04, Windows Server 2025; Node 24.22 | Verified locally (CI) | [GitHub Actions run 43759300324](https://github.com/dilipna/AnyMCP/actions/runs/43759300324), 2026-11-15: type check, 136/136 unit and integration tests, 67/67 browser tests (Chrome for Testing 158.0.8127.18, synthetic fixture), reproducible package, npm tarball installed and run (HTTP + stdio). The extension ZIP, bridge and npm tarball were byte-identical on all four CI jobs and to the Windows 11 build. No public-site run and no real AI app there; nobody has used it by hand on macOS or Linux |
+| Node 20.19 | Verified locally (CI, Ubuntu) | same run: Node 20.19.6 passes every step above |
+| Node 21 – 23 | Prepared but untested | `engines: >=20.19`; not run |
 | Playwright Chromium 158 | Verified end to end | 67/67 browser tests, fixture evaluation (170/170, protocol v2), public sites |
 | Google Chrome 157.0.8103.52 (branded) | Verified end to end | full browser suite 67/67 on 2026-11-15 (the production-build test always uses Chromium); public sites 7/7 in Chrome |
 | Edge, Brave, other Chromium browsers | Prepared but untested | MV3 + side panel should work; not tried |

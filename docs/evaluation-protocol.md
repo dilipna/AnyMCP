@@ -88,6 +88,17 @@ bundled Chromium or the real branded Chrome (`ANYMCP_E2E_BROWSER=chrome`).
 4. Any change to scenarios, oracle logic or definitions after the first headline run requires a new `protocolVersion`.
 5. Results are committed under `eval/results/` together with the protocol version and hashes.
 
+**Commit ids in results recorded before 2026-11-15.** Before the first push, the local history was rewritten once to
+drop pre-rename panel images (`store/screenshots/raw/`), which changed every commit id. Result files are left exactly
+as recorded, so the ids they name are the old ones. Their `sourceTreeSha256` values are unaffected (no source file
+changed). Old → published commit:
+
+| Recorded in | Old id | Published id |
+|---|---|---|
+| `fixture-chromium-2026-11-14T06-10-35` | `02983df6ec8a` | `b72fdbbd5cd0` (Package the bridge for npm…) |
+| `public-sites-2026-11-14T05-49-41` | `a568d13e07b4` | `fa4b91f2b810` (Fix first-site authorization…) |
+| `public-sites-2026-11-14T06-45-27` | `a2764ec72ab3` | `2efc2cc881c5` (CI on macOS too…) |
+
 ## Protocol versions
 
 | Version | Change | Comparable with |

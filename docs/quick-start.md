@@ -3,8 +3,9 @@
 From nothing to a working, read-only tool your AI app can call. About 15 minutes the first time.
 
 **You need:** Chrome 116 or newer · Node.js 20.19 or newer · git · an MCP client (an "AI app" that supports MCP,
-for example Claude Code). No account, API key or paid service. Verified on Windows 11; macOS and Linux are intended
-but not yet tested (see [compatibility.md](compatibility.md)).
+for example Claude Code). No account, API key or paid service. Verified end to end on Windows 11. The automated test
+suites also pass on macOS and Linux, but nobody has followed this guide there yet (see
+[compatibility.md](compatibility.md)).
 
 ## 1. Get AnyMCP and build it
 

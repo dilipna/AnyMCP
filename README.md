@@ -1,12 +1,15 @@
 # AnyMCP
 
+[![CI](https://github.com/dilipna/AnyMCP/actions/workflows/ci.yml/badge.svg)](https://github.com/dilipna/AnyMCP/actions/workflows/ci.yml)
+
 *Teach a website task once, review it, and let your AI app run it as an MCP tool.*
 
 **AnyMCP lets your AI app use website tasks that you teach once in your own Chrome and approve: a Chrome extension
 records the task, and a small local bridge offers it to your AI app as an MCP tool.**
 
 > **Status: developer beta.** Not published to the Chrome Web Store or npm. Verified on Windows 11 with Chromium 158
-> and Chrome 157, on a synthetic test site and three public scraping sandboxes, with Claude Code as a real client. It is not production software, has not
+> and Chrome 157, on a synthetic test site and three public scraping sandboxes, with Claude Code as a real client; the
+> automated suites also pass on macOS and Linux in CI. It is not production software, has not
 > had a security review, and does not work on every website. See [docs/compatibility.md](docs/compatibility.md).
 
 ## The problem
@@ -118,7 +121,7 @@ to your AI app is marked untrusted. Details and the limits of all this: [docs/th
 
 [docs/index.md](docs/index.md) lists everything. Most useful: [compatibility](docs/compatibility.md) ·
 [known limitations](docs/known-limitations.md) · [architecture](docs/architecture.md) ·
-[privacy policy draft](docs/privacy-policy.md) · [security](SECURITY.md) · [naming check](docs/naming-check.md).
+[privacy policy](docs/privacy-policy.md) ([hosted](https://dilipna.github.io/AnyMCP/privacy-policy)) · [security](SECURITY.md) · [naming check](docs/naming-check.md).
 
 ## Licence
 
