@@ -15,7 +15,8 @@ pushed). Commits use the owner's GitHub no-reply identity.
   State in `~/.anymcp` (pre-release `~/.mycp` copied once).
 - `packages/extension` — service worker (orchestrator, approvals, bridge client, recording), content script (locator,
   engine, recorder, banner), React side panel. `scripts/build.mjs --target=prod|e2e`.
-- `packages/fixture` — synthetic sites (orders portal, catalog, single-page app, self-saving settings, header-less table).
+- `packages/fixture` — synthetic sites (orders portal, catalog, single-page app, self-saving settings, header-less table,
+  rich text inbox with a model-keeping editor and an Enter-to-send chat).
 - `packages/eval` — frozen fixture evaluation (protocol v2), `public-sites.ts` (3 public sandboxes, optional Claude Code).
 - `e2e/` — Playwright: real Chromium or branded Chrome + built extension + bridge + MCP SDK client.
 - `scripts/` — build-all, package-release (ZIP + npm tarball), verify-npm-package, clean-install-check, stdio-smoke, demo-claude.
@@ -24,7 +25,7 @@ pushed). Commits use the owner's GitHub no-reply identity.
 | Check | Command | Result |
 |---|---|---|
 | Typecheck / unit + integration | `npm run typecheck` / `npm test` | clean / 133 pass |
-| Browser suite | `npm run test:e2e` (Chromium 158) and `ANYMCP_E2E_BROWSER=chrome` (Chrome 157.0.8103.52) | 65/65 each |
+| Browser suite | `npm run test:e2e` (Chromium 158) and `ANYMCP_E2E_BROWSER=chrome` (Chrome 157.0.8103.52) | 67/67 each |
 | Fixture evaluation | `npm run eval` | 170/170, 0 false success, 0 unapproved |
 | Public sites | `npm run eval:public -- --with-claude` (Chromium) and `-- --chrome` | 7/7 equal independent reading in both; Claude Code HTTP + stdio ✓ |
 | Packaging | `npm run package -- --verify`, `npm run package:check` | reproducible; tarball installs and runs outside the checkout |

@@ -15,8 +15,8 @@ Evidence labels used below:
 | Windows 11, Node 24.11 | Verified end to end | all suites, public-site run, clean-checkout install |
 | macOS, Linux | Prepared but untested | CI workflow (`.github/workflows/ci.yml`) targets Ubuntu, macOS and Windows; it has never run (nothing pushed) |
 | Node 20.19 – 23 | Prepared but untested | `engines: >=20.19`; only Node 24.11 was run here (running Node 20.19 locally was blocked by this environment's permission rules); CI includes Node 20.19 on Ubuntu |
-| Playwright Chromium 158 | Verified end to end | 65/65 browser tests, fixture evaluation (170/170, protocol v2), public sites |
-| Google Chrome 157.0.8103.52 (branded) | Verified end to end | full browser suite 65/65 on 2026-11-14 (the production-build test always uses Chromium); public sites 7/7 in Chrome |
+| Playwright Chromium 158 | Verified end to end | 67/67 browser tests, fixture evaluation (170/170, protocol v2), public sites |
+| Google Chrome 157.0.8103.52 (branded) | Verified end to end | full browser suite 67/67 on 2026-11-15 (the production-build test always uses Chromium); public sites 7/7 in Chrome |
 | Edge, Brave, other Chromium browsers | Prepared but untested | MV3 + side panel should work; not tried |
 | Firefox, Safari | Not supported | different extension platforms |
 | Docked side panel in a real window | Prepared but untested | tests render the same panel page in a tab |
