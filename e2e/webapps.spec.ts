@@ -174,7 +174,8 @@ test("a dropdown that saves the moment it changes: approval every run, written o
   expect((await s.call({ type: "record.start", tabId })).ok).toBe(true);
   await page.locator("[data-anymcp-banner]").waitFor({ state: "attached" });
   await page.getByLabel("Reminder frequency").focus();
-  await page.keyboard.press("ArrowDown"); // Never -> Daily, and the SITE SAVES IT immediately
+  // type-ahead "d": Never -> Daily, and the SITE SAVES IT immediately (not ArrowDown, which opens the menu on macOS)
+  await page.keyboard.press("d");
   await expect(page.getByRole("status")).toHaveText(/Saved: reminders Daily/);
   const rec = await waitForState(s, (x) => (x.recording?.steps.length ?? 0) >= 1);
   expect(rec.recording!.steps[0]).toMatchObject({ kind: "input", control: "select", label: "Reminder frequency", example: "Daily" });

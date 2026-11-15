@@ -118,7 +118,7 @@ for (const scheme of ["light", "dark"] as const) {
     await site.getByLabel("Search products").click();
     await site.keyboard.type("lamp");
     await site.keyboard.press("Tab");
-    await site.keyboard.press("ArrowDown");
+    await site.keyboard.press("l"); // type-ahead: Category All -> Lighting (an arrow key opens the menu on macOS)
     await site.getByLabel("In stock only").click();
     await site.getByLabel("Lowest price").click();
     await site.getByRole("button", { name: "Find products" }).click();

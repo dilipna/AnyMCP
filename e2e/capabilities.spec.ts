@@ -39,7 +39,9 @@ test("record dropdown + checkbox + option + shadow-DOM button + list, then run i
   await page.getByLabel("Search products").click();
   await page.keyboard.type("lamp");
   await page.keyboard.press("Tab"); // focus moves to the Category dropdown
-  await page.keyboard.press("ArrowDown"); // All -> Lighting
+  // type-ahead "l": All -> Lighting. Not ArrowDown: on macOS an arrow key opens the dropdown's menu instead of
+  // changing the value, so the change (and the recorded step) never happens there.
+  await page.keyboard.press("l");
   await expect(page.getByLabel("Category")).toHaveValue("Lighting");
   await page.getByLabel("In stock only").click();
   await page.getByLabel("Lowest price").click();
