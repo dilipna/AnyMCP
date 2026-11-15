@@ -6,6 +6,7 @@
 // /health. With --e2e it also runs the browser suite there. Nothing is run inside the working copy.
 import { cpSync, mkdtempSync, rmSync, existsSync } from "node:fs";
 import { spawn, spawnSync } from "node:child_process";
+import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -41,14 +42,22 @@ let ok =
 
 if (ok) {
   // start the BUNDLED bridge exactly as documented and check it answers
+  // ports the OS says are free right now (fixed ports can fall into a range Windows reserved after a reboot)
+  const freePort = () =>
+    new Promise((res) => {
+      const s = createServer().listen(0, "127.0.0.1", () => {
+        const p = s.address().port;
+        s.close(() => res(p));
+      });
+    });
+  const mcpPort = await freePort();
+  const extPort = await freePort();
   const home = mkdtempSync(join(tmpdir(), "anymcp-clean-home-"));
-  const child = spawn(process.execPath, [join(dest, "release", `anymcp-bridge-0.1.0.mjs`), "--mcp-port=49820", "--ext-port=49821", `--home=${home}`], { stdio: "ignore" });
-  await new Promise((r) => setTimeout(r, 2500));
+  const child = spawn(process.execPath, [join(dest, "release", `anymcp-bridge-0.1.0.mjs`), `--mcp-port=${mcpPort}`, `--ext-port=${extPort}`, `--home=${home}`], { stdio: "ignore" });
   let health = null;
-  try {
-    health = await (await fetch("http://127.0.0.1:49820/health")).json();
-  } catch {
-    /* fall through */
+  for (let i = 0; i < 100 && !health; i++) {
+    await new Promise((r) => setTimeout(r, 100));
+    health = await fetch(`http://127.0.0.1:${mcpPort}/health`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
   }
   child.kill();
   rmSync(home, { recursive: true, force: true });

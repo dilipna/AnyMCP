@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { DEFAULT_EXT_PORT, DEFAULT_MCP_PORT, ANYMCP_VERSION } from "anymcp-protocol";
 import { PAIRING_FILE, startBridge, type BridgeHandle } from "./bridge";
 import { listening, runStdio } from "./stdio";
+import { explainListenError } from "./errors";
 import { stdioLaunchFor, type Launch } from "./launch";
 import { defaultHome } from "./store";
 
@@ -153,7 +154,7 @@ AnyMCP bridge ${ANYMCP_VERSION} is running. It listens on 127.0.0.1 only.
 }
 
 main().catch((e) => {
-  const msg = (e as NodeJS.ErrnoException).code === "EADDRINUSE" ? "A port is already in use. Is another AnyMCP bridge running? Use --mcp-port / --ext-port to choose others." : String(e);
-  console.error(`AnyMCP bridge could not start: ${msg}`);
+  const ports = { mcpPort: Number(arg("mcp-port") ?? DEFAULT_MCP_PORT), extPort: Number(arg("ext-port") ?? DEFAULT_EXT_PORT) };
+  console.error(`AnyMCP bridge could not start: ${explainListenError(e, ports) ?? String(e)}`);
   process.exit(1);
 });

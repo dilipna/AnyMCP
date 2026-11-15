@@ -19,6 +19,7 @@ import { McpServer, fromJsonSchema, type RegisteredTool } from "@modelcontextpro
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import { ANYMCP_VERSION } from "anymcp-protocol";
 import { startBridge, type BridgeHandle, type BridgeOptions } from "./bridge";
+import { explainListenError } from "./errors";
 
 /** A tool as `tools/list` returns it. */
 interface RemoteTool {
@@ -116,7 +117,11 @@ export class Upstream extends EventEmitter<{ tools: [RemoteTool[]] }> {
       if (!this.own.store.state.extension) this.o.log(`not paired yet: enter ${this.own.pairingCode().replace(/^(\d{4})/, "$1 ")} in the AnyMCP side panel (Connect)`);
       return { url: this.own.mcpUrl, token: this.own.token() };
     } catch (e) {
-      if ((e as NodeJS.ErrnoException).code !== "EADDRINUSE") throw e;
+      if ((e as NodeJS.ErrnoException).code !== "EADDRINUSE") {
+        const why = explainListenError(e, { mcpPort: this.o.mcpPort, extPort: this.o.extPort });
+        if (why) this.o.log(why); // the app's MCP log is the only place a stdio user can see this
+        throw e;
+      }
       return forward(); // lost a start-up race with another bridge
     }
   }

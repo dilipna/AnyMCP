@@ -8,8 +8,12 @@
    and the setup commands for it. If something else uses 47820/47821, choose other ports:
    `npm run bridge -- --mcp-port=48820 --ext-port=48821`, then in the panel *Settings → Connection → advanced*
    use `ws://127.0.0.1:48821/ext` when pairing.
-3. Click **Reconnect now**. AnyMCP also retries by itself (1 s, 2 s, 4 s … up to 15 s).
-4. If Chrome asks about **local network access**, choose **Allow**. (Chrome 147+ can gate loopback access; on
+3. Did it print *"The system does not allow listening on port …"* (`EACCES`)? The port is reserved. On Windows,
+   Hyper-V, WSL or Docker reserve port ranges, and the ranges can change after a reboot; list them with
+   `netsh interface ipv4 show excludedportrange protocol=tcp`. Start the bridge on two free ports
+   (`--mcp-port=… --ext-port=…`) and, when pairing, enter `ws://127.0.0.1:<ext-port>/ext` under *Show advanced*.
+4. Click **Reconnect now**. AnyMCP also retries by itself (1 s, 2 s, 4 s … up to 15 s).
+5. If Chrome asks about **local network access**, choose **Allow**. (Chrome 147+ can gate loopback access; on
    Chrome 157 with default settings we measured no prompt — see `scripts/lna-spike.ts`.) An enterprise policy
    (`LocalNetworkAccessBlockedForUrls`) can block it; ask your administrator.
 
