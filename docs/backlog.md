@@ -7,7 +7,7 @@ defect"; these are normal prototype limits.
 
 | # | Item | User problem | Evidence of need | Benefit | Cost | Now / defer |
 |---|---|---|---|---|---|---|
-| 1 | Real-site validation on 2–3 permitted read-only sites | "Does it work on my site?" is unanswerable from a fixture | Fixture-only evaluation (own limitation #16); one external read-only check exists | Honest compatibility list | S–M (needs owner permission per site) | **Defer — owner-required** |
+| 1 | Real-site validation on 2–3 permitted read-only sites | "Does it work on my site?" is unanswerable from a fixture | Fixture-only evaluation (own limitation #25); one external read-only check exists | Honest compatibility list | S–M (needs owner permission per site) | **Defer — owner-required** |
 | 2 | ~~`<select>`, checkbox/radio, contenteditable~~ **done** (record + replay + e2e; rich text as plain text) | Many forms use them | — | Wider coverage | — | Formatting (bold, lists) not planned |
 | 3 | Read-resume after a service-worker restart | A suspended read is reported `interrupted`; the client must retry | Observed by design (resilience e2e) | Fewer retries | M (needs argument persistence in memory-only storage + resume rules) | Defer: retry-by-client is safe and simple |
 | 4 | ~~stdio shim for the bridge~~ **done**: `anymcp-bridge --stdio` (becomes / forwards to / takes over the bridge) | Clients that only spawn stdio servers | — | More clients | — | Verified with the SDK client over stdio; not yet with Claude Desktop or Cursor themselves |
@@ -20,10 +20,10 @@ defect"; these are normal prototype limits.
 | 11 | Hash-pinned review + signed tool bundles (like Workflow-to-MCP) | Stronger provenance | Comparison doc | Trust | M | Defer |
 | 12 | Independent security review + fuzzing of the locator/engine | No audit exists | Threat model residual risks | Confidence | M (external) | **Owner decision** before any public release |
 | 13 | Firefox / Edge | Other browsers | none | Reach | L | Defer (Edge likely works; untested) |
-| 14 | A11y testing with a screen reader | axe-only today | known-limitations #18 | Real accessibility confidence | S–M | Do before a public release |
+| 14 | A11y testing with a screen reader | axe-only today | known-limitations #27 | Real accessibility confidence | S–M | Do before a public release |
 | 15 | Vulnerability disclosure address + SECURITY.md | None exists | Release gates | Required for publication | XS | **Owner action** |
 | 16 | ~~Mark a fill step as consequential~~ **done** ("Saves by itself" → approval every run; `no_change_needed` when already set) | Some settings save instantly | — | — | — | e2e: settings dropdown + ARIA switch |
-| 17 | Pagination for lists ("next page" until N items) | Results spread over pages | known-limitations 9b | Complete lists | M (needs a bounded repeat; today's vocabulary has no loops, by design) | Defer; needs a design that keeps tools bounded |
+| 17 | Pagination for lists ("next page" until N items) | Results spread over pages | known-limitations #14 | Complete lists | M (needs a bounded repeat; today's vocabulary has no loops, by design) | Defer; needs a design that keeps tools bounded |
 
 Explicitly **not** planned for the initial release: cloud hosting, billing, marketplaces, enterprise accounts,
 mobile, dozens of site adapters, purchases/payments, unattended messaging.
