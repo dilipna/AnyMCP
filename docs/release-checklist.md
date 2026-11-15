@@ -24,7 +24,7 @@ Store.** Labels: **Verified end to end** · **Verified locally** · **Mock-teste
 | Check | Command | Result |
 |---|---|---|
 | Types | `npm run typecheck` | clean |
-| Unit + integration | `npm test` | 133/133 |
+| Unit + integration | `npm test` | 136/136 |
 | Browser suite, Playwright Chromium 158 | `npm run test:e2e` | 67/67 |
 | Browser suite, Google Chrome 157.0.8103.52 | `ANYMCP_E2E_BROWSER=chrome npm run test:e2e` | 67/67 |
 | Fixture evaluation (protocol v2) | `npm run eval` | 170/170 correct |

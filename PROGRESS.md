@@ -24,7 +24,7 @@ pushed). Commits use the owner's GitHub no-reply identity.
 ## Verified (2026-11-14; re-run to confirm)
 | Check | Command | Result |
 |---|---|---|
-| Typecheck / unit + integration | `npm run typecheck` / `npm test` | clean / 133 pass |
+| Typecheck / unit + integration | `npm run typecheck` / `npm test` | clean / 136 pass |
 | Browser suite | `npm run test:e2e` (Chromium 158) and `ANYMCP_E2E_BROWSER=chrome` (Chrome 157.0.8103.52) | 67/67 each |
 | Fixture evaluation | `npm run eval` | 170/170, 0 false success, 0 unapproved |
 | Public sites | `npm run eval:public -- --with-claude` (Chromium) and `-- --chrome` | 7/7 equal independent reading in both; Claude Code HTTP + stdio ✓ |
