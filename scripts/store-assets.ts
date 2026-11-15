@@ -37,20 +37,38 @@ p{font-size:22px;line-height:1.45;margin:0;color:#dbe6ff;max-width:560px}
 <div class="note">Render of the extension’s side-panel page with synthetic data (Acme Support Portal fixture). Not affiliated with Google or Anthropic.</div>`;
 
 const promo = `<!doctype html><meta charset="utf-8"><style>
-body{margin:0;width:440px;height:280px;font-family:system-ui,"Segoe UI",sans-serif;color:#fff;background:linear-gradient(135deg,#0b57d0,#14213d);display:flex;flex-direction:column;justify-content:center;padding:0 34px;gap:12px}
+*{box-sizing:border-box} body{margin:0;width:440px;height:280px;font-family:system-ui,"Segoe UI",sans-serif;color:#fff;background:linear-gradient(135deg,#0b57d0,#14213d);display:flex;flex-direction:column;justify-content:center;padding:0 34px;gap:12px}
 img{width:64px;height:64px} h1{margin:0;font-size:34px;font-weight:800} p{margin:0;font-size:17px;line-height:1.35;color:#dbe6ff}</style>
 <img src="${icon}"><h1>AnyMCP Extension</h1><p>Teach a website task once, review it, and let your AI app run it as an MCP tool.</p>`;
 
 for (const s of slides) if (!existsSync(raw(s.src))) throw new Error(`missing ${raw(s.src)} — run: npm run screenshots`);
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+
+// Refuse to write an image whose text or logo is cut off at an edge (the first promo tile was: its padding pushed
+// the tagline past 440 px). The panel screenshot is excluded: it is cropped on purpose and fades out.
+async function assertFits(name: string) {
+  const outside = await page.evaluate(() => {
+    const found: string[] = [];
+    for (const el of document.querySelectorAll<HTMLElement>("h1, p, .brand, .note, body > img")) {
+      const r = el.getBoundingClientRect();
+      if (r.left < 0 || r.top < 0 || r.right > innerWidth + 0.5 || r.bottom > innerHeight + 0.5 || el.scrollWidth > el.clientWidth + 1)
+        found.push(`<${el.tagName.toLowerCase()}${el.className ? ` class="${el.className}"` : ""}> at x ${Math.round(r.left)}–${Math.round(r.right)}, y ${Math.round(r.top)}–${Math.round(r.bottom)}`);
+    }
+    return found.length ? `${found.join("; ")} (image is ${innerWidth}×${innerHeight})` : "";
+  });
+  if (outside) throw new Error(`${name}: content does not fit: ${outside}`);
+}
+
 for (const s of slides) {
   await page.setContent(frame(s));
+  await assertFits(s.file);
   await page.screenshot({ path: resolve(root, "store/screenshots", s.file) });
   console.log("wrote", s.file);
 }
 await page.setViewportSize({ width: 440, height: 280 });
 await page.setContent(promo);
+await assertFits("promo-small-440x280.png");
 await page.screenshot({ path: resolve(root, "store/screenshots/promo-small-440x280.png") });
 console.log("wrote promo-small-440x280.png");
 await browser.close();
