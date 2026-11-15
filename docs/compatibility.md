@@ -14,7 +14,7 @@ Evidence labels used below:
 | What | Status | Evidence / note |
 |---|---|---|
 | Windows 11, Node 24.11 | Verified end to end | all suites, public-site run, clean-checkout install |
-| macOS 26.7 (arm64), Ubuntu 26.04, Windows Server 2025; Node 24.22 | Verified locally (CI) | [GitHub Actions run 43759300324](https://github.com/dilipna/AnyMCP/actions/runs/43759300324), 2026-11-15: type check, 136/136 unit and integration tests, 67/67 browser tests (Chrome for Testing 158.0.8127.18, synthetic fixture), reproducible package, npm tarball installed and run (HTTP + stdio). The extension ZIP, bridge and npm tarball were byte-identical on all four CI jobs and to the Windows 11 build. No public-site run and no real AI app there; nobody has used it by hand on macOS or Linux |
+| macOS 26.7 (arm64), Ubuntu 26.04, Windows Server 2025; Node 24.22 | Verified locally (CI) | [GitHub Actions run 43761573768](https://github.com/dilipna/AnyMCP/actions/runs/43761573768), 2026-11-15 (macOS job run twice, green both times): type check, 136/136 unit and integration tests, 67/67 browser tests (Chrome for Testing 158.0.8127.18, synthetic fixture), reproducible package, npm tarball installed and run (HTTP + stdio). The extension ZIP, bridge and npm tarball were byte-identical on all four CI jobs and to the Windows 11 build. No public-site run and no real AI app there; nobody has used it by hand on macOS or Linux |
 | Node 20.19 | Verified locally (CI, Ubuntu) | same run: Node 20.19.6 passes every step above |
 | Node 21 – 23 | Prepared but untested | `engines: >=20.19`; not run |
 | Playwright Chromium 158 | Verified end to end | 67/67 browser tests, fixture evaluation (170/170, protocol v2), public sites |

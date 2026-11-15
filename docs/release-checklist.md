@@ -8,7 +8,7 @@ npm, NOT submitted to the Chrome Web Store.** Labels: **Verified end to end** ·
 
 | # | Gate | Status | Evidence / what is missing |
 |---|---|---|---|
-| 1 | Clean installation: a fresh copy installs, tests, builds, packages and starts | **Verified locally** (Windows 11, Node 24.11) | `node scripts/clean-install-check.mjs`: npm ci, typecheck, tests, build, reproducible package, npm install-and-run check, bridge `/health`, all PASS on 2026-11-14. macOS, Ubuntu, Windows Server and Node 20.19: **Verified locally (CI)**, every step of `npm ci` → package check passes ([run 43759300324](https://github.com/dilipna/AnyMCP/actions/runs/43759300324)). |
+| 1 | Clean installation: a fresh copy installs, tests, builds, packages and starts | **Verified locally** (Windows 11, Node 24.11) | `node scripts/clean-install-check.mjs`: npm ci, typecheck, tests, build, reproducible package, npm install-and-run check, bridge `/health`, all PASS on 2026-11-14. macOS, Ubuntu, Windows Server and Node 20.19: **Verified locally (CI)**, every step of `npm ci` → package check passes ([run 43761573768](https://github.com/dilipna/AnyMCP/actions/runs/43761573768)). |
 | 2 | Core workflow: an MCP client calls an approved tool and gets a verified result | **Verified end to end** | Claude Code 2.1.207 over HTTP and over stdio on public sandboxes (`eval/results/public-sites-*`); SDK client in 67 browser tests. Claude Desktop: **Blocked** (not installed). Cursor: **Blocked** (interface not operable here). |
 | 3 | Tool creation: authorize a site, record, review, test, enable, revoke | **Verified end to end** (recording on public sites) / **Verified locally** (UI-only journey) | `eval:public`; `e2e/ui-journey.spec.ts`, `recording.spec.ts`, `capabilities.spec.ts`, `webapps.spec.ts`, `richtext.spec.ts`, `authorize-site.spec.ts`. Chrome's own permission prompt: **Prepared but untested** (cannot be automated). |
 | 4 | Permission enforcement | **Verified locally** | `permissions.spec.ts` (ungranted site, mid-run redirect, tampered or policy-violating definition, revocation); bridge integration tests (401, Host/Origin, pairing, oversized/malformed/misrouted input); production-build test proves site authorization is reachable. |
@@ -34,7 +34,7 @@ npm, NOT submitted to the Chrome Web Store.** Labels: **Verified end to end** ·
 | npm tarball outside the checkout | `npm run package:check` | 7/7 checks |
 | Packaged bridge over stdio | `npm run smoke:stdio` | PASS |
 | Clean checkout | `node scripts/clean-install-check.mjs` | PASSED |
-| CI, 2026-11-15: macOS 26.7 arm64, Ubuntu 26.04 (Node 24.22 and 20.19.6), Windows Server 2025 | `.github/workflows/ci.yml` ([run 43759300324](https://github.com/dilipna/AnyMCP/actions/runs/43759300324)) | all green: 136/136 unit, 67/67 browser (Chrome for Testing 158), reproducible package, npm tarball 7/7 |
+| CI, 2026-11-15: macOS 26.7 arm64, Ubuntu 26.04 (Node 24.22 and 20.19.6), Windows Server 2025 | `.github/workflows/ci.yml` ([run 43761573768](https://github.com/dilipna/AnyMCP/actions/runs/43761573768)) | all green: 136/136 unit, 67/67 browser (Chrome for Testing 158), reproducible package, npm tarball 7/7 |
 
 ## Not verified (honest list)
 
@@ -52,7 +52,8 @@ npm, NOT submitted to the Chrome Web Store.** Labels: **Verified end to end** ·
    unrelated npm package `anymcp` exists; a trademark search is still advisable, see `docs/naming-check.md`).
 2. ~~Security contact~~ **done 2026-11-15:** GitHub private vulnerability reporting enabled; `SECURITY.md` links it.
 3. ~~Push~~ **done 2026-11-15** (history first stripped of pre-rename panel images); CI green on macOS, Ubuntu and
-   Windows after two fixes it found (lockfile entries newer npm requires; macOS dropdown keys in three tests).
+   Windows after three fixes it found (lockfile entries newer npm requires; macOS dropdown keys in three tests; a
+   test locator that could click the header's "Running" pill instead of a run).
 4. **Run the first-time-user test** with 3–5 people; try Claude Desktop or Cursor with the manual test in the sheet.
 5. ~~Host the privacy policy~~ **done 2026-11-15** (GitHub Pages). Still open: a lawyer's review of it, and real
    docked-panel screenshots (list in `docs/quick-start.md`) to supplement the labelled renders.
