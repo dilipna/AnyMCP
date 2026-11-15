@@ -39,7 +39,7 @@ for (const scheme of ["light", "dark"] as const) {
     await p.getByRole("button", { name: "Tools", exact: true }).waitFor();
     await audit(p, `${scheme}/tool library`);
 
-    await p.getByText("Find order").first().click();
+    await p.getByRole("main").getByText("Find order").first().click();
     await p.getByRole("button", { name: "Run test" }).waitFor();
     await p.getByLabel("order_id").fill("A-1012");
     await p.getByRole("button", { name: "Run test" }).click();
@@ -49,7 +49,7 @@ for (const scheme of ["light", "dark"] as const) {
 
     await p.getByRole("button", { name: "Runs" }).click();
     await audit(p, `${scheme}/runs list`);
-    await p.getByText("Draft customer note").first().click();
+    await p.getByRole("main").getByText("Draft customer note").first().click();
     await p.getByRole("button", { name: "← All runs" }).waitFor();
     await audit(p, `${scheme}/run timeline (unknown outcome)`);
 

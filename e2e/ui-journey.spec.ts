@@ -103,12 +103,14 @@ test("teach → review → save → test → enable → use via MCP → disconne
 
   // ---- 6. the run is visible in the Runs screen with a timeline ----
   await p.getByRole("button", { name: "Runs" }).click();
-  await p.getByText("UI journey find order").first().click();
+  // Scoped to <main>: until the panel hears the run ended, the header shows `Running “<tool>”`, and an unscoped
+  // getByText(...).first() clicks that pill instead of the run (seen on a slow macOS CI runner; reproduced locally).
+  await p.getByRole("main").getByText("UI journey find order").first().click();
   await expect(p.getByRole("list", { name: "Run timeline" })).toContainText("Outcome verified");
 
   // ---- 7. edit creates a NEW version that must be tested again; the enabled one keeps running ----
   await p.getByRole("button", { name: "Tools", exact: true }).click();
-  await p.getByText("UI journey find order").first().click();
+  await p.getByRole("main").getByText("UI journey find order").first().click();
   await p.getByRole("button", { name: "Edit…" }).click();
   await p.getByLabel("Description for the AI assistant").fill("Look up an order by id and return its status (edited by a person).");
   await p.getByRole("button", { name: "Save as new version" }).click();
@@ -146,7 +148,7 @@ test("Settings: privacy toggles work, and deleting history empties the Runs scre
 
   // default: results are NOT kept
   await p.getByRole("button", { name: "Runs" }).click();
-  await p.getByText("Find order").first().click();
+  await p.getByRole("main").getByText("Find order").first().click();
   await expect(p.getByText("Result returned to the assistant")).toHaveCount(0);
 
   // opt in, run again: the returned values now appear in history
@@ -155,7 +157,7 @@ test("Settings: privacy toggles work, and deleting history empties the Runs scre
   await expect(p.getByLabel(/Keep results in run history/)).toBeChecked(); // responds immediately, does not snap back
   await s.run(c, "find_order", { order_id: "A-1013" });
   await p.getByRole("button", { name: "Runs" }).click();
-  await p.getByText("Find order").first().click();
+  await p.getByRole("main").getByText("Find order").first().click();
   await expect(p.getByText("Result returned to the assistant")).toBeVisible();
 
   // delete history
