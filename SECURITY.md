@@ -5,8 +5,9 @@ it defends against and, just as important, what it does not.
 
 ## Reporting a vulnerability
 
-**Contact: [OWNER: add a monitored private address, or enable GitHub private vulnerability reporting for
-https://github.com/dilipna/AnyMCP and link it here]. Until then, please do not post vulnerability details publicly.**
+**Report privately through GitHub: https://github.com/dilipna/AnyMCP/security/advisories/new** (the repository's
+Security tab → "Report a vulnerability"). Only the maintainer can see the report. Please do not open a public issue,
+pull request or discussion with vulnerability details.
 
 Include: what you did, what you expected, what happened, and the AnyMCP version (side panel → Settings → About AnyMCP,
 or `anymcp-bridge --help`). **Never include your bridge token, pairing secret or pairing code.**
@@ -35,4 +36,5 @@ Only the latest commit on the default branch. There are no releases yet.
 
 ## Response
 
-[OWNER: state what you can honestly commit to, for example "acknowledgement within 7 days, best effort fix".]
+AnyMCP is maintained by one person on a best-effort basis. There is no guaranteed response or fix time. Reports are
+handled in the private advisory, and a fix is published with credit to the reporter unless they ask not to be named.
