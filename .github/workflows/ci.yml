@@ -1,4 +1,3 @@
-# Not run yet: nothing has been pushed to GitHub. The first push will be the first run. See docs/release-checklist.md.
 name: CI
 on:
   push:
