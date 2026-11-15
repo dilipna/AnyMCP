@@ -16,8 +16,8 @@ jobs:
             node: "20.19"
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: ${{ matrix.node }}
           cache: npm
@@ -41,13 +41,13 @@ jobs:
         run: npm run package:check
       - name: Keep the release artifacts
         if: matrix.os == 'ubuntu-latest' && matrix.node == '24'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: anymcp-release
           path: release/
       - name: Keep test output on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: test-results-${{ matrix.os }}-node${{ matrix.node }}
           path: test-results/

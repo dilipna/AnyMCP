@@ -125,6 +125,12 @@ npx ${NPM_NAME}            # starts the bridge; prints a pairing code and setup 
 * Uninstall: \`npm uninstall -g ${NPM_NAME}\` (if installed globally), remove \`anymcp\` from your AI app's settings,
   and delete \`~/.anymcp\` (it holds the pairing secret and the client token).
 
+## Privacy and security
+
+Nothing is sent to the AnyMCP developer; results go only to the AI app you connect. Details:
+https://dilipna.github.io/AnyMCP/privacy-policy. Report vulnerabilities privately:
+https://github.com/dilipna/AnyMCP/security/advisories/new (never include your token or pairing code).
+
 ## Licence
 
 MIT. Bundled third-party code keeps its own licences: see THIRD_PARTY_NOTICES.md.
