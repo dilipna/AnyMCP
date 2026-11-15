@@ -1,6 +1,6 @@
 # AnyMCP documentation
 
-Start with the [README](../README.md). Then, by question:
+Start with the [README](https://github.com/dilipna/AnyMCP#readme). Then, by question:
 
 | If you want to know… | Read |
 |---|---|
@@ -8,15 +8,15 @@ Start with the [README](../README.md). Then, by question:
 | What has been tested where, and with which AI apps? | [compatibility.md](compatibility.md) (evidence labels) |
 | What exactly works, and what doesn't? | [supported-capabilities.md](supported-capabilities.md) · [known-limitations.md](known-limitations.md) |
 | How is it built, and why those choices? | [architecture.md](architecture.md) · [decisions.md](decisions.md) |
-| What data goes where? | [privacy-policy.md](privacy-policy.md) (draft) |
-| Is it safe? What isn't it protected against? | [threat-model.md](threat-model.md) · [../SECURITY.md](../SECURITY.md) |
+| What data goes where? | [privacy-policy.md](privacy-policy.md) (hosted at https://dilipna.github.io/AnyMCP/privacy-policy) |
+| Is it safe? What isn't it protected against? | [threat-model.md](threat-model.md) · [SECURITY.md](https://github.com/dilipna/AnyMCP/blob/main/SECURITY.md) |
 | What was measured, and how? | [public-site-report.md](public-site-report.md) · [evaluation-protocol.md](evaluation-protocol.md) → `eval/results/` |
 | How does it differ from existing projects? | [comparison.md](comparison.md) (every cell tagged V-doc / V-code / M / U) |
 | What must happen before it's published? | [release-checklist.md](release-checklist.md) · [naming-check.md](naming-check.md) |
-| Store submission material | [../store/listing.md](../store/listing.md) · [privacy-policy.md](privacy-policy.md) |
+| Store submission material | [store/listing.md](https://github.com/dilipna/AnyMCP/blob/main/store/listing.md) · [privacy-policy.md](privacy-policy.md) |
 | How do I show it to someone? How do I run a user test? | [demo-script.md](demo-script.md) · [first-time-user-test.md](first-time-user-test.md) |
 | What might come next, and why not now? | [backlog.md](backlog.md) |
-| Where did the work stop? | [../PROGRESS.md](../PROGRESS.md) |
+| Where did the work stop? | [PROGRESS.md](https://github.com/dilipna/AnyMCP/blob/main/PROGRESS.md) |
 
 ## Reading evidence correctly
 

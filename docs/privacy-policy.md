@@ -1,9 +1,11 @@
-# AnyMCP — Privacy Policy (DRAFT)
+# AnyMCP — Privacy Policy
 
-> **Draft, not legal advice.** It is written from what the code does today and must change if the code changes.
-> Bracketed items are for the owner to complete. Have it reviewed before publishing it.
+**Effective date:** 15 November 2026 · **Publisher:** dilipna ([GitHub](https://github.com/dilipna)) ·
+**Applies to:** the AnyMCP Extension for Chrome and the AnyMCP bridge (`@dilipna/anymcp-bridge`)
 
-**Effective date:** [DATE] · **Publisher:** dilipna (GitHub) · **Contact:** [PRIVACY CONTACT — to be added]
+**Contact:** questions about this policy: [open an issue](https://github.com/dilipna/AnyMCP/issues). To report a
+privacy or security problem privately: [private report form](https://github.com/dilipna/AnyMCP/security/advisories/new)
+(only the maintainer can see it).
 
 ## Summary
 
@@ -47,8 +49,8 @@ delete history at any time in Settings.
 ## Permissions
 
 The extension asks Chrome for access to **one website at a time**, when you enter its address under **Allow a
-website** and confirm Chrome's prompt. It has no website access at install. Each permission is explained in
-`store/listing.md`.
+website** and confirm Chrome's prompt. It has no website access at install. Each permission is explained in the
+[store listing notes](https://github.com/dilipna/AnyMCP/blob/main/store/listing.md#permission-justifications-dashboard-privacy-practices-tab).
 
 ## Your controls
 
@@ -69,9 +71,13 @@ Data Policy, including Limited Use).
 
 Data on your computer is protected by your operating-system account; anything that can read your browser profile or
 `~/.anymcp` can read the stored secrets. The bridge listens on 127.0.0.1 only and requires a token or a paired
-extension. AnyMCP has not had an independent security review; see `docs/threat-model.md`. Report vulnerabilities as
-described in `SECURITY.md`.
+extension. AnyMCP has not had an independent security review; see the [threat model](threat-model.md). Report
+vulnerabilities as described in the [security policy](https://github.com/dilipna/AnyMCP/blob/main/SECURITY.md).
 
 ## Changes
 
-[Describe how changes to this policy are announced, for example in the repository's release notes.]
+This policy lives in AnyMCP's public repository, so every change to it is a visible commit:
+[history of this page](https://github.com/dilipna/AnyMCP/commits/main/docs/privacy-policy.md). When a change affects
+what data is handled or where it goes, the effective date above is updated and the change is described in the release
+notes of the first version that includes it. The policy is written from what the code does; if the two ever
+disagree, please report it.
