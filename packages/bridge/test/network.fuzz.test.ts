@@ -146,6 +146,26 @@ describe("MCP HTTP endpoint under random traffic", () => {
     });
     expect(res.status).toBe(413);
   });
+
+  it("answers a body nested more than 64 levels deep with 400, not a 500 from the SDK", async () => {
+    const at = async (depth: number) => {
+      const body = `{"jsonrpc":"2.0","id":7,"method":"tools/call","params":{"name":"find_order","arguments":{"order_id":${"[".repeat(depth)}${"]".repeat(depth)}}}}`;
+      return send(bridge.mcpPort, {
+        method: "POST",
+        path: "/mcp",
+        headers: { authorization: `Bearer ${bridge.token()}`, "content-type": "application/json", accept: "application/json, text/event-stream", "content-length": String(Buffer.byteLength(body)) },
+        setHost: true,
+        body,
+      });
+    };
+    // the envelope itself is 3 levels ({…}, params, arguments), so 61 array levels reach 64 in total
+    expect((await at(61)).status).toBe(200);
+    for (const depth of [62, 5000, 14000]) {
+      const res = await at(depth);
+      expect(res.status, `depth ${depth}`).toBe(400);
+      expect(res.body, `depth ${depth}`).toContain("nested more than 64 levels");
+    }
+  });
 });
 
 describe("extension WebSocket under random traffic", () => {

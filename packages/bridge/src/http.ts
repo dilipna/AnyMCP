@@ -64,6 +64,30 @@ function readBody(req: IncomingMessage): Promise<string | null> {
   });
 }
 
+/**
+ * Deepest allowed nesting of arrays/objects in a request. Real MCP messages are a handful of levels deep. Without a
+ * limit, a body nested a few thousand levels deep (still far under MAX_BODY) made the MCP SDK's Node adapter fail
+ * re-serialising it (JSON.stringify overflows the stack) and answer 500 (found by network.fuzz.test.ts).
+ */
+export const MAX_JSON_DEPTH = 64;
+
+/** True if the JSON text nests arrays/objects deeper than `max`. Iterative (no recursion), ignores brackets in strings. */
+export function nestsDeeperThan(text: string, max: number): boolean {
+  let depth = 0;
+  let inString = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text.charCodeAt(i);
+    if (inString) {
+      if (c === 92 /* \ */) i++;
+      else if (c === 34 /* " */) inString = false;
+    } else if (c === 34) inString = true;
+    else if (c === 91 /* [ */ || c === 123 /* { */) {
+      if (++depth > max) return true;
+    } else if (c === 93 /* ] */ || c === 125 /* } */) depth--;
+  }
+  return false;
+}
+
 function tokenOk(header: string | undefined, token: string): boolean {
   const m = /^Bearer (.+)$/.exec(header ?? "");
   if (!m) return false;
@@ -134,6 +158,11 @@ export function createMcpHttpServer(o: McpHttpOptions): Server {
         if (raw === null) {
           res.writeHead(413, { "content-type": "application/json", connection: "close" });
           res.end(JSON.stringify({ error: "request too large" }));
+          return;
+        }
+        if (nestsDeeperThan(raw, MAX_JSON_DEPTH)) {
+          res.writeHead(400, { "content-type": "application/json" });
+          res.end(JSON.stringify({ jsonrpc: "2.0", error: { code: -32600, message: `Invalid request: nested more than ${MAX_JSON_DEPTH} levels deep` }, id: null }));
           return;
         }
         try {
