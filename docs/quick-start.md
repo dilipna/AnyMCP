@@ -28,6 +28,10 @@ npm run build
 3. Click the AnyMCP toolbar icon (pin it from the puzzle-piece menu if you do not see it). The side panel opens on
    **Tools**, with a **Getting started** checklist.
 
+Microsoft Edge and Brave also pass AnyMCP's test suites: open `edge://extensions` or `brave://extensions` instead,
+turn on **Developer mode** there, and load the same folder. In every browser the docked side panel itself was
+checked only by automation, rendered in a tab.
+
 ## 3. Start the bridge and pair
 
 ```bash

@@ -68,7 +68,8 @@ says nothing about other sites.
 
 ## Quick start (from source, about 10 minutes)
 
-Requirements: **Chrome ≥ 116**, **Node.js ≥ 20.19**, git. No account or paid service.
+Requirements: **Chrome ≥ 116** (Microsoft Edge and Brave also pass the test suites), **Node.js ≥ 20.19**, git. No
+account or paid service.
 
 ```bash
 git clone https://github.com/dilipna/AnyMCP anymcp && cd anymcp

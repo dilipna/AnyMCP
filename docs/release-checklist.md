@@ -8,7 +8,7 @@ npm, NOT submitted to the Chrome Web Store.** Labels: **Verified end to end** ·
 
 | # | Gate | Status | Evidence / what is missing |
 |---|---|---|---|
-| 1 | Clean installation: a fresh copy installs, tests, builds, packages and starts | **Verified locally** (Windows 11, Node 24.11) | `node scripts/clean-install-check.mjs`: npm ci, typecheck, tests, build, reproducible package, npm install-and-run check, bridge `/health`, all PASS on 2026-11-14. macOS, Ubuntu, Windows Server and Node 20.19: **Verified locally (CI)**, every step of `npm ci` → package check passes ([run 43761573768](https://github.com/dilipna/AnyMCP/actions/runs/43761573768)). |
+| 1 | Clean installation: a fresh copy installs, tests, builds, packages and starts | **Verified locally** (Windows 11, Node 24.11) | `node scripts/clean-install-check.mjs`: npm ci, typecheck, tests, build, reproducible package, npm install-and-run check, bridge `/health`, all PASS on 2026-11-14. macOS, Ubuntu, Windows Server, Node 20.19 and 22: **Verified locally (CI)**, every step of `npm ci` → package check passes ([run 43824366060](https://github.com/dilipna/AnyMCP/actions/runs/43824366060)). |
 | 2 | Core workflow: an MCP client calls an approved tool and gets a verified result | **Verified end to end** | Claude Code 2.1.207 over HTTP and over stdio on public sandboxes (`eval/results/public-sites-*`); SDK client in 67 browser tests. Claude Desktop: **Blocked** (not installed). Cursor: **Blocked** (interface not operable here). |
 | 3 | Tool creation: authorize a site, record, review, test, enable, revoke | **Verified end to end** (recording on public sites) / **Verified locally** (UI-only journey) | `eval:public`; `e2e/ui-journey.spec.ts`, `recording.spec.ts`, `capabilities.spec.ts`, `webapps.spec.ts`, `richtext.spec.ts`, `authorize-site.spec.ts`. Chrome's own permission prompt: **Prepared but untested** (cannot be automated). |
 | 4 | Permission enforcement | **Verified locally** | `permissions.spec.ts` (ungranted site, mid-run redirect, tampered or policy-violating definition, revocation); bridge integration tests (401, Host/Origin, pairing, oversized/malformed/misrouted input); production-build test proves site authorization is reachable. |
@@ -37,12 +37,12 @@ npm, NOT submitted to the Chrome Web Store.** Labels: **Verified end to end** ·
 | npm tarball outside the checkout | `npm run package:check` | 7/7 checks |
 | Packaged bridge over stdio | `npm run smoke:stdio` | PASS |
 | Clean checkout | `node scripts/clean-install-check.mjs` | PASSED |
-| CI, 2026-11-15: macOS 26.7 arm64, Ubuntu 26.04 (Node 24.22 and 20.19.6), Windows Server 2025 | `.github/workflows/ci.yml` ([run 43761573768](https://github.com/dilipna/AnyMCP/actions/runs/43761573768)) | all green: 136/136 unit, 67/67 browser (Chrome for Testing 158), reproducible package, npm tarball 7/7 |
+| CI, 2026-11-16: macOS 26.7 arm64, Ubuntu 26.04 (Node 24.22, 22.23.4 and 20.19.6), Windows Server 2025 | `.github/workflows/ci.yml` ([run 43824366060](https://github.com/dilipna/AnyMCP/actions/runs/43824366060)) | all green: 153/153 unit, 67/67 browser (Chrome for Testing 158), reproducible package, npm tarball 7/7; the three artifacts byte-identical on all five jobs and locally |
 
 ## Not verified (honest list)
 
 * macOS and Linux by hand (CI runs the automated suites there, not the public sites or a real AI app), Node 21 and
-  23, Chromium browsers other than Chrome, Edge and Brave.
+  23 (odd-numbered lines), Chromium browsers other than Chrome, Edge and Brave.
 * Claude Desktop, Cursor and other MCP clients.
 * Chrome's "allow this site" prompt and the docked side panel in a real window.
 * Any signed-in website, any write on a real website, any site beyond the three sandboxes.

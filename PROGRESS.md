@@ -32,7 +32,7 @@ serves `docs/` at https://dilipna.github.io/AnyMCP/ (privacy policy: `/privacy-p
 | Public sites | `npm run eval:public -- --with-claude` (Chromium) and `-- --chrome` | 7/7 equal independent reading in both; Claude Code HTTP + stdio ✓ |
 | Packaging | `npm run package -- --verify`, `npm run package:check` | reproducible; tarball installs and runs outside the checkout |
 | Clean checkout | `node scripts/clean-install-check.mjs` | PASSED |
-| CI 2026-11-15 | GitHub Actions run 43761573768 (macOS 26 arm64 ×2, Ubuntu 26.04 Node 24 + 20.19, Windows Server 2025) | all green; artifacts byte-identical on every job and to the local build |
+| CI 2026-11-16 | GitHub Actions run 43824366060 (macOS 26 arm64, Ubuntu 26.04 Node 24 + 22 + 20.19, Windows Server 2025) | all green; artifacts byte-identical on every job and to the local build |
 
 ## Next (needs the owner — see docs/release-checklist.md)
 Done 2026-11-15: naming, security contact (private reporting), push + green CI, hosted privacy policy.

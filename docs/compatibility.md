@@ -14,9 +14,9 @@ Evidence labels used below:
 | What | Status | Evidence / note |
 |---|---|---|
 | Windows 11, Node 24.11 | Verified end to end | all suites, public-site run, clean-checkout install |
-| macOS 26.7 (arm64), Ubuntu 26.04, Windows Server 2025; Node 24.22 | Verified locally (CI) | [GitHub Actions run 43761573768](https://github.com/dilipna/AnyMCP/actions/runs/43761573768), 2026-11-15 (macOS job run twice, green both times): type check, 136/136 unit and integration tests, 67/67 browser tests (Chrome for Testing 158.0.8127.18, synthetic fixture), reproducible package, npm tarball installed and run (HTTP + stdio). The extension ZIP, bridge and npm tarball were byte-identical on all four CI jobs and to the Windows 11 build. No public-site run and no real AI app there; nobody has used it by hand on macOS or Linux |
-| Node 20.19 | Verified locally (CI, Ubuntu) | same run: Node 20.19.6 passes every step above |
-| Node 21 – 23 | Prepared but untested | `engines: >=20.19`; not run |
+| macOS 26.7 (arm64), Ubuntu 26.04, Windows Server 2025; Node 24.22 | Verified locally (CI) | [GitHub Actions run 43824366060](https://github.com/dilipna/AnyMCP/actions/runs/43824366060), 2026-11-16 (macOS was also green twice on 2026-11-15): type check, 153/153 unit, integration and property tests, 67/67 browser tests (Chrome for Testing 158.0.8127.18, synthetic fixture), reproducible package, npm tarball installed and run (HTTP + stdio). The extension ZIP, bridge and npm tarball were byte-identical on all four CI jobs and to the Windows 11 build. No public-site run and no real AI app there; nobody has used it by hand on macOS or Linux |
+| Node 20.19 and 22 | Verified locally (CI, Ubuntu) | same run: Node 20.19.6 and 22.23.4 pass every step above |
+| Node 21, 23 | Prepared but untested | `engines: >=20.19`; odd-numbered lines, not run |
 | Playwright Chromium 158 | Verified end to end | 67/67 browser tests, fixture evaluation (170/170, protocol v2), public sites |
 | Google Chrome 157.0.8103.52 (branded) | Verified end to end | full browser suite 67/67 on 2026-11-15 (the production-build test always uses Chromium); public sites 7/7 in Chrome |
 | Microsoft Edge 157.0.4341.60 | Verified end to end | 2026-11-16: full browser suite 67/67 (`ANYMCP_E2E_BROWSER=msedge`); public sites 7/7, revocation 3/3 (SDK client). The extension was loaded unpacked over the DevTools protocol, not from a store |
