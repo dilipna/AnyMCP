@@ -17,6 +17,7 @@ Start with the [README](https://github.com/dilipna/AnyMCP#readme). Then, by ques
 | How do I show it to someone? How do I run a user test? | [demo-script.md](demo-script.md) · [first-time-user-test.md](first-time-user-test.md) |
 | What might come next, and why not now? | [backlog.md](backlog.md) |
 | What changed, version by version? | [CHANGELOG.md](https://github.com/dilipna/AnyMCP/blob/main/CHANGELOG.md) |
+| How do I report a bug or contribute? | [CONTRIBUTING.md](https://github.com/dilipna/AnyMCP/blob/main/CONTRIBUTING.md) |
 | Where did the work stop? | [PROGRESS.md](https://github.com/dilipna/AnyMCP/blob/main/PROGRESS.md) |
 
 ## Reading evidence correctly

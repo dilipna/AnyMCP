@@ -14,7 +14,15 @@ or `anymcp-bridge --help`). **Never include your bridge token, pairing secret or
 
 ## Supported versions
 
-Only the latest commit on the default branch. There are no releases yet.
+Only the latest commit on the default branch. There are no published releases yet.
+
+## Checking a download
+
+Files attached to a published GitHub release are rebuilt and compared byte for byte by
+`.github/workflows/release.yml`, which then signs build-provenance attestations for them. Check one with the GitHub
+CLI, for example `gh attestation verify anymcp-extension-0.1.0.zip --repo dilipna/AnyMCP`, and compare SHA-256
+values with `SHA256SUMS.txt`. The build is reproducible: `npm ci && npm run package -- --verify` from the release's
+tag gives byte-identical files.
 
 ## In scope
 

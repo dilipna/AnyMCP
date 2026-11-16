@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability (private)
+    url: https://github.com/dilipna/AnyMCP/security/advisories/new
+    about: Only the maintainer sees it. Please do not open a public issue for security problems.
+  - name: Documentation and troubleshooting
+    url: https://dilipna.github.io/AnyMCP/troubleshooting
+    about: Common problems (pairing, connecting an AI app, allowing a site) and their fixes.

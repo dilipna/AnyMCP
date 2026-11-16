@@ -31,9 +31,17 @@ Limits and evidence: [compatibility](docs/compatibility.md), [known limitations]
   a required parameter named `constructor` is enforced; a missing `constructor` argument is no longer filled in as
   `function Object() { [native code] }`; values that differ only by a `__proto__` key no longer hash the same
   (approval binding, duplicate detection, tool versions). All found by new property-based tests.
+* The bridge refuses a request nested more than 64 levels deep with a clear 400. Before, a body nested a few
+  thousand levels deep made the MCP SDK fail while re-serialising it and answer 500 (found by the network fuzz
+  tests; it needed the bridge token and the bridge kept running).
 * New property-based ("fuzz") tests for the protocol code and both bridge network endpoints, seeded and replayable.
 * The browser suite also runs in Microsoft Edge and Brave (`ANYMCP_E2E_BROWSER=msedge|brave`); CI adds Node 22.
 * CI on macOS, Linux and Windows; a lockfile fix for newer npm; macOS-safe dropdown handling in three tests; a test
   locator that could click the header's "Running" label instead of a run.
 * The store promo tile no longer cuts off its text; the npm README links the privacy policy and private
   vulnerability reporting.
+* Release integrity: a release workflow rebuilds each published release, proves the attached files are byte-identical
+  to that clean build, and signs build-provenance attestations (`gh attestation verify`). CodeQL analyses every
+  push; CI runs with a read-only token.
+* The evaluations' independent page reading decodes HTML entities once (`&amp;lt;` stays `&lt;`) and removes
+  tags completely (found by CodeQL; no past result changes).

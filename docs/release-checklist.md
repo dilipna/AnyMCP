@@ -1,7 +1,7 @@
 # Release checklist — AnyMCP 0.1.0 (developer beta)
 
-**Overall: developer beta. Pushed to https://github.com/dilipna/AnyMCP (public) on 2026-11-15. NOT published to
-npm, NOT submitted to the Chrome Web Store.** Labels: **Verified end to end** · **Verified locally** · **Mock-tested** · **Prepared but untested** ·
+**Overall: developer beta. Pushed to https://github.com/dilipna/AnyMCP (public) on 2026-11-15. A v0.1.0 release is
+prepared as a DRAFT (visible only to the owner). NOT published to npm, NOT submitted to the Chrome Web Store.** Labels: **Verified end to end** · **Verified locally** · **Mock-tested** · **Prepared but untested** ·
 **Blocked** · **Owner** (needs a decision, an account or someone else). Re-run the command to re-check.
 
 ## Gates
@@ -14,10 +14,12 @@ npm, NOT submitted to the Chrome Web Store.** Labels: **Verified end to end** ·
 | 4 | Permission enforcement | **Verified locally** | `permissions.spec.ts` (ungranted site, mid-run redirect, tampered or policy-violating definition, revocation); bridge integration tests (401, Host/Origin, pairing, oversized/malformed/misrouted input); production-build test proves site authorization is reachable. |
 | 5 | Failure handling without false success | **Verified locally** (fixture) | fixture evaluation protocol v2: 170/170 correct, 0 false success, 0 unapproved, 105/105 recovered (`eval/results/fixture-chromium-2026-11-14T06-10-35.*`). Real-site writes: none tested. |
 | 6 | Usability | **Owner** | Getting-started checklist, plain-language errors, axe WCAG A/AA clean (light and dark, 420 px). **No person outside development has used it.** Sheet: `docs/first-time-user-test.md`. |
-| 7 | Packaging | **Verified locally** | `npm run package -- --verify`: extension ZIP, bridge file and npm tarball byte-identical across two clean builds, and across all four CI jobs (macOS, Ubuntu with Node 24 and 20.19, Windows) and this Windows 11 machine; `npm run package:check`: tarball installs outside the checkout with no dependencies and runs (HTTP + stdio). |
+| 7 | Packaging | **Verified locally** | `npm run package -- --verify`: extension ZIP, bridge file and npm tarball byte-identical across two clean builds, and across all five CI jobs (macOS, Ubuntu with Node 24, 22 and 20.19, Windows) and this Windows 11 machine; `npm run package:check`: tarball installs outside the checkout with no dependencies and runs (HTTP + stdio). |
 | 8 | Store preparation | **Prepared but untested** (not submitted) | `store/listing.md`: text, permission justifications, data-usage answers, URLs. Privacy policy hosted at https://dilipna.github.io/AnyMCP/privacy-policy (GitHub Pages from `docs/`; every link checked; **not reviewed by a lawyer**). Security reports: GitHub private vulnerability reporting (enabled). Images: five 1280×800 renders of the panel page and a 440×280 promo tile in `store/screenshots/` (labelled renders; real-window screenshots still recommended). Missing: developer account, dashboard answers confirmed by the owner. |
 | 9 | Evidence: claims link to reproducible results and state limits | **Verified locally** | README → `docs/public-site-report.md`, `docs/compatibility.md`, `eval/results/`; `docs/known-limitations.md`. |
 | 10 | Licence and attribution | **Verified locally** | MIT `LICENSE`; each artifact carries LICENSE + third-party notices for what it bundles. |
+| 11 | Release integrity | **Verified locally** (draft) | Draft release v0.1.0 with the seven `release/` files. `.github/workflows/release.yml` rebuilds from the release's commit and compares every attached file byte for byte: dry run on the draft passed (all 7 identical); with one attached file deliberately altered it failed at that file and signed nothing; restored and passed again (runs 43830492552, 43830621081, 43926730886). On publication it also signs SLSA build-provenance attestations: **Prepared but untested** (signing only runs on a published release). |
+| 12 | Static analysis | **Verified locally** | CodeQL (extended security queries) on every push, JavaScript/TypeScript and workflows. First run: 0 alerts in the extension or bridge; 6 in tooling, 4 fixed (evaluation reader's entity decoding and tag removal, CI token permissions), 2 open for the owner to decide (intended report writes in two developer scripts). |
 
 ## Verified commands (2026-11-14 unless a row says otherwise)
 
@@ -47,8 +49,8 @@ npm, NOT submitted to the Chrome Web Store.** Labels: **Verified end to end** ·
 * Chrome's "allow this site" prompt and the docked side panel in a real window.
 * Any signed-in website, any write on a real website, any site beyond the three sandboxes.
 * Long-running stability, many tools, very large pages; screen readers; non-English UI.
-* Security: no external review or penetration test. In-house property-based fuzzing only (protocol code and both
-  bridge network endpoints).
+* Security: no external review or penetration test. In-house property-based fuzzing (protocol code and both bridge
+  network endpoints) and automated CodeQL analysis only.
 
 ## Owner actions (shortest first)
 
@@ -61,7 +63,12 @@ npm, NOT submitted to the Chrome Web Store.** Labels: **Verified end to end** ·
 4. **Run the first-time-user test** with 3–5 people; try Claude Desktop or Cursor with the manual test in the sheet.
 5. ~~Host the privacy policy~~ **done 2026-11-15** (GitHub Pages). Still open: a lawyer's review of it, and real
    docked-panel screenshots (list in `docs/quick-start.md`) to supplement the labelled renders.
-6. **Publish** `@dilipna/anymcp-bridge` (needs an npm account) and, later, submit the extension (developer account).
+6. **Publish** `@dilipna/anymcp-bridge` (needs `npm login`; publish `release/dilipna-anymcp-bridge-0.1.0.tgz`, the
+   file attached to the draft) and **publish the draft release** v0.1.0 (Releases page → Edit → Publish; the release
+   workflow then re-checks the files and signs attestations). Later, submit the extension (developer account).
+7. **CodeQL alerts 5 and 6** (`js/http-to-file-access` in `packages/eval/src/external.ts` and
+   `scripts/verify-npm-package.mjs`): both scripts write their own reports, which is their purpose; dismiss them as
+   "won't fix" if you agree (Security tab → Code scanning).
 
 ## Not done on purpose
 

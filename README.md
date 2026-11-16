@@ -123,7 +123,7 @@ to your AI app is marked untrusted. Details and the limits of all this: [docs/th
 [docs/index.md](docs/index.md) lists everything. Most useful: [compatibility](docs/compatibility.md) ·
 [known limitations](docs/known-limitations.md) · [architecture](docs/architecture.md) ·
 [privacy policy](docs/privacy-policy.md) ([hosted](https://dilipna.github.io/AnyMCP/privacy-policy)) · [security](SECURITY.md) · [naming check](docs/naming-check.md) ·
-[changelog](CHANGELOG.md).
+[changelog](CHANGELOG.md) · [contributing](CONTRIBUTING.md).
 
 ## Licence
 

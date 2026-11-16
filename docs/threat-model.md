@@ -28,7 +28,7 @@ how, where the test is, and — equally important — what it does **not** defen
 | T2 | Prompt injection makes the assistant call a write tool | Every write needs a per-run approval in the browser that the assistant cannot give; approval shows exact action + values | `approval.spec`; sender check unit tests |
 | T3 | Page changes between approval and click (bait-and-switch) | Approval bound to a hash of tool version, target, args, page values; page polled; re-checked in the content script right before the click | invalidation e2e (state, target, last-moment race) |
 | T4 | Web page or content script forges an approval/revoke/save-tool message | Only senders whose URL is the extension's own origin are accepted; a content script's sender is the web page and is refused | `sender.test.ts` |
-| T5 | Another local process or web page uses the bridge | Loopback bind; Host + Origin validation; bearer token; no CORS headers; WS needs `chrome-extension://` Origin, matching id, pairing code then HMAC | bridge integration tests (401/403/handshake); `network.fuzz.test.ts` (random methods, paths, Host/Origin/Authorization and bodies: never a 5xx, never a success without the exact token from a loopback host and origin; random WebSocket origins and frames never pair) |
+| T5 | Another local process or web page uses the bridge | Loopback bind; Host + Origin validation; bearer token; no CORS headers; WS needs `chrome-extension://` Origin, matching id, pairing code then HMAC | bridge integration tests (401/403/handshake); `network.fuzz.test.ts` (random methods, paths, Host/Origin/Authorization and bodies: never a 5xx, never a success without the exact token from a loopback host and origin; random WebSocket origins and frames never pair; found that deeply nested bodies made the SDK answer 500, now refused with 400 past 64 levels) |
 | T6 | DNS rebinding | Host header allow-list, Origin validation | bridge tests |
 | T7 | Brute-forcing the pairing code | single use, 10-minute expiry, 5 attempts then rotates | bridge tests |
 | T8 | A tool acts on the wrong site (redirect, lookalike) | Exact origins only; origin checked on every `ensureContent`; links/forms that leave the origin are refused | permissions e2e (mid-run redirect to another origin) |
@@ -62,7 +62,8 @@ how, where the test is, and — equally important — what it does **not** defen
 * **No independent security review and no penetration test** has been done. In-house property-based fuzzing
   (seeded and replayable: `packages/protocol/test/fuzz.test.ts`, `packages/bridge/test/network.fuzz.test.ts`) covers
   canonical hashing, sensitive-field detection, argument validation, parameter substitution, tool-definition parsing
-  and both bridge network endpoints. It is not a substitute for a review, and the locator and engine inside web
+  and both bridge network endpoints. CodeQL (extended security queries) analyses every push; its first run found
+  nothing in the extension or bridge code. Neither is a substitute for a review, and the locator and engine inside web
   pages are covered only by the browser suites.
 * **Local Network Access.** Chrome 147+ may prompt for loopback access. Measured on Chrome 157 with default
   settings: no prompt, WebSocket connected (see `scripts/lna-spike.ts`). Enterprise policies can change this.
