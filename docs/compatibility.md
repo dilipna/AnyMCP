@@ -19,8 +19,8 @@ Evidence labels used below:
 | Node 21 – 23 | Prepared but untested | `engines: >=20.19`; not run |
 | Playwright Chromium 158 | Verified end to end | 67/67 browser tests, fixture evaluation (170/170, protocol v2), public sites |
 | Google Chrome 157.0.8103.52 (branded) | Verified end to end | full browser suite 67/67 on 2026-11-15 (the production-build test always uses Chromium); public sites 7/7 in Chrome |
-| Microsoft Edge 157.0.4341.60 | Verified locally | full browser suite 67/67 on 2026-11-16 (`ANYMCP_E2E_BROWSER=msedge`); the extension is loaded unpacked over the DevTools protocol, not from a store |
-| Brave 1.99.57 (Chromium 157.0.8103.79) | Verified locally | full browser suite 67/67 on 2026-11-16 (`ANYMCP_E2E_BROWSER=brave`), default Shields settings in a fresh profile |
+| Microsoft Edge 157.0.4341.60 | Verified end to end | 2026-11-16: full browser suite 67/67 (`ANYMCP_E2E_BROWSER=msedge`); public sites 7/7, revocation 3/3 (SDK client). The extension was loaded unpacked over the DevTools protocol, not from a store |
+| Brave 1.99.57 (Chromium 157.0.8103.79) | Verified end to end | 2026-11-16: full browser suite 67/67 (`ANYMCP_E2E_BROWSER=brave`); public sites 7/7, revocation 3/3 (SDK client); default Shields settings in a fresh profile |
 | Other Chromium browsers (Opera, Vivaldi, Arc, …) | Prepared but untested | MV3 + side panel should work; not tried |
 | Firefox, Safari | Not supported | different extension platforms |
 | Docked side panel in a real window | Prepared but untested | tests render the same panel page in a tab |

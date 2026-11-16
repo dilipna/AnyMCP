@@ -3,8 +3,11 @@
 **Scope:** three public sandboxes published for scraping practice, a few inputs each, on 2026-11-14, Windows 11,
 Playwright Chromium 158 (with Claude Code) and, separately, Google Chrome 157.0.8103.52 (SDK client only). Read-only: pages are opened by address and read; no form is submitted, no account used, no
 message sent. About 25 page loads, paced. Raw results: `eval/results/public-sites-2026-11-14T05-49-41.{md,json}` (Chromium + Claude Code) and
-`eval/results/public-sites-2026-11-14T06-45-27.{md,json}` (Chrome).
-Re-run with `npm run eval:public` (add `-- --with-claude` to include Claude Code).
+`eval/results/public-sites-2026-11-14T06-45-27.{md,json}` (Chrome). Re-runs on 2026-11-16 in Microsoft Edge and Brave
+(SDK client only): `eval/results/public-sites-2026-11-16T07-28-57.{md,json}` (Edge) and
+`eval/results/public-sites-2026-11-16T07-29-48.{md,json}` (Brave).
+Re-run with `npm run eval:public` (add `-- --with-claude` to include Claude Code; `ANYMCP_E2E_BROWSER=msedge` or
+`=brave` for another installed browser).
 
 **What this shows:** the whole workflow (record → review → test → enable → call from an MCP client) works on these
 pages today, and the results equal an independent reading of the same pages. **What it does not show:** that any
@@ -32,7 +35,8 @@ automated. In the product, the person uses **Allow a website** and confirms Chro
 | quotes.toscrape.com/js | content drawn by JavaScript after load; page number in the path | `quotes_page` | CSS `span.text` | page 3 (10), page 5 (10) | yes, 20/20 |
 
 * Removing each site removed its tool from the client (3/3).
-* The same 7 runs and 3 revocations also passed in branded Google Chrome 157.0.8103.52.
+* The same 7 runs and 3 revocations also passed in branded Google Chrome 157.0.8103.52 and, on 2026-11-16, in
+  Microsoft Edge 157.0.4341.60 and Brave 1.99.57 (Chromium 157.0.8103.79), with the same item counts.
 * **Claude Code** (`claude -p`, version 2.1.207): `books_in_category` over **HTTP** returned the right two titles
   with their exact URLs; `hockey_team_search` over **stdio** (packaged bridge, forwarding) returned the right rows.
   The bridge recorded the callers as "claude-code" and "claude-code (via stdio)".

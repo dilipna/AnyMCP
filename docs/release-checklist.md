@@ -29,6 +29,7 @@ npm, NOT submitted to the Chrome Web Store.** Labels: **Verified end to end** ·
 | Browser suite, Google Chrome 157.0.8103.52 | `ANYMCP_E2E_BROWSER=chrome npm run test:e2e` | 67/67 |
 | Browser suite, Microsoft Edge 157.0.4341.60 (2026-11-16) | `ANYMCP_E2E_BROWSER=msedge npm run test:e2e` | 67/67 |
 | Browser suite, Brave 1.99.57 / Chromium 157.0.8103.79 (2026-11-16) | `ANYMCP_E2E_BROWSER=brave npm run test:e2e` | 67/67 |
+| Public sandboxes in Edge and Brave (2026-11-16) | `ANYMCP_E2E_BROWSER=msedge\|brave npm run eval:public` | 7/7 and revocation 3/3 in each |
 | Fixture evaluation (protocol v2) | `npm run eval` | 170/170 correct |
 | Public sandboxes + Claude Code | `npm run eval:public -- --with-claude` | 7/7 SDK runs equal an independent reading; revocation 3/3; Claude Code HTTP ✓, stdio ✓ |
 | Public sandboxes in branded Chrome | `npm run eval:public -- --chrome` | 7/7, revocation 3/3 |
