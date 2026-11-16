@@ -390,6 +390,8 @@ form.addEventListener('submit', async (e) => {
   <label for="pw">Password</label><input id="pw" name="password" type="password" autocomplete="current-password">
   <label for="tok">API token</label><input id="tok" name="api_token" type="text" autocomplete="off">
   <label for="cc">Card number</label><input id="cc" name="cardnumber" type="text" autocomplete="cc-number">
+  <label for="exp">Expires</label><input id="exp" name="exp" type="text" autocomplete="section-pay billing cc-exp">
+  <label for="sec">Security code</label><input id="sec" name="sc" type="text" inputmode="numeric">
   <label for="priv">Internal reference</label><input id="priv" name="ref" type="text" data-anymcp-ignore>
   <span data-mycp-ignore><label for="legacy">Legacy reference</label><input id="legacy" name="legacy_ref" type="text"></span>
   <button type="submit">Save settings</button>

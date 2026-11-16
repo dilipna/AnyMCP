@@ -1,11 +1,16 @@
 // Which form fields AnyMCP must never record, read, fill or click. Dependency-free (shared with the content script).
 
 const SENSITIVE_WORDS_RE =
-  /\bpass(word|code|wd)?\b|\bpwd\b|\botp\b|\bone[- ]?time\b|\btoken\b|\bsecret\b|\bapi[- ]?key\b|\bssn\b|\bsocial security\b|\bcard[- ]?(number|no|num)\b|\bcredit card\b|\bcvv\b|\bcvc\b|\biban\b|\brouting number\b/i;
+  /\bpass(word|code|wd)?\b|\bpwd\b|\botp\b|\bone[- ]?time\b|\btoken\b|\bsecret\b|\bapi[- ]?key\b|\bssn\b|\bsocial security\b|\bcard[- ]?(number|no|num)\b|\bcredit card\b|\bcvv\b|\bcvc\b|\biban\b|\brouting number\b|\bsecurity ?code\b|\bverification ?code\b|\bcsc\b/i;
 
-/** Split camelCase, snake_case, kebab-case and dotted names into words before matching. */
+/** Split camelCase, ACRONYMWords, snake_case, kebab-case, dotted names and trailing digits (cvv2, password2) into
+ *  words before matching. */
 function normalizeName(s: string): string {
-  return s.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replace(/[_\-.]+/g, " ");
+  return s
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+    .replace(/([A-Za-z])([0-9])/g, "$1 $2")
+    .replace(/[_\-.]+/g, " ");
 }
 
 /** True if a field name, id, label or step target looks like it holds a secret. */
@@ -37,7 +42,8 @@ export function isSensitiveField(f: FieldDescriptor): boolean {
   if (f.anymcpIgnore) return true;
   const type = (f.type ?? "").toLowerCase();
   if (type === "password" || type === "hidden" || type === "file") return true;
-  const ac = (f.autocomplete ?? "").toLowerCase();
-  if (ac.startsWith("cc-") || ac === "one-time-code" || ac.includes("password")) return true;
+  // autocomplete is a token list ("section-pay billing cc-number"): any payment, one-time-code or password token counts
+  const tokens = (f.autocomplete ?? "").toLowerCase().split(/\s+/);
+  if (tokens.some((t) => t.startsWith("cc-") || t === "one-time-code" || t.includes("password"))) return true;
   return [f.name, f.id, f.label, f.ariaLabel, f.placeholder].some((s) => looksSensitive(s));
 }

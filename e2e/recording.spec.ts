@@ -27,6 +27,8 @@ async function openTab(path: string): Promise<{ page: Page; tabId: number }> {
 }
 
 test("recording never captures password, token, card or data-anymcp-ignore fields — and none of it is stored", async () => {
+  // "Expires" is known to be a card field only from its autocomplete token list (section-pay billing cc-exp), and
+  // "Security code" only from its label: both were missed before the fuzz tests found those gaps.
   const { page, tabId } = await openTab("/account");
   expect((await s.call({ type: "record.start", tabId })).ok).toBe(true);
 
@@ -39,17 +41,19 @@ test("recording never captures password, token, card or data-anymcp-ignore field
   await type("Password", "hunter2-SECRET");
   await type("API token", "tok_live_abc123SECRET");
   await type("Card number", "4111111111111111");
+  await type("Expires", "12/29-EXPIRY");
+  await type("Security code", "737-CSC");
   await type("Internal reference", "internal-xyz-PRIVATE");
   await type("Legacy reference", "legacy-xyz-PRIVATE"); // inside the pre-release attribute data-mycp-ignore
 
-  const st = await waitForState(s, (x) => (x.recording?.steps.length ?? 0) >= 1 && (x.recording?.skippedSensitive ?? 0) >= 5);
+  const st = await waitForState(s, (x) => (x.recording?.steps.length ?? 0) >= 1 && (x.recording?.skippedSensitive ?? 0) >= 7);
   const labels = st.recording!.steps.map((x) => x.label);
   expect(labels).toEqual(["Display name"]); // the only non-sensitive field
-  expect(st.recording!.skippedSensitive).toBe(5);
+  expect(st.recording!.skippedSensitive).toBe(7);
 
   // scan EVERYTHING the extension persisted or holds in memory-storage, plus what the panel receives
   const dump = await s.panel.evaluate(async () => JSON.stringify({ local: await chrome.storage.local.get(null), session: await chrome.storage.session.get(null) }));
-  for (const secret of ["hunter2", "tok_live_abc123", "4111111111111111", "internal-xyz", "legacy-xyz"]) expect(dump, `leaked ${secret}`).not.toContain(secret);
+  for (const secret of ["hunter2", "tok_live_abc123", "4111111111111111", "12/29-EXPIRY", "737-CSC", "internal-xyz", "legacy-xyz"]) expect(dump, `leaked ${secret}`).not.toContain(secret);
   expect(JSON.stringify(st)).not.toContain("hunter2");
   // the user's own, non-sensitive typed example may exist ONLY in memory-only session storage, never in local storage
   const local = await s.panel.evaluate(async () => JSON.stringify(await chrome.storage.local.get(null)));

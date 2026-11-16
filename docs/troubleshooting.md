@@ -69,8 +69,9 @@ it. If the change is not there and you still want it, ask your assistant again (
 
 ## Recording does not capture something I typed
 
-Password, payment, token and one-time-code fields — and anything marked `data-anymcp-ignore` — are skipped on
-purpose (the panel counts them). Everything else is recorded only while the tab is on the approved site.
+Password, payment (card number, expiry, security code), token and one-time-code or verification-code fields — and
+anything marked `data-anymcp-ignore` — are skipped on purpose (the panel counts them). AnyMCP recognises them by
+field type, by any `autocomplete` hint (for example `billing cc-exp`), and by words in the field's name, id or label. Everything else is recorded only while the tab is on the approved site.
 
 ## "Allow this site" does nothing
 

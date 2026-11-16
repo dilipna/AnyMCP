@@ -1,6 +1,6 @@
 # AnyMCP — Privacy Policy
 
-**Effective date:** 15 November 2026 · **Publisher:** dilipna ([GitHub](https://github.com/dilipna)) ·
+**Effective date:** 16 November 2026 · **Publisher:** dilipna ([GitHub](https://github.com/dilipna)) ·
 **Applies to:** the AnyMCP Extension for Chrome and the AnyMCP bridge (`@dilipna/anymcp-bridge`)
 
 **Contact:** questions about this policy: [open an issue](https://github.com/dilipna/AnyMCP/issues). To report a
@@ -28,9 +28,11 @@ app you choose (an MCP client) run website tasks you taught and approved.
 | **4. Your AI app → its model provider** | Whatever your AI app sends, usually including tool results. | Decided by your AI app (for example, Claude Code sends conversations to Anthropic). | Under that provider's policy. AnyMCP cannot see or control this. |
 | **Websites** | Ordinary page requests from your browser. | The website you allowed. | The website may log visits as usual. |
 
-**Never collected or forwarded:** passwords, payment-card details, one-time codes and similar fields (ignored when
-recording, refused when running), fields a site marks private (`data-anymcp-ignore`), and your cookies or tokens
-(they stay in the browser; they are never sent to the bridge or the AI app).
+**Never collected or forwarded:** passwords, payment-card details (number, expiry, security code), one-time and
+verification codes and similar fields (ignored when recording, refused when running; recognised by field type, by
+any autocomplete hint, and by words in the field's name, id or label), fields a site marks private
+(`data-anymcp-ignore`), and your cookies or tokens (they stay in the browser; they are never sent to the bridge or
+the AI app).
 
 ## Recording a task
 
