@@ -14,6 +14,7 @@ import { join, resolve } from "node:path";
 import type { ResultEnvelope, ToolDefinition } from "anymcp-protocol";
 import { ANYMCP_VERSION } from "anymcp-protocol";
 import { startStack, sleep } from "../../../e2e/harness";
+import { htmlText } from "./html-text";
 import { gitRevision, sourceTreeHash } from "./revision";
 
 if (process.argv.includes("--chrome")) process.env.ANYMCP_E2E_BROWSER = "chrome";
@@ -91,7 +92,7 @@ async function truthFor(slug: string): Promise<string | null> {
   const html = await res.text();
   const m = /class="instock availability">([\s\S]*?)<\/p>/.exec(html);
   const pr = /class="price_color">([^<]+)</.exec(html);
-  return m && pr ? `${m[1]!.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim()} | ${pr[1]!.trim()}` : null;
+  return m && pr ? `${htmlText(m[1]!)} | ${pr[1]!.trim()}` : null;
 }
 
 interface Row {

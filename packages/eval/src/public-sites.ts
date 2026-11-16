@@ -32,6 +32,7 @@ import { ANYMCP_VERSION } from "anymcp-protocol";
 import { PATH_PART_PATTERN, buildDraft, type DraftSpec } from "../../extension/src/shared/draft";
 import type { TabCandidate } from "../../extension/src/shared/panel-api";
 import { browserLabel, sleep, startStack, waitForState, type Stack } from "../../../e2e/harness";
+import { htmlText, normalizeSpace } from "./html-text";
 import { gitRevision, sourceTreeHash } from "./revision";
 
 const ROOT = resolve(import.meta.dirname, "../../..");
@@ -43,18 +44,8 @@ const BOOKS = "https://books.toscrape.com";
 const HOCKEY = "https://www.scrapethissite.com";
 const QUOTES = "https://quotes.toscrape.com";
 
-const norm = (s: string) => s.replace(/\s+/g, " ").trim();
-const decode = (s: string) =>
-  norm(
-    s
-      .replace(/<[^>]+>/g, "")
-      .replace(/&amp;/g, "&")
-      .replace(/&quot;/g, '"')
-      .replace(/&#0?39;|&apos;/g, "'")
-      .replace(/&lt;/g, "<")
-      .replace(/&gt;/g, ">")
-      .replace(/&#(\d+);/g, (_, n: string) => String.fromCharCode(Number(n))),
-  );
+const norm = normalizeSpace;
+const decode = htmlText; // tags removed until none are left, entities decoded once (see html-text.ts)
 
 async function fetchTruth(url: string, parse: (html: string, url: string) => unknown[]): Promise<unknown[]> {
   await sleep(PAUSE_MS);
