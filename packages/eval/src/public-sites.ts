@@ -30,7 +30,7 @@ import type { ResultEnvelope, ToolDefinition } from "anymcp-protocol";
 import { ANYMCP_VERSION } from "anymcp-protocol";
 import { PATH_PART_PATTERN, buildDraft, type DraftSpec } from "../../extension/src/shared/draft";
 import type { TabCandidate } from "../../extension/src/shared/panel-api";
-import { sleep, startStack, waitForState, type Stack } from "../../../e2e/harness";
+import { browserLabel, sleep, startStack, waitForState, type Stack } from "../../../e2e/harness";
 import { gitRevision, sourceTreeHash } from "./revision";
 
 const ROOT = resolve(import.meta.dirname, "../../..");
@@ -369,7 +369,7 @@ async function main() {
     anymcpVersion: ANYMCP_VERSION,
     sourceTreeSha256: sourceTreeHash().sha256,
     git: gitRevision(),
-    browser: `${process.env.ANYMCP_E2E_BROWSER === "chrome" ? "Google Chrome" : "Playwright Chromium"} ${s.browserVersion}`,
+    browser: browserLabel(s.browserVersion),
     os: `${os.type()} ${os.release()} ${os.arch()}`,
     node: process.version,
     finishedAt: new Date().toISOString(),

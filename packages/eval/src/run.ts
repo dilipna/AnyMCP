@@ -3,6 +3,7 @@
 //   npm run eval -- --freeze           (re)write scenarios.lock.json (only before a headline run!)
 //   npm run eval -- --only=read.empty  development run: NOT a headline result, labelled as partial
 //   ANYMCP_E2E_BROWSER=chrome npm run eval   use the real branded Chrome instead of Playwright's Chromium
+//                                           (also msedge or brave: see e2eBrowser() in e2e/harness.ts)
 
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
@@ -12,7 +13,7 @@ import type { ResultEnvelope } from "anymcp-protocol";
 import { ANYMCP_VERSION, isSuccessStatus } from "anymcp-protocol";
 import { buildDraft, type DraftSpec } from "../../extension/src/shared/draft";
 import type { TabCandidate } from "../../extension/src/shared/panel-api";
-import { startStack, waitForState, sleep } from "../../../e2e/harness";
+import { browserLabel, e2eBrowser, startStack, waitForState, sleep } from "../../../e2e/harness";
 import { fileSha256, gitRevision, sourceTreeHash } from "./revision";
 import { PROTOCOL_VERSION, SCENARIOS, type Ctx, type Observation } from "./scenarios";
 
@@ -59,7 +60,6 @@ async function main() {
   execFileSync(process.execPath, [resolve(import.meta.dirname, "../../extension/scripts/build.mjs"), "--target=e2e"], { stdio: "inherit" });
   const stack = await startStack({ reconnectGraceMs: 8000 });
   const browserVersion = stack.browserVersion;
-  const useChrome = process.env.ANYMCP_E2E_BROWSER === "chrome";
   let n = 0;
   const idle = async () => {
     const d = Date.now() + 15_000;
@@ -271,7 +271,7 @@ async function main() {
     sourceFiles: rev.files,
     gitHead: git.head,
     gitDirty: git.dirty,
-    browser: `${useChrome ? "Google Chrome (real, branded)" : "Playwright Chromium"} ${browserVersion}`,
+    browser: browserLabel(browserVersion),
     os: `${os.type()} ${os.release()} ${os.arch()}`,
     node: process.version,
     cpu: os.cpus()[0]?.model ?? "unknown",
@@ -281,7 +281,7 @@ async function main() {
     site: "synthetic fixture (Acme Support Portal)",
   };
   const stamp = new Date(t0).toISOString().replace(/[:.]/g, "-").slice(0, 19);
-  const tag = `${useChrome ? "chrome" : "chromium"}-${stamp}${only ? `-only-${only}` : ""}${dev ? "-DEV" : ""}`;
+  const tag = `${e2eBrowser()}-${stamp}${only ? `-only-${only}` : ""}${dev ? "-DEV" : ""}`;
   const dir = resolve(ROOT, "eval/results");
   mkdirSync(dir, { recursive: true });
   const json = { env, totals: { runs: total, correct: sum("correct"), falseSuccess: sum("falseSuccess"), unapprovedActions: sum("unapproved"), overClaimsOfSafety: sum("overClaim") }, perScenario: per.map(({ lat, ...p }) => ({ ...p, latencyMs: lat.length ? { n: lat.length, min: Math.min(...lat), median: median(lat), p95: pct(lat, 95), max: Math.max(...lat) } : null })), writeLatencyMs: writeLat.length ? { n: writeLat.length, min: Math.min(...writeLat), median: median(writeLat), p95: pct(writeLat, 95), max: Math.max(...writeLat) } : null, toolCreation: creation, failures, runs: results };

@@ -2,7 +2,7 @@
 // the real bridge + the official MCP SDK client over HTTP. Nothing in the path is mocked.
 
 import { chromium, type BrowserContext, type Page, type Worker } from "@playwright/test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { Client, StreamableHTTPClientTransport } from "@modelcontextprotocol/client";
@@ -15,6 +15,38 @@ import type { PanelState } from "../packages/extension/src/shared/types";
 
 export const EXT_PATH = resolve(import.meta.dirname, "../packages/extension/dist/e2e");
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** The browser the suites drive, from ANYMCP_E2E_BROWSER: Playwright's bundled Chromium (default) or a real,
+ *  installed one. Brave has no Playwright channel; its path can be given in ANYMCP_BRAVE_PATH. */
+export type E2EBrowser = "chromium" | "chrome" | "msedge" | "brave";
+export const BROWSER_NAMES: Record<E2EBrowser, string> = {
+  chromium: "Playwright Chromium",
+  chrome: "Google Chrome",
+  msedge: "Microsoft Edge",
+  brave: "Brave",
+};
+/** How results name the browser, e.g. "Microsoft Edge (real, installed) 157.0.4341.60". */
+export const browserLabel = (version: string) => {
+  const b = e2eBrowser();
+  return `${BROWSER_NAMES[b]}${b === "chromium" ? "" : " (real, installed)"} ${version}`;
+};
+export function e2eBrowser(): E2EBrowser {
+  const v = process.env.ANYMCP_E2E_BROWSER || "chromium";
+  if (!(v in BROWSER_NAMES)) throw new Error(`ANYMCP_E2E_BROWSER=${v} is not one of ${Object.keys(BROWSER_NAMES).join(", ")}`);
+  return v as E2EBrowser;
+}
+function bravePath(): string {
+  const candidates = [
+    process.env.ANYMCP_BRAVE_PATH,
+    join(process.env.ProgramFiles ?? "C:\\Program Files", "BraveSoftware", "Brave-Browser", "Application", "brave.exe"),
+    join(process.env.LOCALAPPDATA ?? "", "BraveSoftware", "Brave-Browser", "Application", "brave.exe"),
+    "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
+    "/usr/bin/brave-browser",
+  ];
+  const found = candidates.find((p) => p && existsSync(p));
+  if (!found) throw new Error("Brave not found; set ANYMCP_BRAVE_PATH to its executable");
+  return found;
+}
 
 export interface Stack {
   browserVersion: string;
@@ -59,14 +91,15 @@ export async function startStack(opts: StackOptions = {}): Promise<Stack> {
   });
   const profile = mkdtempSync(join(tmpdir(), "anymcp-e2e-profile-"));
 
-  // ANYMCP_E2E_BROWSER=chrome runs the SAME suite in the real, branded Chrome installed on this machine.
-  // Branded Chrome 137+ ignores --load-extension, so there the extension is loaded over the DevTools protocol.
-  const useRealChrome = process.env.ANYMCP_E2E_BROWSER === "chrome";
+  // ANYMCP_E2E_BROWSER=chrome|msedge|brave runs the SAME suite in a real browser installed on this machine.
+  // Branded Chrome 137+ ignores --load-extension, so in every installed browser the extension is loaded over the
+  // DevTools protocol instead.
+  const which = e2eBrowser();
   let context: BrowserContext;
   let extId: string;
-  if (useRealChrome) {
+  if (which !== "chromium") {
     context = await chromium.launchPersistentContext(profile, {
-      channel: "chrome",
+      ...(which === "brave" ? { executablePath: bravePath() } : { channel: which }),
       headless: true,
       ignoreDefaultArgs: ["--disable-extensions"],
       args: ["--enable-unsafe-extension-debugging"],
