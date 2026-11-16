@@ -9,7 +9,9 @@ export function canonicalJson(value: unknown): string {
 function sortValue(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(sortValue);
   if (value && typeof value === "object") {
-    const out: Record<string, unknown> = {};
+    // Null prototype: on a plain {} an assignment to "__proto__" would set the prototype and the key would vanish
+    // from the output, so two different values could hash the same (found by the fuzz tests).
+    const out: Record<string, unknown> = Object.create(null);
     for (const key of Object.keys(value as Record<string, unknown>).sort()) {
       const v = (value as Record<string, unknown>)[key];
       if (v !== undefined) out[key] = sortValue(v);

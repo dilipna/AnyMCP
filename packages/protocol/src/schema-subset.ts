@@ -51,6 +51,12 @@ export const SchemaSubsetZ: z.ZodType<SchemaSubset> = z.lazy(() =>
 export type ObjectSchema = Extract<SchemaSubset, { type: "object" }>;
 export const ObjectSchemaZ = SchemaSubsetZ.refine((s) => s.type === "object", "must be an object schema") as unknown as z.ZodType<ObjectSchema>;
 
+/** The declared property `key` of an object schema, or undefined. Own entries only, so names such as `constructor`
+ *  or `__proto__` are never mistaken for declared fields (found by the fuzz tests). */
+export function declaredProperty(schema: ObjectSchema, key: string): SchemaSubset | undefined {
+  return Object.hasOwn(schema.properties, key) ? schema.properties[key] : undefined;
+}
+
 export interface SchemaIssue {
   path: string;
   message: string;
@@ -120,10 +126,10 @@ export function validateAgainstSchema(schema: SchemaSubset, value: unknown, path
       }
       const obj = value as Record<string, unknown>;
       for (const key of schema.required ?? []) {
-        if (!(key in obj) || obj[key] === undefined) issues.push({ path: `${path}.${key}`, message: "is required" });
+        if (!Object.hasOwn(obj, key) || obj[key] === undefined) issues.push({ path: `${path}.${key}`, message: "is required" });
       }
       for (const key of Object.keys(obj)) {
-        const sub = schema.properties[key];
+        const sub = declaredProperty(schema, key);
         if (!sub) {
           issues.push({ path: `${path}.${key}`, message: "is not an allowed field" });
           continue;

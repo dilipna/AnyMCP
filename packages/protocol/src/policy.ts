@@ -5,9 +5,9 @@
 // so what the user reads is exactly what the engine enforces.
 
 import { isCommitStep, type Condition, type Locator, type LocatorLeaf, type Step, type TextRef, type ToolDefinition, type ValueRef } from "./tool";
-import { isParamRef } from "./text";
+import { argValue, isParamRef } from "./text";
 import { looksSensitive } from "./sensitive";
-import { isPatternSafe, type SchemaSubset } from "./schema-subset";
+import { declaredProperty, isPatternSafe, type SchemaSubset } from "./schema-subset";
 
 export interface PolicyIssue {
   code: string;
@@ -41,11 +41,11 @@ export function templateParams(template: string): string[] {
 }
 
 export function renderTemplate(template: string, args: Record<string, unknown>): string {
-  return template.replace(PLACEHOLDER_RE, (_, name: string) => (args[name] === undefined ? `{${name}}` : String(args[name])));
+  return template.replace(PLACEHOLDER_RE, (_, name: string) => (argValue(args, name) === undefined ? `{${name}}` : String(argValue(args, name))));
 }
 
 export function renderEntryPath(path: string, args: Record<string, unknown>): string {
-  return path.replace(PLACEHOLDER_RE, (_, name: string) => encodeURIComponent(String(args[name] ?? "")));
+  return path.replace(PLACEHOLDER_RE, (_, name: string) => encodeURIComponent(String(argValue(args, name) ?? "")));
 }
 
 /** Path plus optional query of the page a run starts on. Every placeholder value is URL-encoded. */
@@ -211,12 +211,12 @@ export function validateToolPolicy(tool: ToolDefinition): PolicyIssue[] {
       if (tool.kind !== "write") err("commit_in_read_tool", `Step "${s.id}" changes data, but the tool is marked read-only.`, s.id);
     }
     if (s.op === "extract") {
-      const declared = tool.output.properties[s.into];
+      const declared = declaredProperty(tool.output, s.into);
       const wantsArray = s.source.type === "table" || s.source.type === "list";
       if (declared && wantsArray !== (declared.type === "array")) {
         err("output_shape_mismatch", `Step "${s.id}": “${s.into}” is ${wantsArray ? "a list of values" : "a single value"}, but the output schema says otherwise.`, s.id);
       }
-      if (!tool.output.properties[s.into]) err("unknown_output", `Step "${s.id}" extracts into “${s.into}”, which is not in the output schema.`, s.id);
+      if (!declared) err("unknown_output", `Step "${s.id}" extracts into “${s.into}”, which is not in the output schema.`, s.id);
       if (s.source.type === "text" && s.source.optional && tool.output.required?.includes(s.into)) {
         err("optional_required_output", `Step "${s.id}": “${s.into}” is a required output, so it cannot be optional.`, s.id);
       }
@@ -231,7 +231,7 @@ export function validateToolPolicy(tool: ToolDefinition): PolicyIssue[] {
   for (const [label, consts] of [["Empty", tool.emptyResult], ["Success", tool.successResult]] as const) {
     if (!consts) continue;
     for (const [k, v] of Object.entries(consts)) {
-      const sub = tool.output.properties[k];
+      const sub = declaredProperty(tool.output, k);
       if (!sub) {
         err("const_unknown_field", `${label} result field “${k}” is not in the output schema.`);
         continue;
@@ -273,13 +273,13 @@ export function validateToolPolicy(tool: ToolDefinition): PolicyIssue[] {
   // parameters
   const props = tool.input.properties;
   const refs = collectParamRefs(tool);
-  for (const r of refs) if (!props[r]) err("unknown_param", `“${r}” is used but is not an input parameter.`);
+  for (const r of refs) if (!declaredProperty(tool.input, r)) err("unknown_param", `“${r}” is used but is not an input parameter.`);
   for (const [name, schema] of Object.entries(props)) {
     if (!refs.has(name)) err("unused_param", `Input “${name}” is never used by the workflow.`);
     checkSchemaPatterns(schema, name, err);
   }
   for (const p of templateParams(tool.entry.path)) {
-    const s = props[p];
+    const s = declaredProperty(tool.input, p);
     if (s && !(s.type === "string" && (s.pattern || s.enum))) {
       err("path_param_unconstrained", `“${p}” is placed in the start path, so it must be a string with a pattern or fixed list of values.`);
     }
@@ -287,7 +287,7 @@ export function validateToolPolicy(tool: ToolDefinition): PolicyIssue[] {
   for (const [name, schema] of Object.entries(props)) {
     if (schema.type === "string" && schema.maxLength === undefined) err("input_unbounded", `Input “${name}” needs a maximum length.`);
   }
-  for (const key of tool.input.required ?? []) if (!props[key]) err("bad_required", `Required input “${key}” is not defined.`);
+  for (const key of tool.input.required ?? []) if (!declaredProperty(tool.input, key)) err("bad_required", `Required input “${key}” is not defined.`);
   for (const key of tool.output.required ?? []) {
     // A required output must be PRODUCED on the success path. (The empty result is a different path.)
     const extracted = tool.steps.some((s) => s.op === "extract" && s.into === key);
