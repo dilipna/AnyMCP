@@ -24,9 +24,11 @@ npm, NOT submitted to the Chrome Web Store.** Labels: **Verified end to end** ·
 | Check | Command | Result |
 |---|---|---|
 | Types | `npm run typecheck` | clean |
-| Unit + integration | `npm test` | 136/136 |
+| Unit + integration, incl. property-based tests (2026-11-16) | `npm test` | 153/153 (fuzz suites at 400 cases per property; a 25,000-case run with another seed also passed) |
 | Browser suite, Playwright Chromium 158 | `npm run test:e2e` | 67/67 |
 | Browser suite, Google Chrome 157.0.8103.52 | `ANYMCP_E2E_BROWSER=chrome npm run test:e2e` | 67/67 |
+| Browser suite, Microsoft Edge 157.0.4341.60 (2026-11-16) | `ANYMCP_E2E_BROWSER=msedge npm run test:e2e` | 67/67 |
+| Browser suite, Brave 1.99.57 / Chromium 157.0.8103.79 (2026-11-16) | `ANYMCP_E2E_BROWSER=brave npm run test:e2e` | 67/67 |
 | Fixture evaluation (protocol v2) | `npm run eval` | 170/170 correct |
 | Public sandboxes + Claude Code | `npm run eval:public -- --with-claude` | 7/7 SDK runs equal an independent reading; revocation 3/3; Claude Code HTTP ✓, stdio ✓ |
 | Public sandboxes in branded Chrome | `npm run eval:public -- --chrome` | 7/7, revocation 3/3 |
@@ -38,13 +40,14 @@ npm, NOT submitted to the Chrome Web Store.** Labels: **Verified end to end** ·
 
 ## Not verified (honest list)
 
-* macOS and Linux by hand (CI runs the automated suites there, not the public sites or a real AI app), Node 21–23,
-  other Chromium browsers.
+* macOS and Linux by hand (CI runs the automated suites there, not the public sites or a real AI app), Node 21 and
+  23, Chromium browsers other than Chrome, Edge and Brave.
 * Claude Desktop, Cursor and other MCP clients.
 * Chrome's "allow this site" prompt and the docked side panel in a real window.
 * Any signed-in website, any write on a real website, any site beyond the three sandboxes.
 * Long-running stability, many tools, very large pages; screen readers; non-English UI.
-* Security: no external review, no fuzzing.
+* Security: no external review or penetration test. In-house property-based fuzzing only (protocol code and both
+  bridge network endpoints).
 
 ## Owner actions (shortest first)
 

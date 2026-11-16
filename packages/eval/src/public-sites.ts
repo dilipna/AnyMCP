@@ -1,6 +1,7 @@
 // PUBLIC-SITE read-only validation: real websites, the REAL recorder, the real extension, the bridge, MCP clients.
 //
 //   npx tsx packages/eval/src/public-sites.ts [--chrome] [--with-claude]
+//   ANYMCP_E2E_BROWSER=msedge|brave npx tsx packages/eval/src/public-sites.ts   (another installed browser)
 //
 // What it does, per site: opens the start page in a tab, records the way a person would (picks what to return,
 // marks what proves it worked), applies only edits the review screen supports, saves, tests, enables, then calls the

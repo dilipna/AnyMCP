@@ -28,12 +28,12 @@ how, where the test is, and — equally important — what it does **not** defen
 | T2 | Prompt injection makes the assistant call a write tool | Every write needs a per-run approval in the browser that the assistant cannot give; approval shows exact action + values | `approval.spec`; sender check unit tests |
 | T3 | Page changes between approval and click (bait-and-switch) | Approval bound to a hash of tool version, target, args, page values; page polled; re-checked in the content script right before the click | invalidation e2e (state, target, last-moment race) |
 | T4 | Web page or content script forges an approval/revoke/save-tool message | Only senders whose URL is the extension's own origin are accepted; a content script's sender is the web page and is refused | `sender.test.ts` |
-| T5 | Another local process or web page uses the bridge | Loopback bind; Host + Origin validation; bearer token; no CORS headers; WS needs `chrome-extension://` Origin, matching id, pairing code then HMAC | bridge integration tests (401/403/handshake) |
+| T5 | Another local process or web page uses the bridge | Loopback bind; Host + Origin validation; bearer token; no CORS headers; WS needs `chrome-extension://` Origin, matching id, pairing code then HMAC | bridge integration tests (401/403/handshake); `network.fuzz.test.ts` (random methods, paths, Host/Origin/Authorization and bodies: never a 5xx, never a success without the exact token from a loopback host and origin; random WebSocket origins and frames never pair) |
 | T6 | DNS rebinding | Host header allow-list, Origin validation | bridge tests |
 | T7 | Brute-forcing the pairing code | single use, 10-minute expiry, 5 attempts then rotates | bridge tests |
 | T8 | A tool acts on the wrong site (redirect, lookalike) | Exact origins only; origin checked on every `ensureContent`; links/forms that leave the origin are refused | permissions e2e (mid-run redirect to another origin) |
-| T9 | Stored tool tampered with / edited to skip approval | Definition hash re-checked at every run; policy re-validated at every run | permissions e2e (tampered, policy-violating) |
-| T10 | Recording captures secrets | Sensitive-field detection (type, autocomplete, name/id/label words, `data-anymcp-ignore`) at capture; only trusted user events; only the approved origin; values kept in memory only | recording e2e (4 sensitive fields skipped; storage scanned for the secrets) |
+| T9 | Stored tool tampered with / edited to skip approval | Definition hash re-checked at every run; policy re-validated at every run | permissions e2e (tampered, policy-violating); `fuzz.test.ts` (randomly mutated definitions never crash parsing or policy, and every change changes the hash) |
+| T10 | Recording captures secrets | Sensitive-field detection (type; every `autocomplete` token, e.g. `billing cc-number`; name/id/label words in any casing or with a digit, e.g. `cvv2`, `securityCode`; `data-anymcp-ignore`) at capture; only trusted user events; only the approved origin; values kept in memory only | recording e2e (7 sensitive fields skipped, including one known only from its autocomplete tokens and one only from its label; storage scanned for the secrets); `fuzz.test.ts` (generated field names and autocomplete lists) |
 | T11 | Duplicate or replayed writes | Bridge dedupes in-flight identical calls and refuses an identical completed/unknown write for 10 min; extension never auto-replays a click; write tools have `maxAttempts = 1` | e2e duplicate + ack-lost tests (POST count) |
 | T12 | A false "success" | Success needs every postcondition observed and a schema-valid output; uncertain ⇒ `unknown_outcome` | evaluation: false-success count |
 | T13 | Stale approval prompt after the worker dies | Prompt held in memory only; panel drops it when the worker connection drops; `decide` verifies execution id + hash | resilience e2e |
@@ -41,6 +41,7 @@ how, where the test is, and — equally important — what it does **not** defen
 | T15 | A forwarded stdio call runs twice | The stdio forwarder retries only when the request certainly never ran (connection refused, or 401 after a token rotation); any other failure is reported as "outcome unknown — do not retry" | `stdio.integration.test.ts` |
 | T16 | A field that saves by itself changes data without approval | Fills can be marked `commit` (approval path, binding re-checked, write-ahead intent); unmarked dropdown/checkbox steps are flagged in review; a commit fill that would change nothing is not performed and is reported as `no_change_needed` | `webapps.spec` (settings dropdown + ARIA switch, server write log) |
 | T17 | The pairing code is read from disk | While unpaired, the running bridge writes its current single-use code to `pairing.json` (owner-only on POSIX) next to `state.json`, which already holds stronger secrets; removed once paired and on exit; only the bridge that owns the ports writes it | `stdio.integration.test.ts` (pairing file) |
+| T18 | Arguments named like built-in object properties (`constructor`, `__proto__`, `toString`) slip past validation, are read from `Object.prototype`, or make two different argument sets hash the same | Arguments and schema fields are looked up as own properties only; canonical JSON keeps every own key (null-prototype objects) | `fuzz.test.ts` (found and fixed four such defects on 2026-11-16) |
 
 ## Residual risks — what AnyMCP does not protect against
 
@@ -58,7 +59,11 @@ how, where the test is, and — equally important — what it does **not** defen
 * **Sites that detect automation**, or pages whose behaviour depends on trusted (OS-level) input events: AnyMCP
   uses DOM events, not OS input.
 * **Timing (TOCTOU) at the site.** The binding is checked immediately before the click, not at the server.
-* **No independent security review, no fuzzing, no penetration test** has been done.
+* **No independent security review and no penetration test** has been done. In-house property-based fuzzing
+  (seeded and replayable: `packages/protocol/test/fuzz.test.ts`, `packages/bridge/test/network.fuzz.test.ts`) covers
+  canonical hashing, sensitive-field detection, argument validation, parameter substitution, tool-definition parsing
+  and both bridge network endpoints. It is not a substitute for a review, and the locator and engine inside web
+  pages are covered only by the browser suites.
 * **Local Network Access.** Chrome 147+ may prompt for loopback access. Measured on Chrome 157 with default
   settings: no prompt, WebSocket connected (see `scripts/lna-spike.ts`). Enterprise policies can change this.
 

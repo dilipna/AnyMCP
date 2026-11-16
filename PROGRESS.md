@@ -26,8 +26,8 @@ serves `docs/` at https://dilipna.github.io/AnyMCP/ (privacy policy: `/privacy-p
 ## Verified (2026-11-14 unless dated; re-run to confirm)
 | Check | Command | Result |
 |---|---|---|
-| Typecheck / unit + integration | `npm run typecheck` / `npm test` | clean / 136 pass |
-| Browser suite | `npm run test:e2e` (Chromium 158) and `ANYMCP_E2E_BROWSER=chrome` (Chrome 157.0.8103.52) | 67/67 each |
+| Typecheck / unit + integration + property tests | `npm run typecheck` / `npm test` | clean / 153 pass (2026-11-16) |
+| Browser suite | `npm run test:e2e` (Chromium 158); `ANYMCP_E2E_BROWSER=chrome` (157.0.8103.52), `=msedge` (Edge 157.0.4341.60), `=brave` (1.99.57) | 67/67 each (2026-11-16) |
 | Fixture evaluation | `npm run eval` | 170/170, 0 false success, 0 unapproved |
 | Public sites | `npm run eval:public -- --with-claude` (Chromium) and `-- --chrome` | 7/7 equal independent reading in both; Claude Code HTTP + stdio ✓ |
 | Packaging | `npm run package -- --verify`, `npm run package:check` | reproducible; tarball installs and runs outside the checkout |
@@ -55,5 +55,7 @@ bridge start overwrote the real pairing code · eval used a missing/stale build 
 `checkVisibility()` · checkbox step recorded after the next click · bridge timer wrote to a deleted state dir after
 shutdown · mechanical rename turned facts about "MyCP" into false claims about "AnyMCP" in two docs (fixed) · lockfile
 from npm 11.6 lacked entries npm 11.19 requires (CI `npm ci` failed everywhere) · ArrowDown on a `<select>` opens the
-menu on macOS (3 tests) · `getByText(tool).first()` clicked the header's `Running “tool”` pill while a run was
+menu on macOS (3 tests) · fuzz tests (2026-11-16): `__proto__` vanished from canonical JSON (hash collisions),
+inherited `constructor`/`toString` passed argument validation or were substituted as values, autocomplete token lists
+and `cvv2`/"Security code" fields were not recognised as sensitive · `getByText(tool).first()` clicked the header's `Running “tool”` pill while a run was
 ending (flaky on macOS CI; scope panel clicks to `<main>`) · store promo tile clipped its text (no border-box).

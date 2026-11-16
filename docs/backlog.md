@@ -18,10 +18,10 @@ defect"; these are normal prototype limits.
 | 9 | Autonomous workflow repair | Layout changes break tools | Observed (changed-layout scenarios) | Less maintenance | L, risky | **Out of scope.** Any repair must be reviewed, retested, versioned before activation |
 | 10 | Locale / translations | Non-English users | none | Reach | M | Defer |
 | 11 | Hash-pinned review + signed tool bundles (like Workflow-to-MCP) | Stronger provenance | Comparison doc | Trust | M | Defer |
-| 12 | Independent security review + fuzzing of the locator/engine | No audit exists | Threat model residual risks | Confidence | M (external) | **Owner decision** before any public release |
-| 13 | Firefox / Edge | Other browsers | none | Reach | L | Defer (Edge likely works; untested) |
+| 12 | Independent security review + fuzzing of the locator/engine | No audit exists | Threat model residual risks | Confidence | M (external) | In-house property-based fuzzing **done** for the protocol code and both bridge endpoints (found 6 defects, all fixed: 4 in argument handling and hashing, 2 in sensitive-field detection); the in-page locator/engine is covered by browser suites only. External review: **owner decision** before any public release |
+| 13 | Firefox / ~~Edge~~ | Other browsers | none | Reach | L | Edge and Brave: browser suite 67/67 each (2026-11-16). Firefox: defer (different extension platform) |
 | 14 | A11y testing with a screen reader | axe-only today | known-limitations #27 | Real accessibility confidence | S–M | Do before a public release |
-| 15 | Vulnerability disclosure address + SECURITY.md | None exists | Release gates | Required for publication | XS | **Owner action** |
+| 15 | ~~Vulnerability disclosure address + SECURITY.md~~ **done** (GitHub private vulnerability reporting) | — | — | — | — | — |
 | 16 | ~~Mark a fill step as consequential~~ **done** ("Saves by itself" → approval every run; `no_change_needed` when already set) | Some settings save instantly | — | — | — | e2e: settings dropdown + ARIA switch |
 | 17 | Pagination for lists ("next page" until N items) | Results spread over pages | known-limitations #14 | Complete lists | M (needs a bounded repeat; today's vocabulary has no loops, by design) | Defer; needs a design that keeps tools bounded |
 

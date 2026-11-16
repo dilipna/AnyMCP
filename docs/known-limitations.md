@@ -73,8 +73,9 @@ boundaries of what was built and verified.
     Diagnostics were added to the assertion. A related stale-approval-prompt race after a worker restart was
     found and fixed (the panel now drops approvals when the worker connection drops). The root cause of the
     one failure is **not proven**.
-27. No security audit, no fuzzing, no load testing, no multi-user testing, no accessibility testing with
-    assistive technology (automated axe-core checks only — they find a minority of issues).
+27. No security audit or penetration test (in-house property-based fuzzing only; see `docs/threat-model.md`), no
+    load testing, no multi-user testing, no accessibility testing with assistive technology (automated axe-core
+    checks only — they find a minority of issues).
 28. Only the official SDK client (over HTTP and over stdio) and (see demo) Claude Code were used as MCP clients.
     Claude Desktop, Cursor and other stdio apps were not tested with the real apps.
 
