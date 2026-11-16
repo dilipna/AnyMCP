@@ -1,0 +1,95 @@
+# Runs when a release is published. Rebuilds the artifacts from the release's commit in a clean runner, proves that
+# the files attached to the release are byte-identical to that build (and attaches the build's files if none are
+# attached), then signs SLSA build-provenance attestations for them. Anyone can then check a download with
+#   gh attestation verify <file> --repo dilipna/AnyMCP
+# Run it by hand (Actions → Release → Run workflow) to check a DRAFT before publishing: the default dry run compares
+# and reports, but uploads nothing and signs nothing (signing writes a public transparency-log entry).
+name: Release
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag of the release to check, e.g. v0.1.0 (a draft works too)"
+        required: true
+      attest:
+        description: "Also sign attestations (public transparency log); only for a published release"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # read draft releases; attach missing files to a published release
+      id-token: write # OIDC token used to sign the attestations
+      attestations: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      PUBLISHED: ${{ github.event_name == 'release' }}
+    steps:
+      - name: Find the release and the commit it was made from
+        id: rel
+        run: |
+          json=$(gh api "repos/$GITHUB_REPOSITORY/releases" --paginate --jq ".[] | select(.tag_name == \"$TAG\")" | head -c 1000000)
+          [ -n "$json" ] || { echo "::error::No release with tag $TAG"; exit 1; }
+          id=$(jq -r '.id' <<<"$json" | head -1)
+          draft=$(jq -r '.draft' <<<"$json" | head -1)
+          if [ "$PUBLISHED" = true ]; then ref="$TAG"; else ref=$(jq -r '.target_commitish' <<<"$json" | head -1); fi
+          echo "id=$id" >> "$GITHUB_OUTPUT"
+          echo "draft=$draft" >> "$GITHUB_OUTPUT"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          echo "Release $TAG (id $id, draft=$draft) built from $ref" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ steps.rel.outputs.ref }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install (exact lockfile)
+        run: npm ci
+      - name: Build, package and prove the build is reproducible
+        run: npm run package -- --verify
+      - name: Install the npm tarball outside the checkout and run it
+        run: npm run package:check
+      - name: The tag matches the version that was built
+        run: |
+          v="${TAG#v}"
+          for f in "anymcp-extension-$v.zip" "anymcp-bridge-$v.mjs" "dilipna-anymcp-bridge-$v.tgz"; do
+            [ -f "release/$f" ] || { echo "::error::tag $TAG but release/$f was not built (version mismatch?)"; ls release; exit 1; }
+          done
+      - name: Attached files are byte-identical to this clean build
+        env:
+          REL_ID: ${{ steps.rel.outputs.id }}
+        run: |
+          v="${TAG#v}"
+          files=("anymcp-extension-$v.zip" "anymcp-bridge-$v.mjs" "dilipna-anymcp-bridge-$v.tgz" SHA256SUMS.txt THIRD_PARTY_NOTICES-extension.md THIRD_PARTY_NOTICES-bridge.md permissions-summary.json)
+          mkdir -p attached
+          gh api "repos/$GITHUB_REPOSITORY/releases/$REL_ID/assets" --paginate --jq '.[] | "\(.id) \(.name)"' > assets.txt
+          missing=()
+          for f in "${files[@]}"; do
+            asset=$(awk -v n="$f" '$2 == n { print $1 }' assets.txt | head -1)
+            if [ -z "$asset" ]; then missing+=("$f"); echo "not attached: $f"; continue; fi
+            gh api -H "Accept: application/octet-stream" "repos/$GITHUB_REPOSITORY/releases/assets/$asset" > "attached/$f"
+            if cmp -s "attached/$f" "release/$f"; then echo "identical: $f  $(sha256sum "release/$f" | cut -c1-16)…"
+            else echo "::error::$f attached to the release differs from the clean build"; sha256sum "attached/$f" "release/$f"; exit 1; fi
+          done
+          if [ ${#missing[@]} -gt 0 ]; then
+            if [ "$PUBLISHED" = true ]; then (cd release && gh release upload "$TAG" "${missing[@]}" --repo "$GITHUB_REPOSITORY"); echo "attached: ${missing[*]}"
+            else echo "dry run: would attach ${missing[*]}"; fi
+          fi
+          echo "Attached files match a clean build of $TAG." >> "$GITHUB_STEP_SUMMARY"
+      - name: Sign build-provenance attestations
+        if: env.PUBLISHED == 'true' || (inputs.attest && steps.rel.outputs.draft == 'false')
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            release/anymcp-extension-*.zip
+            release/anymcp-bridge-*.mjs
+            release/dilipna-anymcp-bridge-*.tgz

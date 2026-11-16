@@ -3,6 +3,10 @@ on:
   push:
   pull_request:
 
+# CI only reads the repository (artifacts are kept with the runtime token, not GITHUB_TOKEN).
+permissions:
+  contents: read
+
 jobs:
   verify:
     strategy:
