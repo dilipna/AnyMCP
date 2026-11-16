@@ -26,13 +26,13 @@ serves `docs/` at https://dilipna.github.io/AnyMCP/ (privacy policy: `/privacy-p
 ## Verified (2026-11-14 unless dated; re-run to confirm)
 | Check | Command | Result |
 |---|---|---|
-| Typecheck / unit + integration + property tests | `npm run typecheck` / `npm test` | clean / 153 pass (2026-11-16) |
+| Typecheck / unit + integration + property tests | `npm run typecheck` / `npm test` | clean / 160 pass (2026-11-16) |
 | Browser suite | `npm run test:e2e` (Chromium 158); `ANYMCP_E2E_BROWSER=chrome` (157.0.8103.52), `=msedge` (Edge 157.0.4341.60), `=brave` (1.99.57) | 67/67 each (2026-11-16) |
 | Fixture evaluation | `npm run eval` | 170/170, 0 false success, 0 unapproved |
 | Public sites | `npm run eval:public -- --with-claude` (Chromium) and `-- --chrome` | 7/7 equal independent reading in both; Claude Code HTTP + stdio ✓ |
 | Packaging | `npm run package -- --verify`, `npm run package:check` | reproducible; tarball installs and runs outside the checkout |
 | Clean checkout | `node scripts/clean-install-check.mjs` | PASSED |
-| CI 2026-11-16 | GitHub Actions run 43824366060 (macOS 26 arm64, Ubuntu 26.04 Node 24 + 22 + 20.19, Windows Server 2025) | all green; artifacts byte-identical on every job and to the local build |
+| CI 2026-11-16 | GitHub Actions run 43929412593 at c4e474b (macOS 26 arm64, Ubuntu 26.04 Node 24 + 22 + 20.19, Windows Server 2025) | all green; artifacts byte-identical on every job and to the local build |
 
 ## Next (needs the owner — see docs/release-checklist.md)
 Done 2026-11-15/16: naming, security contact (private reporting), push + green CI, hosted privacy policy, fuzzing,

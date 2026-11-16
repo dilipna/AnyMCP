@@ -8,7 +8,7 @@ prepared as a DRAFT (visible only to the owner). NOT published to npm, NOT submi
 
 | # | Gate | Status | Evidence / what is missing |
 |---|---|---|---|
-| 1 | Clean installation: a fresh copy installs, tests, builds, packages and starts | **Verified locally** (Windows 11, Node 24.11) | `node scripts/clean-install-check.mjs`: npm ci, typecheck, tests, build, reproducible package, npm install-and-run check, bridge `/health`, all PASS on 2026-11-14. macOS, Ubuntu, Windows Server, Node 20.19 and 22: **Verified locally (CI)**, every step of `npm ci` → package check passes ([run 43824366060](https://github.com/dilipna/AnyMCP/actions/runs/43824366060)). |
+| 1 | Clean installation: a fresh copy installs, tests, builds, packages and starts | **Verified locally** (Windows 11, Node 24.11) | `node scripts/clean-install-check.mjs`: npm ci, typecheck, tests, build, reproducible package, npm install-and-run check, bridge `/health`, all PASS on 2026-11-14. macOS, Ubuntu, Windows Server, Node 20.19 and 22: **Verified locally (CI)**, every step of `npm ci` → package check passes ([run 43929412593](https://github.com/dilipna/AnyMCP/actions/runs/43929412593)). |
 | 2 | Core workflow: an MCP client calls an approved tool and gets a verified result | **Verified end to end** | Claude Code 2.1.207 over HTTP and over stdio on public sandboxes (`eval/results/public-sites-*`); SDK client in 67 browser tests. Claude Desktop: **Blocked** (not installed). Cursor: **Blocked** (interface not operable here). |
 | 3 | Tool creation: authorize a site, record, review, test, enable, revoke | **Verified end to end** (recording on public sites) / **Verified locally** (UI-only journey) | `eval:public`; `e2e/ui-journey.spec.ts`, `recording.spec.ts`, `capabilities.spec.ts`, `webapps.spec.ts`, `richtext.spec.ts`, `authorize-site.spec.ts`. Chrome's own permission prompt: **Prepared but untested** (cannot be automated). |
 | 4 | Permission enforcement | **Verified locally** | `permissions.spec.ts` (ungranted site, mid-run redirect, tampered or policy-violating definition, revocation); bridge integration tests (401, Host/Origin, pairing, oversized/malformed/misrouted input); production-build test proves site authorization is reachable. |
@@ -18,7 +18,9 @@ prepared as a DRAFT (visible only to the owner). NOT published to npm, NOT submi
 | 8 | Store preparation | **Prepared but untested** (not submitted) | `store/listing.md`: text, permission justifications, data-usage answers, URLs. Privacy policy hosted at https://dilipna.github.io/AnyMCP/privacy-policy (GitHub Pages from `docs/`; every link checked; **not reviewed by a lawyer**). Security reports: GitHub private vulnerability reporting (enabled). Images: five 1280×800 renders of the panel page and a 440×280 promo tile in `store/screenshots/` (labelled renders; real-window screenshots still recommended). Missing: developer account, dashboard answers confirmed by the owner. |
 | 9 | Evidence: claims link to reproducible results and state limits | **Verified locally** | README → `docs/public-site-report.md`, `docs/compatibility.md`, `eval/results/`; `docs/known-limitations.md`. |
 | 10 | Licence and attribution | **Verified locally** | MIT `LICENSE`; each artifact carries LICENSE + third-party notices for what it bundles. |
-| 11 | Release integrity | **Verified locally** (draft) | Draft release v0.1.0 with the seven `release/` files. `.github/workflows/release.yml` rebuilds from the release's commit and compares every attached file byte for byte: dry run on the draft passed (all 7 identical); with one attached file deliberately altered it failed at that file and signed nothing; restored and passed again (runs 43830492552, 43830621081, 43926730886). On publication it also signs SLSA build-provenance attestations: **Prepared but untested** (signing only runs on a published release). |
+| 11 | Release integrity | **Verified locally** (draft) | Draft release v0.1.0 with the seven `release/` files. `.github/workflows/release.yml` rebuilds from the release's commit and compares every attached file byte for byte: dry run on the draft passed (all 7 identical); with one attached file deliberately altered it failed at that file and signed nothing; restored and passed again (runs 43830492552, 43830621081, 43926730886). After the bridge's nesting-limit fix the draft
+was rebuilt from commit c4e474b (CI green on all five jobs, artifacts identical everywhere) and passed again
+(run 43931968843). On publication it also signs SLSA build-provenance attestations: **Prepared but untested** (signing only runs on a published release). |
 | 12 | Static analysis | **Verified locally** | CodeQL (extended security queries) on every push, JavaScript/TypeScript and workflows. First run: 0 alerts in the extension or bridge; 6 in tooling, 4 fixed (evaluation reader's entity decoding and tag removal, CI token permissions), 2 open for the owner to decide (intended report writes in two developer scripts). |
 
 ## Verified commands (2026-11-14 unless a row says otherwise)
@@ -26,7 +28,7 @@ prepared as a DRAFT (visible only to the owner). NOT published to npm, NOT submi
 | Check | Command | Result |
 |---|---|---|
 | Types | `npm run typecheck` | clean |
-| Unit + integration, incl. property-based tests (2026-11-16) | `npm test` | 153/153 (fuzz suites at 400 cases per property; a 25,000-case run with another seed also passed) |
+| Unit + integration, incl. property-based tests (2026-11-16) | `npm test` | 160/160 (fuzz suites at 400 cases per property; 25,000-case protocol runs with three seeds and 2,000-request network runs with nine seeds also passed) |
 | Browser suite, Playwright Chromium 158 | `npm run test:e2e` | 67/67 |
 | Browser suite, Google Chrome 157.0.8103.52 | `ANYMCP_E2E_BROWSER=chrome npm run test:e2e` | 67/67 |
 | Browser suite, Microsoft Edge 157.0.4341.60 (2026-11-16) | `ANYMCP_E2E_BROWSER=msedge npm run test:e2e` | 67/67 |
@@ -39,7 +41,7 @@ prepared as a DRAFT (visible only to the owner). NOT published to npm, NOT submi
 | npm tarball outside the checkout | `npm run package:check` | 7/7 checks |
 | Packaged bridge over stdio | `npm run smoke:stdio` | PASS |
 | Clean checkout | `node scripts/clean-install-check.mjs` | PASSED |
-| CI, 2026-11-16: macOS 26.7 arm64, Ubuntu 26.04 (Node 24.22, 22.23.4 and 20.19.6), Windows Server 2025 | `.github/workflows/ci.yml` ([run 43824366060](https://github.com/dilipna/AnyMCP/actions/runs/43824366060)) | all green: 153/153 unit, 67/67 browser (Chrome for Testing 158), reproducible package, npm tarball 7/7; the three artifacts byte-identical on all five jobs and locally |
+| CI, 2026-11-16: macOS 26.7 arm64, Ubuntu 26.04 (Node 24.22, 22.23.4 and 20.19.6), Windows Server 2025 | `.github/workflows/ci.yml` ([run 43929412593](https://github.com/dilipna/AnyMCP/actions/runs/43929412593)) | all green: 160/160 unit, 67/67 browser (Chrome for Testing 158), reproducible package, npm tarball 7/7; the three artifacts byte-identical on all five jobs and locally |
 
 ## Not verified (honest list)
 
