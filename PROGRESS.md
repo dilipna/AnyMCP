@@ -32,6 +32,7 @@ serves `docs/` at https://dilipna.github.io/AnyMCP/ (privacy policy: `/privacy-p
 | Public sites | `npm run eval:public -- --with-claude` (Chromium) and `-- --chrome` | 7/7 equal independent reading in both; Claude Code HTTP + stdio ✓ |
 | Packaging | `npm run package -- --verify`, `npm run package:check` | reproducible; tarball installs and runs outside the checkout |
 | Clean checkout | `node scripts/clean-install-check.mjs` | PASSED |
+| Release v0.1.1 (pre-release) | `release.yml` on publication (run 44156695564); `gh attestation verify` | 7/7 files identical to a clean build from the tag; attestations verify for all 3 artifacts |
 | Release v0.1.0 (pre-release) | `release.yml` on publication (run 44007518598); `gh attestation verify` | 7/7 files identical to a clean build from the tag; attestations verify for all 3 artifacts |
 | CI 2026-11-16 | GitHub Actions run 43929412593 at c4e474b (macOS 26 arm64, Ubuntu 26.04 Node 24 + 22 + 20.19, Windows Server 2025) | all green; artifacts byte-identical on every job and to the local build |
 
