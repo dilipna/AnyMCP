@@ -32,6 +32,9 @@ Limits and evidence: [compatibility](docs/compatibility.md), [known limitations]
   a required parameter named `constructor` is enforced; a missing `constructor` argument is no longer filled in as
   `function Object() { [native code] }`; values that differ only by a `__proto__` key no longer hash the same
   (approval binding, duplicate detection, tool versions). All found by new property-based tests.
+* The side panel now says, before you connect an AI app and next to each tool's Enable button, what that app will
+  receive and that it may pass it to its model provider (Chrome Web Store disclosure rules); the privacy policy states
+  Limited Use compliance explicitly.
 * The bridge refuses a request nested more than 64 levels deep with a clear 400. Before, a body nested a few
   thousand levels deep made the MCP SDK fail while re-serialising it and answer 500 (found by the network fuzz
   tests; it needed the bridge token and the bridge kept running).

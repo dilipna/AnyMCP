@@ -16,7 +16,8 @@ app you choose (an MCP client) run website tasks you taught and approved.
   server run by the developer. There is no analytics, telemetry or advertising, and no remotely hosted code.
 * **Data does leave your computer through the AI app you connect.** When your AI app calls an AnyMCP tool, the values
   the tool reads from the web page are given to that app, and AI apps normally send them to their model provider.
-  That part is governed by your AI app's and its provider's policies, not by this one.
+  That part is governed by your AI app's and its provider's policies, not by this one. The side panel says this where
+  you connect an AI app and next to the switch that enables each tool.
 
 ## Where data goes, step by step
 
@@ -65,9 +66,10 @@ website** and confirm Chrome's prompt. It has no website access at install. Each
 
 ## Children, sale of data, advertising
 
-AnyMCP is not directed at children. The developer does not sell, share or use your data for advertising,
-creditworthiness or lending; use of data is limited to providing the feature described above (Chrome Web Store User
-Data Policy, including Limited Use).
+AnyMCP is not directed at children. The developer does not sell or transfer your data and does not use it for
+advertising, creditworthiness or lending. **AnyMCP's use of information it accesses through Chrome's extension APIs
+adheres to the Chrome Web Store User Data Policy, including the Limited Use requirements:** it is used only to provide
+the feature described above, and no person at the developer can read it, because none of it reaches the developer.
 
 ## Security
 

@@ -3,6 +3,20 @@ import type { PanelState } from "../../shared/types";
 import { ago, call } from "../api";
 import { Banner, CopyLine } from "../ui";
 
+const PRIVACY_POLICY_URL = "https://dilipna.github.io/AnyMCP/privacy-policy";
+
+/** What connecting an AI app means for the user's data, shown before they connect one (store disclosure rules). */
+export function DataFlowNotice() {
+  return (
+    <p className="muted" data-testid="data-flow-notice">
+      <strong>What your AI app receives:</strong> the tools you enable and, each time it runs one, the values that tool
+      reads from the page. Your AI app may send them to its model provider under its own policy. Nothing is sent to the
+      AnyMCP developer.{" "}
+      <a href={PRIVACY_POLICY_URL} target="_blank" rel="noopener noreferrer">Privacy policy</a>
+    </p>
+  );
+}
+
 interface Creds {
   mcpUrl: string;
   token: string;
@@ -83,6 +97,7 @@ export function Connect({ state, compact = false }: { state: PanelState; compact
         <div className="stack">
           <h3>3 · Connect your AI client</h3>
           <p className="muted">Available after pairing. You will copy one command into a terminal.</p>
+          <DataFlowNotice />
         </div>
       </section>
     );
@@ -118,6 +133,7 @@ export function Connect({ state, compact = false }: { state: PanelState; compact
       {c.state === "connected" && (
         <div className="stack">
           <h3>Connect your AI client</h3>
+          <DataFlowNotice />
           {!creds ? (
             <button type="button" className="btn" onClick={() => void showCreds()}>
               Show the client command

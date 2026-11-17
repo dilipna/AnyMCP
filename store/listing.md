@@ -73,6 +73,16 @@ history*: not collected (the extension cannot see the addresses of tabs on sites
 communications, user activity*: not collected. Not sold, not used for unrelated purposes, not used for
 creditworthiness. [OWNER: confirm each answer in the dashboard.]
 
+**In-product disclosure and consent** (Disclosure Requirements policy). Before the user connects an AI app (the
+Connect step on first run, and Settings) the side panel states what that app will receive (the enabled tools and each
+run's values read from the page), that the app may pass them to its model provider, and that nothing reaches the
+developer, with a link to the privacy policy. Next to each tool's Enable button it says the same for that tool; enabling
+is the user's affirmative choice, per tool. Site access is requested per site through Chrome's own prompt. Both
+notices are checked by `e2e/ui-journey.spec.ts`.
+
+**Limited Use.** The privacy policy carries the affirmative Limited Use statement (section "Children, sale of data,
+advertising"); tick the Limited Use certification in the dashboard's Privacy practices tab.
+
 **Local companion.** The extension connects to a program the user runs on the same computer (`ws://127.0.0.1`).
 Stated in the description and in the privacy policy.
 

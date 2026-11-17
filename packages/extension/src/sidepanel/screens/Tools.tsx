@@ -277,6 +277,7 @@ function ToolDetail({ row, state, onBack }: { row: ToolRow; state: PanelState; o
           )}
           <button type="button" className="btn" onClick={() => setEditing(true)} disabled={!def}>Edit…</button>
         </div>
+        {!isEnabled && <small className="muted" data-testid="enable-notice">Enabling lets your AI app run this tool and receive what it reads (see “What data it reads” below); your AI app may pass that to its model provider.</small>}
         {!vrow.tested && !isEnabled && <small className="muted">Enabling unlocks after a successful test of this exact version. Any edit creates a new version that needs its own test.</small>}
       </div>
 

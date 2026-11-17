@@ -16,6 +16,9 @@ test("connect and pair using the on-screen steps only", async () => {
   await p.reload();
   await expect(p.getByRole("heading", { name: "Connect AnyMCP to your AI assistant" })).toBeVisible();
   await expect(p.getByText("npm run bridge")).toBeVisible();
+  // before connecting an AI app, the panel says what that app will receive (Chrome Web Store disclosure rules)
+  await expect(p.getByTestId("data-flow-notice")).toContainText("may send them to its model provider");
+  await expect(p.getByTestId("data-flow-notice").getByRole("link", { name: "Privacy policy" })).toHaveAttribute("href", "https://dilipna.github.io/AnyMCP/privacy-policy");
   // the Advanced box lets a person target a non-default bridge port (the test bridge uses a random one)
   await p.getByRole("button", { name: /advanced/i }).click();
   await p.getByLabel("Bridge address").fill(s.bridge.extUrl);
@@ -91,7 +94,9 @@ test("teach → review → save → test → enable → use via MCP → disconne
   await expect(p.getByText("Tested — not enabled").first()).toBeVisible();
 
   // ---- 5. enable → an MCP client can now use it ----
+  await expect(p.getByTestId("enable-notice")).toContainText("receive what it reads"); // informed consent at the switch
   await p.getByRole("button", { name: "Enable for my AI assistant" }).click();
+  await expect(p.getByTestId("enable-notice")).toHaveCount(0);
   await expect(p.getByText("Enabled", { exact: true }).first()).toBeVisible();
   const d = Date.now() + 8000;
   while (!s.bridge.hub.getTool("ui_journey_find_order") && Date.now() < d) await sleep(50);
