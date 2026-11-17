@@ -32,8 +32,8 @@ Evidence labels used below:
 |---|---|---|---|
 | Official MCP TypeScript SDK client | HTTP | Verified end to end | browser suites, evaluation, public sites |
 | Official MCP TypeScript SDK client | stdio | Verified locally | spawns the real CLI over stdio against a fake extension (`stdio.integration.test.ts`); packaged bridge and installed npm package smoke-tested (`npm run smoke:stdio`, `npm run package:check`) |
-| Claude Code 2.1.207 (`claude -p`) | HTTP | Verified end to end | public-site run: books.toscrape.com |
-| Claude Code 2.1.207 (`claude -p`) | stdio | Verified end to end | public-site run: scrapethissite.com, packaged bridge |
+| Claude Code 2.1.207 (`claude -p`) | HTTP | Verified end to end | public-site runs: books.toscrape.com, on 2026-11-14 and again on 2026-11-17 with the current bridge (`eval/results/public-sites-2026-11-17T03-30-27`) |
+| Claude Code 2.1.207 (`claude -p`) | stdio | Verified end to end | public-site runs: scrapethissite.com through the packaged bridge, 2026-11-14 and 2026-11-17 |
 | Claude Desktop | stdio | Blocked | not installed on the test machine. Manual test: [first-time-user-test.md](first-time-user-test.md) |
 | Cursor | stdio | Blocked | installed, but its interface cannot be operated from this environment and its settings were not modified |
 | Other MCP clients | HTTP or stdio | Prepared but untested | standard Streamable HTTP (stateless) and stdio |

@@ -37,7 +37,8 @@ automated. In the product, the person uses **Allow a website** and confirms Chro
 * Removing each site removed its tool from the client (3/3).
 * The same 7 runs and 3 revocations also passed in branded Google Chrome 157.0.8103.52 and, on 2026-11-16, in
   Microsoft Edge 157.0.4341.60 and Brave 1.99.57 (Chromium 157.0.8103.79), with the same item counts.
-* **Claude Code** (`claude -p`, version 2.1.207): `books_in_category` over **HTTP** returned the right two titles
+* **Claude Code** (`claude -p`, version 2.1.207; re-run on 2026-11-17 with the current bridge, same results:
+  `eval/results/public-sites-2026-11-17T03-30-27.{md,json}`): `books_in_category` over **HTTP** returned the right two titles
   with their exact URLs; `hockey_team_search` over **stdio** (packaged bridge, forwarding) returned the right rows.
   The bridge recorded the callers as "claude-code" and "claude-code (via stdio)".
 
