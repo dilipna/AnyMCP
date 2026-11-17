@@ -37,8 +37,9 @@ serves `docs/` at https://dilipna.github.io/AnyMCP/ (privacy policy: `/privacy-p
 
 ## Next (needs the owner — see docs/release-checklist.md)
 Done 2026-11-15/16: naming, security contact (private reporting), push + green CI, hosted privacy policy, fuzzing,
-Edge/Brave, CodeQL, release workflow, v0.1.0 published as a GitHub PRE-RELEASE (2026-11-16, owner's decision).
-1. `npm login` (owner), then publish `release/dilipna-anymcp-bridge-0.1.0.tgz` (identical to the release's file) and
+Edge/Brave, CodeQL, release workflow, v0.1.0 and v0.1.1 published as GitHub PRE-RELEASES (owner's decision; 0.1.1 adds
+the in-product data notice the store expects).
+1. `npm login` (owner), then publish `release/dilipna-anymcp-bridge-0.1.1.tgz` (identical to the v0.1.1 release's file) and
    update quick-start/README/listing ("not published yet").
    CodeQL alerts 5 and 6 (intended report writes in dev scripts): owner may dismiss. 2. First-time-user test incl. Claude Desktop/Cursor. 3. Real docked-panel screenshots; a
    lawyer's look at the policy. 4. Chrome Web Store submission (owner's developer account).

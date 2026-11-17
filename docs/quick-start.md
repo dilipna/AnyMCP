@@ -21,9 +21,9 @@ npm run build
 > The bridge is also prepared as an npm package, `@dilipna/anymcp-bridge` (`npm run package` → `release/`). It is
 > **not published yet**; once it is, `npx @dilipna/anymcp-bridge` replaces `npm run bridge` below.
 
-> **Or skip building:** from the [v0.1.0 pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.0) download `anymcp-extension-0.1.0.zip` and
-> `anymcp-bridge-0.1.0.mjs`. Unzip the extension and choose that folder in step 2; in step 3 run
-> `node anymcp-bridge-0.1.0.mjs` instead of `npm run bridge`. To check the files first, see "Checking a download" in
+> **Or skip building:** from the [v0.1.1 pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.1) download `anymcp-extension-0.1.1.zip` and
+> `anymcp-bridge-0.1.1.mjs`. Unzip the extension and choose that folder in step 2; in step 3 run
+> `node anymcp-bridge-0.1.1.mjs` instead of `npm run bridge`. To check the files first, see "Checking a download" in
 > [SECURITY.md](https://github.com/dilipna/AnyMCP/blob/main/SECURITY.md).
 
 ## 2. Install the extension

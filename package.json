@@ -1,6 +1,6 @@
 {
   "name": "anymcp-monorepo",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "AnyMCP: turn approved website workflows into reusable AI tools.",
   "license": "MIT",

@@ -3,6 +3,18 @@
 Versions follow [semantic versioning](https://semver.org) once a version is published. Changes that affect what
 data AnyMCP handles or where it goes are marked **Data**, as the [privacy policy](docs/privacy-policy.md) promises.
 
+## 0.1.1 — 2026-11-17 (developer beta, GitHub pre-release)
+
+Published as a [GitHub pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.1); not on the Chrome Web Store or npm yet. The build to submit to the store.
+
+* The side panel now says, before you connect an AI app (first-run step 3 and Settings) and next to each tool's
+  Enable button, what that app will receive (the enabled tools and each run's values read from the page) and that it
+  may pass them to its model provider; nothing reaches the developer. Chrome Web Store disclosure rules ask for this
+  inside the product, not only in the listing and privacy policy. The privacy policy now states Limited Use
+  compliance explicitly. No change in what data AnyMCP handles or where it goes.
+* Claude Code re-verified over HTTP and stdio with the current bridge; the clean-install check reads the version
+  instead of a hard-coded file name.
+
 ## 0.1.0 — 2026-11-16 (developer beta, GitHub pre-release)
 
 The first version: the AnyMCP extension for Chrome (MV3) and the AnyMCP bridge (`@dilipna/anymcp-bridge`, the MCP
@@ -32,9 +44,6 @@ Limits and evidence: [compatibility](docs/compatibility.md), [known limitations]
   a required parameter named `constructor` is enforced; a missing `constructor` argument is no longer filled in as
   `function Object() { [native code] }`; values that differ only by a `__proto__` key no longer hash the same
   (approval binding, duplicate detection, tool versions). All found by new property-based tests.
-* The side panel now says, before you connect an AI app and next to each tool's Enable button, what that app will
-  receive and that it may pass it to its model provider (Chrome Web Store disclosure rules); the privacy policy states
-  Limited Use compliance explicitly.
 * The bridge refuses a request nested more than 64 levels deep with a clear 400. Before, a body nested a few
   thousand levels deep made the MCP SDK fail while re-serialising it and answer 500 (found by the network fuzz
   tests; it needed the bridge token and the bridge kept running).

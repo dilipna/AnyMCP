@@ -1,6 +1,6 @@
 {
   "name": "anymcp-bridge",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "description": "AnyMCP local bridge: MCP server (Streamable HTTP and stdio) plus authenticated WebSocket to the AnyMCP Extension.",

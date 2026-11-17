@@ -7,7 +7,7 @@
 **AnyMCP lets your AI app use website tasks that you teach once in your own Chrome and approve: a Chrome extension
 records the task, and a small local bridge offers it to your AI app as an MCP tool.**
 
-> **Status: developer beta**, available as a [GitHub pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.0); not on the Chrome Web Store or npm.
+> **Status: developer beta**, available as a [GitHub pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.1); not on the Chrome Web Store or npm.
 > Verified on Windows 11 with Chromium 158
 > and Chrome 157, on a synthetic test site and three public scraping sandboxes, with Claude Code as a real client; the
 > automated suites also pass on macOS and Linux in CI. It is not production software, has not
@@ -72,8 +72,8 @@ says nothing about other sites.
 Requirements: **Chrome ≥ 116** (Microsoft Edge and Brave also pass the test suites), **Node.js ≥ 20.19**, git. No
 account or paid service.
 
-**No build needed:** from the [v0.1.0 pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.0) download `anymcp-extension-0.1.0.zip` (unzip it and load
-that folder in step 1) and `anymcp-bridge-0.1.0.mjs` (run `node anymcp-bridge-0.1.0.mjs` instead of the commands
+**No build needed:** from the [v0.1.1 pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.1) download `anymcp-extension-0.1.1.zip` (unzip it and load
+that folder in step 1) and `anymcp-bridge-0.1.1.mjs` (run `node anymcp-bridge-0.1.1.mjs` instead of the commands
 below). To build from source:
 
 ```bash
