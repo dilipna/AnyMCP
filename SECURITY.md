@@ -14,7 +14,7 @@ or `anymcp-bridge --help`). **Never include your bridge token, pairing secret or
 
 ## Supported versions
 
-Only the latest commit on the default branch. There are no published releases yet.
+The latest release (0.1.0, a developer-beta pre-release) and the latest commit on the default branch.
 
 ## Checking a download
 

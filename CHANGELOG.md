@@ -3,10 +3,11 @@
 Versions follow [semantic versioning](https://semver.org) once a version is published. Changes that affect what
 data AnyMCP handles or where it goes are marked **Data**, as the [privacy policy](docs/privacy-policy.md) promises.
 
-## 0.1.0 — not yet released (developer beta)
+## 0.1.0 — 2026-11-16 (developer beta, GitHub pre-release)
 
 The first version: the AnyMCP extension for Chrome (MV3) and the AnyMCP bridge (`@dilipna/anymcp-bridge`, the MCP
-server). Nothing has been published to the Chrome Web Store or npm yet.
+server). Published as a [GitHub pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.0) whose files can be checked (SECURITY.md, "Checking a
+download"); not on the Chrome Web Store or npm yet.
 
 ### What it does
 
