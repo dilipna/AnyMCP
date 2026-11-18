@@ -37,6 +37,7 @@ was rebuilt from commit c4e474b (CI green on all five jobs, artifacts identical 
 | Fixture evaluation (protocol v2) | `npm run eval` | 170/170 correct |
 | Public sandboxes + Claude Code | `npm run eval:public -- --with-claude` | 7/7 SDK runs equal an independent reading; revocation 3/3; Claude Code HTTP ✓, stdio ✓ |
 | Public sandboxes in branded Chrome | `npm run eval:public -- --chrome` | 7/7, revocation 3/3 |
+| Five public sandboxes, Playwright Chromium (2026-11-18) | `npm run eval:public` | 11/11 runs equal an independent reading or stop safely; revocation 5/5 (`eval/results/public-sites-2026-11-18T22-32-10`) |
 | Reproducible package | `npm run package -- --verify` | byte-identical |
 | npm tarball outside the checkout | `npm run package:check` | 7/7 checks |
 | Packaged bridge over stdio | `npm run smoke:stdio` | PASS |
@@ -49,7 +50,7 @@ was rebuilt from commit c4e474b (CI green on all five jobs, artifacts identical 
   23 (odd-numbered lines), Chromium browsers other than Chrome, Edge and Brave.
 * Claude Desktop, Cursor and other MCP clients.
 * Chrome's "allow this site" prompt and the docked side panel in a real window.
-* Any signed-in website, any write on a real website, any site beyond the three sandboxes.
+* Any signed-in website, any write on a real website, any site beyond the five practice sandboxes.
 * Long-running stability, many tools, very large pages; screen readers; non-English UI.
 * Security: no external review or penetration test. In-house property-based fuzzing (protocol code and both bridge
   network endpoints) and automated CodeQL analysis only.

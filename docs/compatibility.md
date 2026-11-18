@@ -43,7 +43,7 @@ Evidence labels used below:
 | What | Status | Note |
 |---|---|---|
 | Synthetic fixture (orders, catalog, web app, settings) | Verified locally | written by the same author: a development suite, not a held-out set |
-| books.toscrape.com, scrapethissite.com, quotes.toscrape.com/js | Verified end to end | read-only, a few inputs, one day: [public-site-report.md](public-site-report.md) |
+| books.toscrape.com, scrapethissite.com (search and countries), quotes.toscrape.com/js, webscraper.io test shop | Verified end to end | read-only practice sandboxes, a few inputs each; all five together 11/11 on 2026-11-18: [public-site-report.md](public-site-report.md) |
 | Wikipedia | Not usable | refuses automated browsing (429); robots.txt disallows `/w/` |
 | Sites that need sign-in | Prepared but untested | AnyMCP uses your normal Chrome session and never signs in; no signed-in site was tested |
 | Any other site | Unknown | expect some to work and some not; see below |

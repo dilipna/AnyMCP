@@ -13,10 +13,12 @@
 //   - books.toscrape.com      static listing; one part of the PATH is the input; results are LINKS
 //   - scrapethissite.com      query-string SEARCH; results are TABLE rows (robots.txt allows /pages/)
 //   - quotes.toscrape.com/js  the raw HTML has NO quotes: they are drawn by JavaScript after load
+//   - webscraper.io test shop another site: product cards, page number in the query string, empty past the end
+//   - scrapethissite.com/pages/simple  one long page (250 cards), no input, capped at 25 rows
 // Wikipedia was tried first and refused automated browsing (HTTP 429); its robots.txt disallows /w/. It is not used.
 //
 // Read-only and paced: pages are opened by address and read. AnyMCP submits no form, uses no account, sends no
-// message. About 25 page loads in total, with pauses. The test build is pre-granted these hosts because Chrome's own
+// message. About 40 page loads in total, with pauses. The test build is pre-granted these hosts because Chrome's own
 // "allow this site" prompt cannot be automated (in the product, the person uses the "Allow a website" form).
 //
 // --with-claude additionally asks Claude Code (`claude -p`) to call tools over HTTP and over stdio. That sends the
@@ -43,6 +45,7 @@ const PAUSE_MS = 1500;
 const BOOKS = "https://books.toscrape.com";
 const HOCKEY = "https://www.scrapethissite.com";
 const QUOTES = "https://quotes.toscrape.com";
+const SHOP = "https://webscraper.io";
 
 const norm = normalizeSpace;
 const decode = htmlText; // tags removed until none are left, entities decoded once (see html-text.ts)
@@ -71,6 +74,15 @@ const parseQuotes = (html: string) => {
   const m = /var data = (\[[\s\S]*?\]);\s*\n/.exec(html);
   return m ? (JSON.parse(m[1]!) as { text: string }[]).map((q) => norm(q.text)) : [];
 };
+
+const shopUrl = (page: string) => `${SHOP}/test-sites/e-commerce/static/computers/laptops?${new URLSearchParams({ page })}`;
+/** Product cards: the visible link text (long names are already shortened in the HTML) and the product address. */
+const parseShop = (html: string, pageUrl: string) =>
+  [...html.matchAll(/<a href="([^"]+)" class="title" title="[^"]*" itemprop="name">([\s\S]*?)<\/a>/g)].map((m) => ({ text: decode(m[2]!), url: new URL(m[1]!, pageUrl).href }));
+
+const COUNTRIES_URL = `${HOCKEY}/pages/simple/`;
+/** 250 country cards; each name follows a flag icon inside the heading. */
+const parseCountries = (html: string) => [...html.matchAll(/<h3 class="country-name">([\s\S]*?)<\/h3>/g)].map((m) => decode(m[1]!));
 
 // ---- the sites ------------------------------------------------------------------------------------------------
 interface Run {
@@ -202,6 +214,60 @@ const SITES: SiteCase[] = [
       { args: { page: "3" }, expect: "items", truthUrl: quotesUrl("3") },
       { args: { page: "5" }, expect: "items", truthUrl: quotesUrl("5") },
     ],
+  },
+  {
+    origin: SHOP,
+    label: "Web Scraper test shop (laptop listing)",
+    structure: "a different site: product cards; the page number is in the query string; results are links; past the last page there are no cards and the run must stop",
+    recordUrl: shopUrl("2"),
+    pickMode: "list",
+    pickSelector: "a.title",
+    successSelector: "h1.page-header",
+    edit: (spec) => {
+      spec.id = "laptops_page";
+      spec.title = "Laptops on a shop page";
+      spec.description = "Lists the laptops on one page of the Web Scraper e-commerce test site (webscraper.io/test-sites), each with its link. Read-only.";
+      spec.outputs[0]!.name = "laptops";
+      spec.outputs[0]!.maxRows = 10;
+      // review screen: "Make it an input" on the start address setting `page`
+      const pi = spec.entryQuery!.findIndex((q) => q.key === "page");
+      spec.params.push({ name: "page", description: "Page number, 1 to 20", type: "string", example: spec.entryQuery![pi]!.value, maxLength: 4 });
+      spec.entryQuery![pi] = { ...spec.entryQuery![pi]!, mode: "param", param: "page" };
+    },
+    outputKey: "laptops",
+    max: 10,
+    links: true,
+    parse: parseShop,
+    test: { page: "2" },
+    runs: [
+      { args: { page: "3" }, expect: "items", truthUrl: shopUrl("3") },
+      { args: { page: "20" }, expect: "items", truthUrl: shopUrl("20") }, // the last page
+      // past the end the page has no product cards at all, so the recorded precondition (the list is there) is unmet:
+      // AnyMCP must stop rather than claim an empty success it cannot tell from a wrong page
+      { args: { page: "999" }, expect: "stopped" },
+    ],
+  },
+  {
+    origin: HOCKEY,
+    label: "Scrape This Site (countries, a long page with no input)",
+    structure: "one static page with 250 cards and no input; the tool returns the first 25 (its row cap)",
+    recordUrl: COUNTRIES_URL,
+    pickMode: "list",
+    pickSelector: ".country-name",
+    successSelector: "h1",
+    edit: (spec) => {
+      spec.id = "countries_list";
+      spec.title = "Countries (first 25)";
+      spec.description = "Returns the first 25 country names from the Scrape This Site countries page. Read-only.";
+      spec.outputs[0]!.name = "countries";
+      spec.outputs[0]!.maxRows = 25;
+    },
+    outputKey: "countries",
+    max: 25,
+    links: false,
+    parse: (h) => parseCountries(h),
+    test: {},
+    runs: [{ args: {}, expect: "items", truthUrl: COUNTRIES_URL }],
   },
 ];
 

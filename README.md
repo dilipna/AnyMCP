@@ -9,7 +9,7 @@ records the task, and a small local bridge offers it to your AI app as an MCP to
 
 > **Status: developer beta**, available as a [GitHub pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.1); not on the Chrome Web Store or npm.
 > Verified on Windows 11 with Chromium 158
-> and Chrome 157, on a synthetic test site and three public scraping sandboxes, with Claude Code as a real client; the
+> and Chrome 157, on a synthetic test site and five public scraping sandboxes, with Claude Code as a real client; the
 > automated suites also pass on macOS and Linux in CI. It is not production software, has not
 > had a security review, and does not work on every website. See [docs/compatibility.md](docs/compatibility.md).
 
@@ -64,7 +64,8 @@ Read-only lookups on public pages, recorded through the real recorder and then c
   table rows. Claude Code returned the right rows over **stdio** through the packaged bridge.
 * **"Quotes on a page"** on `quotes.toscrape.com/js/`: the page draws its content with JavaScript after loading.
 
-All seven SDK-client runs equalled an independent reading of the same page. That shows these pages work today; it
+Two more practice sites (the Web Scraper test shop and a 250-entry countries page) pass the same way. All 11 SDK-client
+runs on the five sites equalled an independent reading of the same page or stopped safely. That shows these pages work today; it
 says nothing about other sites.
 
 ## Quick start (from source, about 10 minutes)
@@ -119,7 +120,7 @@ to your AI app is marked untrusted. Details and the limits of all this: [docs/th
 | `npm test` | unit and integration tests |
 | `npm run test:e2e` | browser tests: real Chromium + built extension + bridge + MCP client (`ANYMCP_E2E_BROWSER=chrome` for branded Chrome) |
 | `npm run eval` | frozen evaluation on the synthetic fixture |
-| `npm run eval:public` | read-only validation on three public sandboxes (`-- --with-claude` also drives Claude Code) |
+| `npm run eval:public` | read-only validation on five public sandboxes (`-- --with-claude` also drives Claude Code) |
 | `npm run package` | reproducible extension ZIP + npm package of the bridge in `release/` (nothing is published) |
 | `npm run package:check` | install the packed bridge outside the checkout and run it |
 

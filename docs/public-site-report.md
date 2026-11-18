@@ -1,6 +1,8 @@
 # Public-site validation report
 
-**Scope:** three public sandboxes published for scraping practice, a few inputs each, on 2026-11-14, Windows 11,
+**Scope:** public sandboxes published for scraping practice, a few inputs each, Windows 11. Three sites from
+2026-11-14; two more (the Web Scraper test shop and the Scrape This Site countries page) added on 2026-11-18, when all
+five passed together (11/11 runs, revocation 5/5; `eval/results/public-sites-2026-11-18T22-32-10.{md,json}`, Playwright Chromium 158). The first runs used
 Playwright Chromium 158 (with Claude Code) and, separately, Google Chrome 157.0.8103.52 (SDK client only). Read-only: pages are opened by address and read; no form is submitted, no account used, no
 message sent. About 25 page loads, paced. Raw results: `eval/results/public-sites-2026-11-14T05-49-41.{md,json}` (Chromium + Claude Code) and
 `eval/results/public-sites-2026-11-14T06-45-27.{md,json}` (Chrome). Re-runs on 2026-11-16 in Microsoft Edge and Brave
@@ -33,8 +35,10 @@ automated. In the product, the person uses **Allow a website** and confirms Chro
 | books.toscrape.com | static listing; category in the path; results are links | `books_in_category` | CSS `article.product_pod > h3 > a` | mystery_3 (20), poetry_23 (19), nope_999 → stopped safely | yes, 39/39 items, every URL on the site |
 | scrapethissite.com | search words in the query string; results are a table | `hockey_team_search` | CSS `table.table` | rangers (21 rows), zzqqxx (0 rows) | yes, 21/21 and 0/0 |
 | quotes.toscrape.com/js | content drawn by JavaScript after load; page number in the path | `quotes_page` | CSS `span.text` | page 3 (10), page 5 (10) | yes, 20/20 |
+| webscraper.io test shop (2026-11-18) | a different site; product cards; page number in the query string; results are links | `laptops_page` | CSS `a.title` | page 3 (6), page 20 (3, the last page), page 999 → stopped safely (no cards, so the recorded precondition is unmet) | yes, 9/9 items with their URLs |
+| scrapethissite.com countries (2026-11-18) | one long static page (250 cards), no input; capped at the tool's 25 rows | `countries_list` | CSS `h3.country-name` | the page (25) | yes, 25/25 |
 
-* Removing each site removed its tool from the client (3/3).
+* Removing each site removed its tool from the client (3/3 on 2026-11-14; 5/5 on 2026-11-18).
 * The same 7 runs and 3 revocations also passed in branded Google Chrome 157.0.8103.52 and, on 2026-11-16, in
   Microsoft Edge 157.0.4341.60 and Brave 1.99.57 (Chromium 157.0.8103.79), with the same item counts.
 * **Claude Code** (`claude -p`, version 2.1.207; re-run on 2026-11-17 with the current bridge, same results:
