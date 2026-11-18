@@ -39,6 +39,10 @@ automated. In the product, the person uses **Allow a website** and confirms Chro
 | scrapethissite.com countries (2026-11-18) | one long static page (250 cards), no input; capped at the tool's 25 rows | `countries_list` | CSS `h3.country-name` | the page (25) | yes, 25/25 |
 
 * Removing each site removed its tool from the client (3/3 on 2026-11-14; 5/5 on 2026-11-18).
+* Empty pages: the hockey search shows its table even with no matches, so "zzqqxx" is a valid empty result. The shop
+  shows nothing at all past its last page (no "no products" message), so AnyMCP cannot tell that from a wrong page
+  and stops. On a site that does show such a message, marking it while recording with **Mark a message → "Means:
+  nothing found"** makes those runs return a valid empty result instead.
 * The same 7 runs and 3 revocations also passed in branded Google Chrome 157.0.8103.52 and, on 2026-11-16, in
   Microsoft Edge 157.0.4341.60 and Brave 1.99.57 (Chromium 157.0.8103.79), with the same item counts.
 * **Claude Code** (`claude -p`, version 2.1.207; re-run on 2026-11-17 with the current bridge, same results:
