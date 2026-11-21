@@ -13,7 +13,7 @@ import os from "node:os";
 import { join, resolve } from "node:path";
 import type { ResultEnvelope, ToolDefinition } from "anymcp-protocol";
 import { ANYMCP_VERSION } from "anymcp-protocol";
-import { startStack, sleep } from "../../../e2e/harness";
+import { browserLabel, startStack, sleep } from "../../../e2e/harness";
 import { htmlText } from "./html-text";
 import { gitRevision, sourceTreeHash } from "./revision";
 
@@ -148,7 +148,7 @@ try {
 } finally {
   const rev = sourceTreeHash();
   const git = gitRevision();
-  const env = { anymcpVersion: ANYMCP_VERSION, browser: s.browserVersion, os: `${os.type()} ${os.release()}`, node: process.version, sourceTreeSha256: rev.sha256, gitHead: git.head, startedAt: new Date().toISOString() };
+  const env = { anymcpVersion: ANYMCP_VERSION, browser: browserLabel(s.browserVersion), os: `${os.type()} ${os.release()}`, node: process.version, sourceTreeSha256: rev.sha256, gitHead: git.head, startedAt: new Date().toISOString() };
   await s.close();
   const okN = rows.filter((r) => r.ok).length;
   const dir = resolve(import.meta.dirname, "../../../eval/results");

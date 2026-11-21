@@ -6,6 +6,8 @@ describe("plain text for the independent page reading", () => {
     expect(decodeEntities("&amp;lt;b&amp;gt;")).toBe("&lt;b&gt;");
     expect(decodeEntities("Tom &amp; Jerry &quot;live&quot; &#39;99 &#x263A; &apos;")).toBe(`Tom & Jerry "live" '99 ☺ '`);
     expect(decodeEntities("&unknown; &#99999999;")).toBe("&unknown; &#99999999;");
+    expect(decodeEntities("Caf&eacute; &Eacute;t&eacute; it&rsquo;s &ldquo;ok&rdquo; &hellip; 1&ndash;2 &mdash; &copy; &euro;5")).toBe("Café Été it’s “ok” … 1–2 — © €5");
+    expect(decodeEntities("&constructor; &toString;")).toBe("&constructor; &toString;"); // not Object.prototype
   });
   it("removes nested and broken tags completely", () => {
     expect(stripTags("<scr<b>ipt>alert(1)</script>")).toBe("alert(1)");

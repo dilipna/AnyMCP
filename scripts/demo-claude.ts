@@ -14,7 +14,7 @@ import { execFile } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { startStack, waitForState } from "../e2e/harness";
+import { browserLabel, startStack, waitForState } from "../e2e/harness";
 
 if (process.argv.includes("--chrome")) process.env.ANYMCP_E2E_BROWSER = "chrome";
 
@@ -33,7 +33,7 @@ function claude(prompt: string, allowed: string[], cfg: string): Promise<{ code:
 }
 
 const s = await startStack();
-const record: Record<string, unknown> = { when: new Date().toISOString(), browser: s.browserVersion, site: "synthetic fixture", client: "claude -p (Claude Code)" };
+const record: Record<string, unknown> = { when: new Date().toISOString(), browser: browserLabel(s.browserVersion), site: "synthetic fixture", client: "claude -p (Claude Code)" };
 try {
   const cfg = join(tmp, "mcp.json");
   writeFileSync(cfg, JSON.stringify({ mcpServers: { anymcp: { type: "http", url: s.bridge.mcpUrl, headers: { Authorization: `Bearer ${s.bridge.token()}` } } } }));

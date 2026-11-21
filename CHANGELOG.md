@@ -3,6 +3,20 @@
 Versions follow [semantic versioning](https://semver.org) once a version is published. Changes that affect what
 data AnyMCP handles or where it goes are marked **Data**, as the [privacy policy](docs/privacy-policy.md) promises.
 
+## Unreleased
+
+Found by a code review of the changes since 2026-11-15; the first is the most important.
+
+* Release workflow: run by hand for an already-published release, it built the release's target branch instead of its
+  tag before signing. It now always builds the tag of a published release, and records the commit it built.
+* More names that every object inherits (`constructor`) are handled as ordinary names: a single output named
+  "Constructor" is no longer reported as a duplicate in the tool editor; a blank `constructor` input in the test form
+  stays blank; a required output named `constructor` that is never produced, or not declared, is refused by the policy.
+* The evaluations' page reader decodes common named entities (`&eacute;`, `&rsquo;`, `&hellip;`, …) case-sensitively,
+  so a correct result is not scored as a mismatch; unknown entities stay as written.
+* Evaluation results from `external.ts` and the Claude demo name the browser; the test harness rejects an unknown
+  `ANYMCP_E2E_BROWSER` such as `toString` and no longer probes a relative Brave path when `LOCALAPPDATA` is unset.
+
 ## 0.1.1 — 2026-11-17 (developer beta, GitHub pre-release)
 
 Published as a [GitHub pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.1); not on the Chrome Web Store or npm yet. The build to submit to the store.

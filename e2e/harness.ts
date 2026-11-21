@@ -32,14 +32,14 @@ export const browserLabel = (version: string) => {
 };
 export function e2eBrowser(): E2EBrowser {
   const v = process.env.ANYMCP_E2E_BROWSER || "chromium";
-  if (!(v in BROWSER_NAMES)) throw new Error(`ANYMCP_E2E_BROWSER=${v} is not one of ${Object.keys(BROWSER_NAMES).join(", ")}`);
+  if (!Object.hasOwn(BROWSER_NAMES, v)) throw new Error(`ANYMCP_E2E_BROWSER=${v} is not one of ${Object.keys(BROWSER_NAMES).join(", ")}`);
   return v as E2EBrowser;
 }
 function bravePath(): string {
   const candidates = [
     process.env.ANYMCP_BRAVE_PATH,
     join(process.env.ProgramFiles ?? "C:\\Program Files", "BraveSoftware", "Brave-Browser", "Application", "brave.exe"),
-    join(process.env.LOCALAPPDATA ?? "", "BraveSoftware", "Brave-Browser", "Application", "brave.exe"),
+    process.env.LOCALAPPDATA ? join(process.env.LOCALAPPDATA, "BraveSoftware", "Brave-Browser", "Application", "brave.exe") : undefined,
     "/Applications/Brave Browser.app/Contents/MacOS/Brave Browser",
     "/usr/bin/brave-browser",
   ];
