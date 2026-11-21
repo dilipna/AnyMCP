@@ -289,9 +289,10 @@ export function validateToolPolicy(tool: ToolDefinition): PolicyIssue[] {
   }
   for (const key of tool.input.required ?? []) if (!declaredProperty(tool.input, key)) err("bad_required", `Required input “${key}” is not defined.`);
   for (const key of tool.output.required ?? []) {
+    if (!declaredProperty(tool.output, key)) err("bad_required_output", `Required output “${key}” is not defined.`);
     // A required output must be PRODUCED on the success path. (The empty result is a different path.)
     const extracted = tool.steps.some((s) => s.op === "extract" && s.into === key);
-    const constant = !!tool.successResult && key in tool.successResult;
+    const constant = !!tool.successResult && Object.hasOwn(tool.successResult, key); // own keys only: not "constructor"
     if (!extracted && !constant) err("output_not_extracted", `Required output “${key}” is never produced on a successful run (extract it or give it a fixed success value).`);
   }
 

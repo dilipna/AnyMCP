@@ -294,7 +294,7 @@ export function buildDraft(spec: DraftSpec, version: number): BuildResult {
     if (approvalUse && o.kind !== "text") errors.push(`“${o.name}” is a ${o.kind} and cannot be used as an approval value.`);
     if (!returned) continue;
     const name = snake(o.name, "value");
-    if (outProps[name]) {
+    if (Object.hasOwn(outProps, name)) { // own keys only: "constructor" is not a duplicate
       errors.push(`Two outputs are named “${name}”.`);
       continue;
     }

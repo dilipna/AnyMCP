@@ -93,7 +93,7 @@ function TestForm({ def, row, version, state }: { def: ToolDefinition; row: Tool
     setEnv(null);
     const args: Record<string, unknown> = {};
     for (const [k, schema] of props) {
-      const v = vals[k] ?? "";
+      const v = Object.hasOwn(vals, k) ? vals[k]! : ""; // own keys only: a blank "constructor" input stays blank
       if (v === "") continue;
       args[k] = schema.type === "integer" || schema.type === "number" ? Number(v) : schema.type === "boolean" ? v === "true" : v;
     }
