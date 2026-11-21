@@ -40,7 +40,9 @@ jobs:
           [ -n "$json" ] || { echo "::error::No release with tag $TAG"; exit 1; }
           id=$(jq -r '.id' <<<"$json" | head -1)
           draft=$(jq -r '.draft' <<<"$json" | head -1)
-          if [ "$PUBLISHED" = true ]; then ref="$TAG"; else ref=$(jq -r '.target_commitish' <<<"$json" | head -1); fi
+          # A published release has a tag: always build that. Only a draft (no tag yet) builds its target, which may be a
+          # branch name, so the summary says which commit that was.
+          if [ "$draft" = false ]; then ref="$TAG"; else ref=$(jq -r '.target_commitish' <<<"$json" | head -1); fi
           echo "id=$id" >> "$GITHUB_OUTPUT"
           echo "draft=$draft" >> "$GITHUB_OUTPUT"
           echo "ref=$ref" >> "$GITHUB_OUTPUT"
@@ -48,6 +50,10 @@ jobs:
       - uses: actions/checkout@v5
         with:
           ref: ${{ steps.rel.outputs.ref }}
+      - name: Record the commit that was built
+        env:
+          REF: ${{ steps.rel.outputs.ref }}
+        run: echo "Built commit $(git rev-parse HEAD) (from $REF)" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/setup-node@v5
         with:
           node-version: "24"
