@@ -7,6 +7,12 @@ data AnyMCP handles or where it goes are marked **Data**, as the [privacy policy
 
 Found by a code review of the changes since 2026-11-15; the first is the most important.
 
+* Bridge: started with npx from a release package (`npx --package=<release .tgz address> anymcp-bridge`), it told
+  Claude Desktop, Cursor and other stdio apps to run `npx -y @dilipna/anymcp-bridge@<version>`, which fails because
+  the package is not on the npm registry. It now prints `npx -y --package=<this version's GitHub release package>
+  anymcp-bridge --stdio`. Found 2026-11-22 by running v0.1.1 that way; `npm run smoke:stdio -- --npx=<address>`
+  checks the printed form end to end. Bridges started any other way (a global install, the release's .mjs file) were
+  not affected.
 * Release workflow: run by hand for an already-published release, it built the release's target branch instead of its
   tag before signing. It now always builds the tag of a published release, and records the commit it built.
 * More names that every object inherits (`constructor`) are handled as ordinary names: a single output named
