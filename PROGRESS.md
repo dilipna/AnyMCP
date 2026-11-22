@@ -37,14 +37,18 @@ serves `docs/` at https://dilipna.github.io/AnyMCP/ (privacy policy: `/privacy-p
 | Release v0.1.0 (pre-release) | `release.yml` on publication (run 44007518598); `gh attestation verify` | 7/7 files identical to a clean build from the tag; attestations verify for all 3 artifacts |
 | CI 2026-11-16 | GitHub Actions run 43929412593 at c4e474b (macOS 26 arm64, Ubuntu 26.04 Node 24 + 22 + 20.19, Windows Server 2025) | all green; artifacts byte-identical on every job and to the local build |
 
-## Next (needs the owner — see docs/release-checklist.md)
-Done 2026-11-15/16: naming, security contact (private reporting), push + green CI, hosted privacy policy, fuzzing,
-Edge/Brave, CodeQL, release workflow, v0.1.0 and v0.1.1 published as GitHub PRE-RELEASES (owner's decision; 0.1.1 adds
-the in-product data notice the store expects).
-1. `npm login` (owner), then publish `release/dilipna-anymcp-bridge-0.1.1.tgz` (identical to the v0.1.1 release's file) and
-   update quick-start/README/listing ("not published yet").
-   CodeQL alerts 5 and 6 (intended report writes in dev scripts): owner may dismiss. 2. First-time-user test incl. Claude Desktop/Cursor. 3. Real docked-panel screenshots; a
-   lawyer's look at the policy. 4. Chrome Web Store submission (owner's developer account).
+## Next (state on 2026-11-22)
+Released: v0.1.0 and v0.1.1 as GitHub PRE-RELEASES (verified, attested). main has UNRELEASED fixes from a code
+review (CHANGELOG "Unreleased"): a v0.1.2 needs the owner's explicit go-ahead (prepare + dry-run as a draft first).
+1. npm NOT published. Owner is logged in as `dilipna`, 2FA is on (recovery codes were pasted into a chat: owner must
+   regenerate them). Publishing failed: EOTP without a real authenticator code; with a recovery code the PUT returned
+   E404. Easiest fix: add a passkey / security key (Windows Hello) as the 2FA method on npmjs.com, then
+   `npm publish ./release/dilipna-anymcp-bridge-0.1.1.tgz --access public --auth-type=web` (approve in the browser),
+   or use a 6-digit code from Microsoft/Google Authenticator. The leading `./` is required. After publishing:
+   verify from the registry and update README/quick start/listing ("not published yet" → npx).
+2. Owner tries v0.1.1 from the release with Claude Code; takes real docked-panel screenshots (docs/quick-start.md).
+3. 3–5 first-time users (docs/first-time-user-test.md). 4. Chrome Web Store: upload anymcp-extension-0.1.1.zip,
+   Unlisted, fields in store/listing.md, tick Limited Use. 5. Later: lawyer review, external security review.
 
 ## Decisions that matter (docs/decisions.md)
 - Extension is the source of truth for tools; the bridge only gets manifests. Nothing is fetched remotely.
