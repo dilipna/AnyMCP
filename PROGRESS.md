@@ -26,30 +26,30 @@ serves `docs/` at https://dilipna.github.io/AnyMCP/ (privacy policy: `/privacy-p
 ## Verified (2026-11-14 unless dated; re-run to confirm)
 | Check | Command | Result |
 |---|---|---|
-| Typecheck / unit + integration + property tests | `npm run typecheck` / `npm test` | clean / 160 pass (2026-11-16) |
+| Typecheck / unit + integration + property tests | `npm run typecheck` / `npm test` | clean / 169 pass (2026-11-23) |
 | Browser suite | `npm run test:e2e` (Chromium 158); `ANYMCP_E2E_BROWSER=chrome` (157.0.8103.52), `=msedge` (Edge 157.0.4341.60), `=brave` (1.99.57) | 67/67 each (2026-11-16) |
 | Fixture evaluation | `npm run eval` | 170/170, 0 false success, 0 unapproved |
 | Public sites (5 pages, 4 sandboxes, 2026-11-18; 2026-11-23 with 0.1.2) | `npm run eval:public` | 11/11, revocation 5/5 |
 | Public sites (3 sandboxes) | `npm run eval:public -- --with-claude` (Chromium) and `-- --chrome` | 7/7 equal independent reading in both; Claude Code HTTP + stdio ✓ |
 | Packaging | `npm run package -- --verify`, `npm run package:check` | reproducible; tarball installs and runs outside the checkout |
 | Clean checkout | `node scripts/clean-install-check.mjs` | PASSED |
+| Release v0.1.2 (pre-release, 2026-11-23) | `release.yml` on publication (run 45251293145); `gh attestation verify`; install from the release address | 7/7 files identical to a clean build from the tag (6d0b101); attestations verify (Rekor 4056249726), altered copy rejected; `npx --package=<v0.1.2 address>` and `npm install -g` work with an empty cache; printed stdio entry passes `smoke:stdio --npx` |
 | Release v0.1.1 (pre-release) | `release.yml` on publication (run 44156695564); `gh attestation verify` | 7/7 files identical to a clean build from the tag; attestations verify for all 3 artifacts |
 | Release v0.1.0 (pre-release) | `release.yml` on publication (run 44007518598); `gh attestation verify` | 7/7 files identical to a clean build from the tag; attestations verify for all 3 artifacts |
+| CI 2026-11-23 | GitHub Actions run 45128313242 at 6d0b101 (all 5 jobs) | all green; 169/169, 67/67; artifacts byte-identical on every job and locally |
 | CI 2026-11-16 | GitHub Actions run 43929412593 at c4e474b (macOS 26 arm64, Ubuntu 26.04 Node 24 + 22 + 20.19, Windows Server 2025) | all green; artifacts byte-identical on every job and to the local build |
 
 ## Next (state on 2026-11-23)
-Released: v0.1.0 and v0.1.1 as GitHub PRE-RELEASES (verified, attested). v0.1.2 (code-review fixes + the bridge's
-npx stdio entry + release-address install docs) is being prepared: owner approved preparing it on 2026-11-22; it is
-published only after a draft + release.yml dry run AND the owner's final yes.
-1. npm: DROPPED (owner, 2026-11-22). The bridge package is installed from the release address:
+Released: v0.1.0, v0.1.1 and **v0.1.2** (2026-11-23) as GitHub PRE-RELEASES (verified, attested). Each new release
+still needs its own go-ahead (draft + release.yml dry run first).
+1. npm: DROPPED (owner, 2026-11-22). The bridge installs from the release address:
    `npx --package=https://github.com/dilipna/AnyMCP/releases/download/vX.Y.Z/dilipna-anymcp-bridge-X.Y.Z.tgz anymcp-bridge`
    or `npm install -g <address>`. Docs must never tell people to run `npx @dilipna/anymcp-bridge`.
    Owner should still regenerate the npm recovery codes that were pasted into a chat, if the account is reachable.
-2. After v0.1.2 is published: verify downloads + attestations, the release-address install (npx and -g, fresh cache),
-   `npm run smoke:stdio -- --npx=<v0.1.2 address>`, then update compatibility "Installing the bridge" and checklist gate 11.
-3. Owner tries v0.1.2 with Claude Code; takes real docked-panel screenshots (docs/quick-start.md).
-4. Chrome Web Store: upload anymcp-extension-0.1.2.zip, Unlisted, fields in store/listing.md, tick Limited Use.
-5. 3–5 first-time users (docs/first-time-user-test.md). 6. Later: lawyer review, external security review.
+2. Chrome Web Store: upload anymcp-extension-0.1.2.zip, Unlisted, fields in store/listing.md, tick Limited Use.
+   Owner takes real docked-panel screenshots (list in docs/quick-start.md).
+3. 3–5 first-time users (docs/first-time-user-test.md); turn feedback into fixes.
+4. Claude Desktop / Cursor manual test if the owner installs them. 5. Later: lawyer review, external security review.
 
 ## Decisions that matter (docs/decisions.md)
 - Extension is the source of truth for tools; the bridge only gets manifests. Nothing is fetched remotely.

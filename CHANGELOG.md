@@ -3,7 +3,7 @@
 Versions follow [semantic versioning](https://semver.org) once a version is published. Changes that affect what
 data AnyMCP handles or where it goes are marked **Data**, as the [privacy policy](docs/privacy-policy.md) promises.
 
-## 0.1.2 — 2026-11-22 (developer beta, GitHub pre-release)
+## 0.1.2 — 2026-11-23 (developer beta, GitHub pre-release)
 
 Published as a [GitHub pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.2); not on the Chrome Web
 Store. **The bridge is not published to the npm registry**: install it from the release address,

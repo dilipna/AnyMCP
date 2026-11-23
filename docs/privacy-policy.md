@@ -1,6 +1,6 @@
 # AnyMCP — Privacy Policy
 
-**Effective date:** 22 November 2026 · **Publisher:** dilipna ([GitHub](https://github.com/dilipna)) ·
+**Effective date:** 23 November 2026 · **Publisher:** dilipna ([GitHub](https://github.com/dilipna)) ·
 **Applies to:** the AnyMCP Extension for Chrome and the AnyMCP bridge (`@dilipna/anymcp-bridge`)
 
 **Contact:** questions about this policy: [open an issue](https://github.com/dilipna/AnyMCP/issues). To report a
