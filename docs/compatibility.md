@@ -18,7 +18,7 @@ Evidence labels used below:
 | Node 20.19 and 22 | Verified locally (CI, Ubuntu) | same run: Node 20.19.6 and 22.23.4 pass every step above |
 | Node 21, 23 | Prepared but untested | `engines: >=20.19`; odd-numbered lines, not run |
 | Playwright Chromium 158 | Verified end to end | 67/67 browser tests, fixture evaluation (170/170, protocol v2), public sites |
-| Google Chrome 157.0.8103.52 (branded) | Verified end to end | full browser suite 67/67 on 2026-11-15 (the production-build test always uses Chromium); public sites 7/7 in Chrome |
+| Google Chrome 157.0.8103.79 (branded) | Verified end to end | 2026-11-23 at a1c4d85: full browser suite 71/71; nine practice pages 20/20 with Claude Code over HTTP and stdio (`eval/results/public-sites-2026-11-23T22-07-25`). Earlier, 157.0.8103.52: browser suite 67/67 on 2026-11-15 (the production-build test always uses Chromium); public sites 7/7 |
 | Microsoft Edge 157.0.4341.60 | Verified end to end | 2026-11-16: full browser suite 67/67 (`ANYMCP_E2E_BROWSER=msedge`); public sites 7/7, revocation 3/3 (SDK client). The extension was loaded unpacked over the DevTools protocol, not from a store |
 | Brave 1.99.57 (Chromium 157.0.8103.79) | Verified end to end | 2026-11-16: full browser suite 67/67 (`ANYMCP_E2E_BROWSER=brave`); public sites 7/7, revocation 3/3 (SDK client); default Shields settings in a fresh profile |
 | Other Chromium browsers (Opera, Vivaldi, Arc, …) | Prepared but untested | MV3 + side panel should work; not tried |
@@ -42,8 +42,8 @@ The bridge package is attached to each GitHub release; it is not on the npm regi
 |---|---|---|---|
 | Official MCP TypeScript SDK client | HTTP | Verified end to end | browser suites, evaluation, public sites |
 | Official MCP TypeScript SDK client | stdio | Verified locally | spawns the real CLI over stdio against a fake extension (`stdio.integration.test.ts`); packaged bridge and installed npm package smoke-tested (`npm run smoke:stdio`, `npm run package:check`) |
-| Claude Code 2.1.207 (`claude -p`) | HTTP | Verified end to end | public-site runs: books.toscrape.com, on 2026-11-14 and again on 2026-11-17 with the current bridge (`eval/results/public-sites-2026-11-17T03-30-27`) |
-| Claude Code 2.1.207 (`claude -p`) | stdio | Verified end to end | public-site runs: scrapethissite.com through the packaged bridge, 2026-11-14 and 2026-11-17 |
+| Claude Code 2.1.207 (`claude -p`) | HTTP | Verified end to end | public-site runs: books.toscrape.com, on 2026-11-14, 2026-11-17 and 2026-11-23 (in Chrome, at a1c4d85) with the current bridge (`eval/results/public-sites-2026-11-17T03-30-27`) |
+| Claude Code 2.1.207 (`claude -p`) | stdio | Verified end to end | public-site runs: scrapethissite.com through the packaged bridge, 2026-11-14, 2026-11-17 and 2026-11-23 |
 | Claude Desktop | stdio | Blocked | not installed on the test machine. Manual test: [first-time-user-test.md](first-time-user-test.md) |
 | Cursor | stdio | Blocked | installed, but its interface cannot be operated from this environment and its settings were not modified |
 | Other MCP clients | HTTP or stdio | Prepared but untested | standard Streamable HTTP (stateless) and stdio |

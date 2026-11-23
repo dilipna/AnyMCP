@@ -30,6 +30,7 @@ serves `docs/` at https://dilipna.github.io/AnyMCP/ (privacy policy: `/privacy-p
 | Browser suite | `npm run test:e2e` (Chromium 158); `ANYMCP_E2E_BROWSER=chrome` (157.0.8103.52), `=msedge` (Edge 157.0.4341.60), `=brave` (1.99.57) | 67/67 each (2026-11-16) |
 | Fixture evaluation | `npm run eval` | 170/170, 0 false success, 0 unapproved |
 | Public sites (9 pages, 5 sites, 2026-11-23, after fixes) | `npm run eval:public` | 20/20, slow-page check, revocation 9/9 |
+| Chrome 157.0.8103.79 + Claude Code (2026-11-23, a1c4d85) | `ANYMCP_E2E_BROWSER=chrome npm run test:e2e`; `npm run eval:public -- --chrome --with-claude` | 71/71; 20/20 + Claude Code HTTP ✓ stdio ✓ |
 | Public sites (5 pages, 4 sandboxes, 2026-11-18; 2026-11-23 with 0.1.2) | `npm run eval:public` | 11/11, revocation 5/5 |
 | Public sites (3 sandboxes) | `npm run eval:public -- --with-claude` (Chromium) and `-- --chrome` | 7/7 equal independent reading in both; Claude Code HTTP + stdio ✓ |
 | Packaging | `npm run package -- --verify`, `npm run package:check` | reproducible; tarball installs and runs outside the checkout |
