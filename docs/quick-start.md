@@ -126,8 +126,10 @@ happened, step by step.
   `anymcp` from the app's MCP settings.
 * **Revoke everything:** Settings → **Revoke all access…** (all tools off, all sites removed, bridge unpaired).
 * **Stop the bridge:** Ctrl+C in its terminal.
-* **Update:** `git pull && npm ci && npm run build`, then the reload button on `chrome://extensions`. Pairing and
-  tools are kept.
+* **Update:** from a release, unzip the newer ZIP into the **same folder** (replace its files), press the reload
+  button on `chrome://extensions`, and start the bridge with the newer release's command. Chrome treats an unpacked
+  extension in a different folder as a different extension, whose tools and pairing start empty. From source:
+  `git pull && npm ci && npm run build`, then the reload button. Pairing and tools are kept.
 * **Uninstall:** remove the extension from `chrome://extensions`, remove `anymcp` from your AI app, delete the
   `~/.anymcp` folder (`%USERPROFILE%\.anymcp` on Windows).
 

@@ -103,6 +103,25 @@ addresses of that site's tabs only. This keeps the extension unable to see brows
 | Developer contact email | Set and verified in the developer account, not here. Google requires a verified contact email before publishing |
 | Upload | `release/anymcp-extension-<version>.zip` from `npm run package` (includes LICENSE and third-party notices) |
 
+## Test instructions (dashboard "Test instructions" tab)
+
+No account or credentials are needed; everything below uses a public practice site and reads only.
+
+> AnyMCP needs its local companion program (the "bridge") to do anything. To test:
+> 1. Install Node.js 20.19 or newer. In a terminal (on Windows, Command Prompt) run:
+>    `npx --package=https://github.com/dilipna/AnyMCP/releases/download/v0.1.2/dilipna-anymcp-bridge-0.1.2.tgz anymcp-bridge`
+>    and type `y` if asked. It prints an 8-digit pairing code. Leave it running.
+> 2. Click the AnyMCP toolbar icon to open the side panel. In Getting started, step "Pair this browser", enter the
+>    code and press Pair. The header shows "Bridge connected".
+> 3. Teach → Allow a website → enter `https://books.toscrape.com` → Allow this site → accept Chrome's prompt.
+> 4. Open `https://books.toscrape.com/catalogue/category/books/travel_2/index.html`. Teach → Start recording next to
+>    that tab → Pick a list → click one book title → Mark a message → click the yellow "Warning!" box → Stop
+>    recording → Review the tool.
+> 5. Give the tool a name, Save as draft, then Run test: the result lists the books with their links. Enable for my
+>    AI assistant makes it available to an MCP client (optional; for example Claude Code, using the command shown in
+>    Settings → Show the client command).
+> Settings → Revoke all access undoes everything. Source and documentation: https://github.com/dilipna/AnyMCP
+
 ## Likely reviewer questions
 
 Broad *optional* host patterns (requested per site at runtime), the localhost companion program, and the remote-code
