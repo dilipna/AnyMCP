@@ -1,8 +1,12 @@
 # Public-site validation report
 
-**Scope:** public sandboxes published for scraping practice, a few inputs each, Windows 11. Three sites from
-2026-11-14; two more (the Web Scraper test shop and the Scrape This Site countries page) added on 2026-11-18, when all
-five passed together (11/11 runs, revocation 5/5; `eval/results/public-sites-2026-11-18T22-32-10.{md,json}`, Playwright Chromium 158). The first runs used
+**Scope:** public sites published for scraping or test-automation practice, a few inputs each, Windows 11. Three
+pages from 2026-11-14; two more (the Web Scraper test shop and the Scrape This Site countries page) added on
+2026-11-18, when all five passed together (11/11 runs, revocation 5/5;
+`eval/results/public-sites-2026-11-18T22-32-10.{md,json}`, Playwright Chromium 158). Four more on 2026-11-23 (a single
+value, a layout table, a page drawn 10 s late, and a fifth site, the-internet.herokuapp.com): they first exposed three
+defects (`public-sites-2026-11-23T19-55-49`), fixed the same day; then all nine pages on five sites passed together
+(20/20 runs, the slow-page check, revocation 9/9; `eval/results/public-sites-2026-11-23T20-26-36`). The first runs used
 Playwright Chromium 158 (with Claude Code) and, separately, Google Chrome 157.0.8103.52 (SDK client only). Read-only: pages are opened by address and read; no form is submitted, no account used, no
 message sent. About 25 page loads, paced. Raw results: `eval/results/public-sites-2026-11-14T05-49-41.{md,json}` (Chromium + Claude Code) and
 `eval/results/public-sites-2026-11-14T06-45-27.{md,json}` (Chrome). Re-runs on 2026-11-16 in Microsoft Edge and Brave
@@ -37,8 +41,12 @@ automated. In the product, the person uses **Allow a website** and confirms Chro
 | quotes.toscrape.com/js | content drawn by JavaScript after load; page number in the path | `quotes_page` | CSS `span.text` | page 3 (10), page 5 (10) | yes, 20/20 |
 | webscraper.io test shop (2026-11-18) | a different site; product cards; page number in the query string; results are links | `laptops_page` | CSS `a.title` | page 3 (6), page 20 (3, the last page), page 999 → stopped safely (no cards, so the recorded precondition is unmet) | yes, 9/9 items with their URLs |
 | scrapethissite.com countries (2026-11-18) | one long static page (250 cards), no input; capped at the tool's 25 rows | `countries_list` | CSS `h3.country-name` | the page (25) | yes, 25/25 |
+| books.toscrape.com book page (2026-11-23) | ONE value (the price); book in the path; a recommended-books strip repeats the same price style | `book_price` | CSS `div.col-sm-6.product_main p.price_color` | tipping-the-velvet_999, sharp-objects_997, zzqqxx_9999 → stopped safely (404 page) | yes, 2/2 prices |
+| quotes.toscrape.com/tableful (2026-11-23) | a table used for layout, no class names: quote cell, tags row, side cell, empty spacer; tag in the path | `quotes_by_tag` | CSS `table > tbody > tr > td[style="padding-top: 2em;"]` | life (10), humor (10), zzqqxx → stopped safely (no quotes) | yes, 20/20 |
+| quotes.toscrape.com/js-delayed (2026-11-23) | quotes drawn by a 10-second timer after load; page in the path | `delayed_quotes_page` | CSS `span.text` | first test at the default 5 s step timeout → stopped safely after 5.5 s, nothing returned; version 2 with 15 s: page 3 (10), page 4 (10) | yes, 20/20 |
+| the-internet.herokuapp.com/tables (2026-11-23) | another site, built for test-automation practice; a data table with a column of action links; no input | `practice_table` | CSS `#table1` | the page (4 rows, 3 columns kept) | yes, 4/4 |
 
-* Removing each site removed its tool from the client (3/3 on 2026-11-14; 5/5 on 2026-11-18).
+* Removing each site removed its tool from the client (3/3 on 2026-11-14; 5/5 on 2026-11-18; 9/9 on 2026-11-23).
 * Empty pages: the hockey search shows its table even with no matches, so "zzqqxx" is a valid empty result. The shop
   shows nothing at all past its last page (no "no products" message), so AnyMCP cannot tell that from a wrong page
   and stops. On a site that does show such a message, marking it while recording with **Mark a message → "Means:
@@ -57,8 +65,21 @@ automated. In the product, the person uses **Allow a website** and confirms Chro
 * **A success check contained a live count.** On scrapethissite the page heading ends with "21 items", so a check
   on it only matched one search. The review screen now warns when a check contains a number.
 * **Tables without `<thead>`** returned their header row as the first record. Fixed and covered by a test.
-* **All three tools rely on CSS selectors**, because these sandboxes have no labels, roles or test ids on their
-  results. The review screen flags such tools ("may break if the site changes"); if the markup changes, the tool
+* **A list guess took in neighbouring cells, and that produced a false success** (2026-11-23). On the layout
+  table the recorder's "others like it" pattern was `table > tbody > tr > td`: results mixed quotes with tags rows,
+  and a tag with no quotes returned "success" with two unrelated cells. The recorder now narrows a pattern with no
+  class by an attribute of the clicked item when that removes exactly the items built differently from it (empty
+  spacer cells aside). A first version missed the real page's empty `<td></td>` spacer; the synthetic copy in
+  `e2e/site-patterns.spec.ts` now has one. Known limitation 30 says what is still a guess.
+* **Content drawn after load was read too early, and the editor's timeout did not help** (2026-11-23). Reading
+  looked once after the page's "loaded" check; quotes drawn 10 s late stopped after 0.4 s, even with a 15 s per-step
+  timeout, because the recorded wait was fixed at 5 s. Reading now waits for what it reads up to the per-step
+  timeout, and the recorded wait follows that timeout.
+* **A value unique on one page was ambiguous on the next** (2026-11-23): `p.price_color` also matched the
+  recommended-books strip on other books (AnyMCP stopped with `locator_ambiguous`, never a wrong price). Picked
+  values are now anchored to their container.
+* **Every tool here relies on CSS selectors**, because these practice pages have no labels, roles or test ids on
+  their results. The review screen flags such tools ("may break if the site changes"); if the markup changes, the tool
   stops with `locator_missing` instead of guessing.
 
 ## Separate script

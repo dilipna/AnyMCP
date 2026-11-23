@@ -9,12 +9,19 @@
 // reading of the same page (Node fetch + regular expressions, or the page's own embedded data). It also checks that
 // removing the site takes the tool away from the client.
 //
-// Sites (structurally different on purpose; all three are sandboxes published for scraping practice):
+// Sites (structurally different on purpose; all are published for scraping or test-automation practice):
 //   - books.toscrape.com      static listing; one part of the PATH is the input; results are LINKS
 //   - scrapethissite.com      query-string SEARCH; results are TABLE rows (robots.txt allows /pages/)
 //   - quotes.toscrape.com/js  the raw HTML has NO quotes: they are drawn by JavaScript after load
 //   - webscraper.io test shop another site: product cards, page number in the query string, empty past the end
 //   - scrapethissite.com/pages/simple  one long page (250 cards), no input, capped at 25 rows
+//   - books.toscrape.com book page  ONE VALUE (the price); a "recommended" strip below repeats the same price style
+//   - quotes.toscrape.com/tableful  quotes laid out with a layout TABLE (quote cell, then a tags row), tag in the path
+//   - quotes.toscrape.com/js-delayed  quotes drawn 10 s after load: longer than a recorded tool's 5 s step timeout, so
+//                                   the first test must stop honestly; then the per-step timeout is raised in a new
+//                                   version (as the tool editor does) and the runs must return the right quotes
+//   - the-internet.herokuapp.com/tables  another site, built for test-automation practice: a data table with a column
+//                                   of action links (robots.txt allows everything)
 // Wikipedia was tried first and refused automated browsing (HTTP 429); its robots.txt disallows /w/. It is not used.
 //
 // Read-only and paced: pages are opened by address and read. AnyMCP submits no form, uses no account, sends no
@@ -46,6 +53,7 @@ const BOOKS = "https://books.toscrape.com";
 const HOCKEY = "https://www.scrapethissite.com";
 const QUOTES = "https://quotes.toscrape.com";
 const SHOP = "https://webscraper.io";
+const HEROKU = "https://the-internet.herokuapp.com";
 
 const norm = normalizeSpace;
 const decode = htmlText; // tags removed until none are left, entities decoded once (see html-text.ts)
@@ -84,6 +92,30 @@ const COUNTRIES_URL = `${HOCKEY}/pages/simple/`;
 /** 250 country cards; each name follows a flag icon inside the heading. */
 const parseCountries = (html: string) => [...html.matchAll(/<h3 class="country-name">([\s\S]*?)<\/h3>/g)].map((m) => decode(m[1]!));
 
+const bookUrl = (slug: string) => `${BOOKS}/catalogue/${slug}/index.html`;
+/** The book's own price is in the main product box; the "recommended" strip below repeats the same class. */
+const parseBookPrice = (html: string) => {
+  const m = /class="col-sm-6 product_main">[\s\S]*?<p class="price_color">([^<]*)<\/p>/.exec(html);
+  return m ? [norm(decode(m[1]!))] : [];
+};
+
+const tablefulUrl = (tag: string) => `${QUOTES}/tableful/tag/${tag}/page/1/`;
+/** Layout table: each quote (with "Author: …") is a cell in its own row; the quote's tags are in the next row. */
+const parseTableful = (html: string) => [...html.matchAll(/<td style="padding-top: 2em;">([\s\S]*?)<\/td>/g)].map((m) => norm(decode(m[1]!)));
+
+/** Same embedded array as /js/, drawn by a 10-second timer instead of at load. */
+const delayedUrl = (page: string) => `${QUOTES}/js-delayed/page/${page}/`;
+
+const HEROKU_TABLES = `${HEROKU}/tables`;
+/** Example 1's body rows: last name, first name and amount due (cells 1, 2 and 4). */
+const parseHerokuTable = (html: string) => {
+  const body = /<table id="table1"[\s\S]*?<tbody>([\s\S]*?)<\/tbody>/.exec(html)?.[1] ?? "";
+  return [...body.matchAll(/<tr>([\s\S]*?)<\/tr>/g)].map((r) => {
+    const c = [...r[1]!.matchAll(/<td>([\s\S]*?)<\/td>/g)].map((x) => norm(decode(x[1]!)));
+    return { last_name: c[0], first_name: c[1], due: c[3] };
+  });
+};
+
 // ---- the sites ------------------------------------------------------------------------------------------------
 interface Run {
   args: Record<string, unknown>;
@@ -95,7 +127,7 @@ interface SiteCase {
   label: string;
   structure: string;
   recordUrl: string;
-  pickMode: "list" | "table";
+  pickMode: "list" | "table" | "text";
   pickSelector: string;
   successSelector: string;
   edit: (spec: DraftSpec) => void;
@@ -105,6 +137,9 @@ interface SiteCase {
   parse: (html: string, url: string) => unknown[];
   test: Record<string, unknown>;
   runs: Run[];
+  /** The page is slower than a recorded tool's default step timeout: the first test must stop honestly; then a new
+   * version with this per-step timeout (the tool editor's "Per-step timeout") is tested, enabled and run. */
+  slow?: { stepTimeoutMs: number };
   claude?: { transport: "http" | "stdio"; prompt: string; truthUrl: string; mustContain: (truth: unknown[]) => string[] };
 }
 
@@ -269,6 +304,115 @@ const SITES: SiteCase[] = [
     test: {},
     runs: [{ args: {}, expect: "items", truthUrl: COUNTRIES_URL }],
   },
+  {
+    origin: BOOKS,
+    label: "Books to Scrape (one book's price)",
+    structure: "one value, not a list; part of the path is the input; a recommended-books strip below repeats the same price style, so the tool must return the book's own price",
+    recordUrl: bookUrl("a-light-in-the-attic_1000"),
+    pickMode: "text",
+    pickSelector: ".product_main .price_color",
+    successSelector: "div.alert-warning",
+    edit: (spec) => {
+      spec.id = "book_price";
+      spec.title = "Price of a book";
+      spec.description = "Returns the price shown on one book's page of the Books to Scrape sandbox (books.toscrape.com). Read-only.";
+      spec.outputs[0]!.name = "price";
+      spec.params.push(pathPart("book", "a-light-in-the-attic_1000", "Book part of the address, e.g. tipping-the-velvet_999"));
+    },
+    outputKey: "price",
+    max: 1,
+    links: false,
+    parse: (h) => parseBookPrice(h),
+    test: { book: "a-light-in-the-attic_1000" },
+    runs: [
+      { args: { book: "tipping-the-velvet_999" }, expect: "items", truthUrl: bookUrl("tipping-the-velvet_999") },
+      { args: { book: "sharp-objects_997" }, expect: "items", truthUrl: bookUrl("sharp-objects_997") },
+      { args: { book: "zzqqxx_9999" }, expect: "stopped" }, // no such book (HTTP 404 page): must stop, not invent a price
+    ],
+  },
+  {
+    origin: QUOTES,
+    label: "Quotes to Scrape (layout table, by tag)",
+    structure: "quotes laid out with an HTML table used for layout: each quote is a cell in its own row and its tags are in the next row; part of the path is the input",
+    recordUrl: tablefulUrl("love"),
+    pickMode: "list",
+    pickSelector: 'td[style="padding-top: 2em;"]',
+    successSelector: "h1 a",
+    edit: (spec) => {
+      spec.id = "quotes_by_tag";
+      spec.title = "Quotes with a tag";
+      spec.description = "Returns the quotes (with their authors) on the first page of one tag in the table version of the Quotes to Scrape sandbox. Read-only.";
+      spec.outputs[0]!.name = "quotes";
+      spec.outputs[0]!.maxRows = 10;
+      spec.params.push(pathPart("tag", "love", "A tag, e.g. life or humor"));
+    },
+    outputKey: "quotes",
+    max: 10,
+    links: false,
+    parse: (h) => parseTableful(h),
+    test: { tag: "love" },
+    runs: [
+      { args: { tag: "life" }, expect: "items", truthUrl: tablefulUrl("life") },
+      { args: { tag: "humor" }, expect: "items", truthUrl: tablefulUrl("humor") },
+      { args: { tag: "zzqqxx" }, expect: "stopped" }, // a tag page with no quotes: the recorded list is not there
+    ],
+  },
+  {
+    origin: QUOTES,
+    label: "Quotes to Scrape (drawn 10 seconds after load)",
+    structure: "the quotes are drawn by a 10-second timer after the page loads, longer than a recorded tool's 5-second step timeout; part of the path is the input",
+    recordUrl: delayedUrl("2"),
+    pickMode: "list",
+    pickSelector: ".quote .text",
+    successSelector: "h1 a",
+    slow: { stepTimeoutMs: 15000 },
+    edit: (spec) => {
+      spec.id = "delayed_quotes_page";
+      spec.title = "Quotes on a slow page";
+      spec.description = "Returns the quotes on one page of the delayed JavaScript version of the Quotes to Scrape sandbox. Read-only.";
+      spec.outputs[0]!.name = "quotes";
+      spec.outputs[0]!.maxRows = 10;
+      spec.params.push(pathPart("page", "2", "Page number, e.g. 3"));
+    },
+    outputKey: "quotes",
+    max: 10,
+    links: false,
+    parse: (h) => parseQuotes(h),
+    test: { page: "2" },
+    runs: [
+      { args: { page: "3" }, expect: "items", truthUrl: delayedUrl("3") },
+      { args: { page: "4" }, expect: "items", truthUrl: delayedUrl("4") },
+    ],
+  },
+  {
+    origin: HEROKU,
+    label: "The Internet (test-automation practice site, data table)",
+    structure: "another site, built for test-automation practice: a data table whose last column holds action links; no input",
+    recordUrl: HEROKU_TABLES,
+    pickMode: "table",
+    pickSelector: "#table1",
+    successSelector: "h3",
+    edit: (spec) => {
+      spec.id = "practice_table";
+      spec.title = "Example data table";
+      spec.description = "Returns the rows of the first example table on the-internet.herokuapp.com/tables (last name, first name, amount due). Read-only.";
+      const t = spec.outputs[0]!;
+      t.name = "people";
+      t.maxRows = 10;
+      // review screen: keep three columns ("Drop" the rest)
+      t.columns = {
+        "Last Name": { header: "Last Name", as: "string" },
+        "First Name": { header: "First Name", as: "string" },
+        Due: { header: "Due", as: "string" },
+      };
+    },
+    outputKey: "people",
+    max: 10,
+    links: false,
+    parse: (h) => parseHerokuTable(h),
+    test: {},
+    runs: [{ args: {}, expect: "items", truthUrl: HEROKU_TABLES }],
+  },
 ];
 
 function claude(prompt: string, allowed: string[], cfg: string): Promise<{ code: number | null; result: string; stderr: string }> {
@@ -300,7 +444,7 @@ async function record(s: Stack, c: SiteCase): Promise<DraftSpec> {
     if (!started.ok) throw new Error(`record.start: ${started.error}`);
     await page.locator("[data-anymcp-banner]").waitFor({ state: "attached" });
 
-    const pick = async (mode: "list" | "table" | "success", selector: string, outputs: number, signals: number) => {
+    const pick = async (mode: "list" | "table" | "text" | "success", selector: string, outputs: number, signals: number) => {
       await s.call({ type: "record.pick", mode });
       await waitForState(s, (x) => x.recording?.pick === mode);
       await page.locator(selector).first().click();
@@ -354,11 +498,35 @@ async function main() {
         site.tool = { id: def.id, entry: def.entry, steps: def.steps.map((x) => x.op), warnings: built.warnings };
 
         if (!(await s.call({ type: "tool.save", definition: def, source: "recorded" })).ok) throw new Error("save failed");
-        await sleep(PAUSE_MS);
-        const tested = ((await s.call<{ envelope: ResultEnvelope }>({ type: "tool.test", id: def.id, version: 1, args: c.test })) as { data: { envelope: ResultEnvelope } }).data.envelope;
-        site.test = { status: tested.status, message: tested.message };
+        const test = async (version: number) => {
+          await sleep(PAUSE_MS);
+          const t0 = Date.now();
+          const env = ((await s.call<{ envelope: ResultEnvelope }>({ type: "tool.test", id: def.id, version, args: c.test })) as { data: { envelope: ResultEnvelope } }).data.envelope;
+          return { env, ms: Date.now() - t0 };
+        };
+        let version = 1;
+        if (c.slow) {
+          // the recorded tool keeps the default step timeout: the test must stop, report why, and return nothing
+          const first = await test(1);
+          site.defaultTimeoutTest = {
+            stepTimeoutMs: def.limits.stepTimeoutMs,
+            status: first.env.status,
+            reason: first.env.reasonCode,
+            message: first.env.message,
+            ms: first.ms,
+            actionMayHaveOccurred: first.env.actionMayHaveOccurred,
+            pass: first.env.status !== "success" && first.env.status !== "empty" && first.env.actionMayHaveOccurred === false,
+          };
+          // the tool editor's "Per-step timeout" saves a new version, which must be tested before it can be enabled
+          version = 2;
+          const edited: ToolDefinition = { ...def, version, limits: { ...def.limits, stepTimeoutMs: c.slow.stepTimeoutMs } };
+          if (!(await s.call({ type: "tool.save", definition: edited, source: "edited" })).ok) throw new Error("saving the edited version failed");
+          site.tool = { ...(site.tool as object), editedStepTimeoutMs: c.slow.stepTimeoutMs };
+        }
+        const tested = (await test(version)).env;
+        site.test = { version, status: tested.status, message: tested.message };
         if (tested.status !== "success") throw new Error(`test run: ${tested.status} ${tested.message}`);
-        await s.call({ type: "tool.enable", id: def.id, version: 1 });
+        await s.call({ type: "tool.enable", id: def.id, version });
         const deadline = Date.now() + 5000;
         while (!s.bridge.hub.getTool(def.id) && Date.now() < deadline) await sleep(50);
 
@@ -368,7 +536,8 @@ async function main() {
         for (const r of c.runs) {
           await sleep(PAUSE_MS);
           const env = await s.run(client, def.id, r.args);
-          const out = ((env.output as Record<string, unknown[]> | undefined)?.[c.outputKey] ?? []) as unknown[];
+          const raw = (env.output as Record<string, unknown> | undefined)?.[c.outputKey];
+          const out = Array.isArray(raw) ? (raw as unknown[]) : raw === undefined || raw === null ? [] : [raw]; // one value = a list of one
           const row: Record<string, unknown> = { args: r.args, expect: r.expect, status: env.status, reason: env.reasonCode, message: env.message, source: env.source ?? null, untrusted: env.untrustedContent, items: out.length, sample: out.slice(0, 2) };
           if (r.expect === "items") {
             const truth = await fetchTruth(r.truthUrl!, c.parse);
@@ -440,7 +609,7 @@ async function main() {
   const lines = [
     "# AnyMCP public-site read-only validation",
     "",
-    `> ${SITES.length} practice pages on ${new Set(SITES.map((c) => c.origin)).size} public scraping sandbox sites, a handful of inputs each. This shows the workflow works on these pages today; it says nothing about other sites.`,
+    `> ${SITES.length} practice pages on ${new Set(SITES.map((c) => c.origin)).size} public practice sites (made for scraping or test-automation practice), a handful of inputs each. This shows the workflow works on these pages today; it says nothing about other sites.`,
     "",
     "## Environment",
     "",
@@ -448,7 +617,7 @@ async function main() {
     "",
     "## Tools, recorded through the real recorder",
     "",
-    ...results.map((r) => `* ${r.site} — ${r.structure}. Tool \`${(r.tool as { id?: string } | undefined)?.id ?? "—"}\`, recorder picked \`${JSON.stringify((r.recorded as { locator?: unknown } | undefined)?.locator ?? null)}\`${r.error ? ` — **error: ${r.error}**` : ""}`),
+    ...results.map((r) => `* ${r.site} (${r.label}) — ${r.structure}. Tool \`${(r.tool as { id?: string } | undefined)?.id ?? "—"}\`, recorder picked \`${JSON.stringify((r.recorded as { locator?: unknown } | undefined)?.locator ?? null)}\`${r.error ? ` — **error: ${r.error}**` : ""}`),
     "",
     "## Runs (official MCP SDK client over HTTP)",
     "",
@@ -461,8 +630,18 @@ async function main() {
       lines.push(`| ${r.site} | \`${JSON.stringify(x.args)}\` | ${x.expect} | ${x.status}${x.reason !== "ok" ? ` (${x.reason})` : ""} | ${x.items} | ${gt ? `${gt.equal ? "yes" : "NO"} (${gt.gotCount}/${gt.wantCount})` : "—"} | ${x.provenance === undefined ? "—" : x.provenance ? "yes" : "NO"} | ${x.pass ? "✓" : "✗"} |`);
     }
   }
+  const slow = results.filter((r) => r.defaultTimeoutTest);
+  if (slow.length) {
+    lines.push("", "## Slower than the default step timeout", "", "| site | default step timeout | first test | took | nothing done | pass | after raising it |", "|---|---|---|---|---|---|---|");
+    for (const r of slow) {
+      const d = r.defaultTimeoutTest as { stepTimeoutMs: number; status: string; reason: string; ms: number; actionMayHaveOccurred: boolean; pass: boolean };
+      const t = r.test as { version?: number; status?: string } | undefined;
+      const raised = (r.tool as { editedStepTimeoutMs?: number } | undefined)?.editedStepTimeoutMs;
+      lines.push(`| ${r.site} (${r.label}) | ${d.stepTimeoutMs} ms | ${d.status} (${d.reason}) | ${(d.ms / 1000).toFixed(1)} s | ${d.actionMayHaveOccurred === false ? "yes" : "NO"} | ${d.pass ? "✓" : "✗"} | version ${t?.version ?? "—"} with ${raised ?? "—"} ms: test ${t?.status ?? "—"} |`);
+    }
+  }
   lines.push("", "## Revocation", "");
-  for (const r of results) if (r.afterRevoke) lines.push(`* ${r.site}: after removing the site, the client still lists the tool: **${(r.afterRevoke as { listedByClient: boolean }).listedByClient}**`);
+  for (const r of results) if (r.afterRevoke) lines.push(`* ${r.site} (${r.label}): after removing the site, the client still lists the tool: **${(r.afterRevoke as { listedByClient: boolean }).listedByClient}**`);
   if (WITH_CLAUDE) {
     lines.push("", "## Real MCP client: Claude Code (`claude -p`)", "", "| site | transport | exit | expected values in the reply | pass |", "|---|---|---|---|---|");
     for (const c of claudeRuns) lines.push(`| ${c.site} | ${c.transport} | ${c.exit} | ${c.pass ? "yes" : "no"} | ${c.pass ? "✓" : "✗"} |`);
@@ -471,7 +650,13 @@ async function main() {
   console.log(lines.join("\n"));
   console.log(`→ eval/results/public-sites-${stamp}.{json,md}`);
   const allPass =
-    results.every((r) => !r.error && ((r.runs as { pass: boolean }[] | undefined) ?? []).every((x) => x.pass) && (r.afterRevoke as { listedByClient: boolean } | undefined)?.listedByClient === false) &&
+    results.every(
+      (r) =>
+        !r.error &&
+        ((r.runs as { pass: boolean }[] | undefined) ?? []).every((x) => x.pass) &&
+        (r.afterRevoke as { listedByClient: boolean } | undefined)?.listedByClient === false &&
+        (r.defaultTimeoutTest === undefined || (r.defaultTimeoutTest as { pass: boolean }).pass),
+    ) &&
     claudeRuns.every((c) => c.pass);
   process.exitCode = allPass ? 0 : 1;
 }

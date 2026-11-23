@@ -89,7 +89,7 @@ export function suggestLocator(el: Element, purpose: "action" | "value" | "stati
     }
   }
   // last resort: a CSS selector that matches exactly this element. Flagged as fragile in the review.
-  const css = cssFor(el);
+  const css = cssFor(el, purpose === "value");
   if (css) return { locator: { by: "css", selector: css }, quality: "fragile" };
   const best = candidates[0]?.loc ?? ({ by: "role", role: role ?? "button", name: name || "unnamed" } as Locator);
   return { locator: best, quality: "ambiguous" };
@@ -105,6 +105,35 @@ function cssPart(e: Element, nth: boolean): string {
     if (same.length > 1) s += `:nth-of-type(${same.indexOf(e) + 1})`;
   }
   return s;
+}
+
+/** The tag names of an element's children: a rough picture of what an item is made of. */
+const shapeOf = (e: Element) => [...e.children].map((c) => c.localName).join(",");
+
+/**
+ * A pattern with no class ("table > tbody > tr > td") also takes in neighbours that merely share the tag: on a table
+ * used for layout, the tags row under each quote and a side cell (quotes.toscrape.com/tableful, 2026-11-23). Narrow it
+ * by one of the clicked item's own attributes, but only when two independent signals agree: every item the attribute
+ * removes is built differently from the clicked one, and every item it keeps is built alike. Removed items with no
+ * text (spacer cells) are left out of that comparison: they carry no value and are skipped when reading. Otherwise keep the
+ * pattern (and its count, shown to the user) as it is, so a list of genuinely similar items never silently shrinks.
+ */
+function narrowByAttribute(sel: string, items: Element[], el: Element, many: (loc: Locator) => Element[] | null): { sel: string; items: Element[] } | null {
+  const mine = shapeOf(el);
+  for (const a of [...el.attributes]) {
+    if (a.name === "id" || a.name === "class" || !/^[a-zA-Z_][a-zA-Z0-9_-]*$/.test(a.name) || !a.value || a.value.length > 80) continue;
+    const narrowed = `${sel}[${a.name}="${a.value.replace(/["\\]/g, "\\$&")}"]`;
+    let kept: Element[] | null;
+    try {
+      kept = many({ by: "css", selector: narrowed });
+    } catch {
+      continue;
+    }
+    if (!kept || kept.length === items.length) continue;
+    const removed = items.filter((x) => !kept!.includes(x) && norm(x.textContent) !== "");
+    if (kept.every((x) => shapeOf(x) === mine) && removed.length > 0 && removed.every((x) => shapeOf(x) !== mine)) return { sel: narrowed, items: kept };
+  }
+  return null;
 }
 
 export interface SuggestedList extends SuggestedLocator {
@@ -154,12 +183,22 @@ export function suggestListLocator(clicked: Element): SuggestedList | null {
       if (sel.includes(".")) return { locator: loc, quality: "fragile", items };
       fallback = { sel, items };
     }
-    if (fallback) return { locator: { by: "css", selector: fallback.sel }, quality: "fragile", items: fallback.items };
+    if (fallback) {
+      const narrowed = narrowByAttribute(fallback.sel, fallback.items, el, many);
+      if (narrowed) return { locator: { by: "css", selector: narrowed.sel }, quality: "fragile", items: narrowed.items };
+      return { locator: { by: "css", selector: fallback.sel }, quality: "fragile", items: fallback.items };
+    }
   }
   return null;
 }
-/** Shortest selector (tag, stable-looking classes, nth-of-type) that matches exactly `el`. Null if none within 5 levels. */
-export function cssFor(el: Element): string | null {
+/**
+ * Shortest selector (tag, stable-looking classes, nth-of-type) that matches exactly `el`. Null if none within 5 levels.
+ * With `anchor` (values the user picks): a selector made only of the element's own tag and classes is placed inside
+ * its nearest ancestor with an id or a stable class, up to 4 levels up. A value's style is often repeated on other
+ * pages of the same site (a "you may also like" strip under a product), while the box it sits in is not: unanchored,
+ * the value is unique on the recorded page and ambiguous elsewhere (books.toscrape.com, 2026-11-23).
+ */
+export function cssFor(el: Element, anchor = false): string | null {
   const unique = (sel: string) => {
     try {
       const m = deepQueryAll(document, sel).filter(isVisible);
@@ -169,13 +208,21 @@ export function cssFor(el: Element): string | null {
     }
   };
   if (el.id && SAFE_IDENT.test(el.id) && unique(`#${el.id}`)) return `#${el.id}`;
+  const anchored = (sel: string): string => {
+    let p = el.parentElement;
+    for (let up = 0; p && p !== document.body && up < 4; up++, p = p.parentElement) {
+      const part = p.id && SAFE_IDENT.test(p.id) && !/\d{3,}/.test(p.id) ? `#${p.id}` : stableClasses(p).length ? cssPart(p, false) : "";
+      if (part && `${part} ${sel}`.length <= 200 && unique(`${part} ${sel}`)) return `${part} ${sel}`;
+    }
+    return sel;
+  };
   const part = cssPart;
   for (const nth of [false, true]) {
     let sel = "";
     let cur: Element | null = el;
     for (let depth = 0; cur && cur !== document.body && depth < 5; depth++, cur = cur.parentElement) {
       sel = sel ? `${part(cur, nth)} > ${sel}` : part(cur, nth);
-      if (sel.length <= 200 && unique(sel)) return sel;
+      if (sel.length <= 200 && unique(sel)) return anchor && depth === 0 ? anchored(sel) : sel;
     }
   }
   return null;

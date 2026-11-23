@@ -33,6 +33,15 @@ describe("buildDraft: recording → reviewed tool definition", () => {
     expect(ops.indexOf("waitFor")).toBeLessThan(ops.indexOf("extract"));
   });
 
+  it("the read barrier has no fixed timeout, so the tool's per-step timeout (editable in the tool editor) applies", () => {
+    // 2026-11-23: it was fixed at 5000 ms, so raising "Per-step timeout" in the editor did not help a slow page
+    const def = buildDraft(spec(), 1).definition!;
+    const barrier = def.steps.find((x) => x.op === "waitFor");
+    expect(barrier).toBeDefined();
+    expect(barrier).not.toHaveProperty("timeoutMs");
+    expect(def.limits.stepTimeoutMs).toBe(5000);
+  });
+
   it("recognises the example value inside locator text and the start path", () => {
     const params = spec().params;
     expect(parameterizeText("A-1012", params)).toEqual({ param: "order_id" });

@@ -15,7 +15,8 @@ boundaries of what was built and verified.
 3. **Reads interrupted by a service-worker restart are reported as `interrupted`**, not resumed. The assistant
    can retry (reads are safe). Resuming mid-run would need to keep argument values across the restart.
 4. **One run at a time.** A second concurrent call is refused with `bridge_busy` (retry-safe).
-5. **Slow failure detection.** A missing element is only declared missing after the step timeout (default 5 s).
+5. **Slow failure detection.** A missing element, value, list or table is only declared missing after the step
+   timeout (default 5 s), and a read tool tries twice, so a page that really lacks it takes about 10 s to stop.
 6. **Approval is not a server-side guarantee.** The binding is checked in the page immediately before the click.
 
 ## Compatibility
@@ -33,14 +34,19 @@ boundaries of what was built and verified.
     never recorded (it means "new line"); in a rich text box it is, as changing data (see 19).
 12. **Custom dropdowns** are two clicks (open, then the option). The option can be made an input in review; its
     allowed values are the choices that were visible when you clicked. Choices that load later are not known.
-13. **Single-page apps.** Start checks wait up to one step timeout for the page to draw itself; pages slower than
-    that stop with `precondition_failed`. Raise the step timeout in the tool editor for such sites.
+13. **Pages that draw content late** (single-page apps, timers, late requests). Start checks, the success check and
+    each reading wait up to one step timeout (default 5 s) for what they need; pages slower than that stop with
+    `precondition_failed` and return nothing. Raise **Per-step timeout** in the tool editor for such sites (a new
+    version, tested before use; checked on a page drawn 10 s after loading). Tools recorded before 2026-11-23 keep a
+    fixed 5-second wait for their success check, so a success check that itself appears late needs re-recording.
+    Reading stops waiting as soon as what it reads is there: a list that a page draws a few items at a time can be
+    read before it is complete. Marking a success check that appears only when the page has finished avoids that.
 14. **Lists are read in page order and bounded** (`maxItems`). Blank items are skipped. If the site paginates, only
     the current page is read (backlog #17). Tables, too, are read from the current page only; there is no "next page"
     loop (by design: tools have no loops).
 15. Branded Chrome 137+ cannot load an unpacked extension from the command line; automated tests there use the
     DevTools protocol (`--enable-unsafe-extension-debugging`). Manual *Load unpacked* is unaffected.
-16. **Many real sites offer no semantic handles.** On all five public sandbox pages tested (four sites), the recorder had to use CSS
+16. **Many real sites offer no semantic handles.** On all nine public practice pages tested (five sites), the recorder had to use CSS
     selectors for the results (flagged "may break if the site changes"). Such tools stop when the markup changes.
 17. **Some sites refuse automated browsing.** Wikipedia answered HTTP 429 and its robots.txt disallows `/w/`. AnyMCP
     runs in your browser but in a tab it opens itself; respect each site's terms and robots rules.
@@ -87,3 +93,12 @@ boundaries of what was built and verified.
     release address (`npx --package=<address> anymcp-bridge`, or `npm install -g <address>`). Started through npx,
     it may need a connection to GitHub each time (whether npm's cache alone is enough offline was not tested); an
     installed copy (`npm install -g`) does not.
+
+## Recording
+
+30. **"Find the others like it" is a guess; check the count before saving.** When the items have no class names or
+    test ids, the recorder falls back to a tag pattern and can take in neighbouring elements that share the tag (on a
+    table used for layout: rows of tags, side cells). It narrows the pattern only when an attribute of the clicked
+    item removes exactly the items built differently from it (checked on quotes.toscrape.com/tableful and a synthetic
+    copy). Otherwise the list may still hold extra items; the recording screen shows how many it matched and the first
+    few, so compare that with the page. A tool built on such a list can return those extra items as results.

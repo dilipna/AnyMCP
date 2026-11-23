@@ -3,6 +3,33 @@
 Versions follow [semantic versioning](https://semver.org) once a version is published. Changes that affect what
 data AnyMCP handles or where it goes are marked **Data**, as the [privacy policy](docs/privacy-policy.md) promises.
 
+## Unreleased
+
+Found by extending the public-site evaluation to four more practice pages (2026-11-23,
+`eval/results/public-sites-2026-11-23T19-55-49`); each is reproduced on a synthetic fixture page in
+`e2e/site-patterns.spec.ts`, which failed before these fixes and passes after.
+
+* **A list read too broadly could report a false success.** On a page laid out with a table and no class names
+  (quotes.toscrape.com/tableful), the recorder's "others like it" pattern was `table > tbody > tr > td`: it also took
+  in the tags row under each quote and a side cell, so results were wrong, and a tag page with no quotes returned
+  "success" with two unrelated cells. The recorder now narrows such a pattern by an attribute of the clicked item, but
+  only when two signals agree (everything removed is built differently from the clicked item, everything kept is
+  built alike; empty spacer cells, which hold no value, are left out of the comparison); otherwise the pattern and its
+  match count are left as they are. A first version of that rule worked on the synthetic copy but not on the real page,
+  whose empty `<td></td>` spacer made the two signals disagree (`public-sites-2026-11-23T20-20-42`); the synthetic
+  page now has the same spacer.
+* **Content drawn after the page loads was read too early.** Reading a value, list or table looked once, right after
+  the page's "loaded" check, and stopped with `locator_missing` if the content was not there yet (quotes drawn by a
+  10-second timer stopped after 0.4 s). Reading now waits for what it reads, up to the step timeout, as finding an
+  element already did. A missing list is therefore reported after the step timeout instead of at once.
+* **Raising "Per-step timeout" in the tool editor did not help a slow page**, although the known limitations said it
+  would: recorded tools waited for their success check with a fixed 5 seconds. That wait now uses the tool's per-step
+  timeout. (Tools recorded before keep their fixed 5-second wait; reading itself follows the per-step timeout.)
+* **A picked value could be unique on the recorded page but ambiguous elsewhere.** The price on a book page was
+  recorded as `p.price_color`; on books with a "recommended" strip that matched several prices, so the tool stopped
+  with `locator_ambiguous` (safely, but uselessly). A picked value whose selector is only its own tag and classes is
+  now placed inside its nearest container with an id or a stable class (`div.col-sm-6.product_main p.price_color`).
+
 ## 0.1.2 — 2026-11-23 (developer beta, GitHub pre-release)
 
 Published as a [GitHub pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.2); not on the Chrome Web

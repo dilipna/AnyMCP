@@ -342,8 +342,10 @@ export function buildDraft(spec: DraftSpec, version: number): BuildResult {
   const sessionExpiredWhen = bySignal("expired");
   if (kind === "write" && failureWhen.length === 0) warnings.push("No error message was picked. AnyMCP will verify by re-reading the page if the result is unclear.");
 
-  // Read barrier: pages often fill in results asynchronously. Wait for the success indicator, then read values.
-  if (postconditions[0]) steps.push({ id: nextId(), op: "waitFor", condition: postconditions[0].condition, timeoutMs: 5000 });
+  // Read barrier: pages often fill in results asynchronously. Wait for the success indicator, then read values (each
+  // reading also waits for what it reads). No fixed timeout: the tool's per-step timeout applies, so raising it in the
+  // tool editor helps slow pages.
+  if (postconditions[0]) steps.push({ id: nextId(), op: "waitFor", condition: postconditions[0].condition });
   steps.push(...extracts);
 
   const startCheck: Locator | null = firstLocator ?? (postconditions[0]?.condition.kind === "exists" ? postconditions[0].condition.locator : null);

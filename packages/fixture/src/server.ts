@@ -229,6 +229,48 @@ export function searchProducts(q: { term?: string; category?: string; inStock?: 
   return [...hits].sort((a, b) => (q.sort === "price" ? a.price - b.price : a.name.localeCompare(b.name)));
 }
 
+// ---- structures found on real practice sites (2026-11-23), rebuilt synthetically so the browser suite covers them ----
+
+/**
+ * Product pages like a real shop's (books.toscrape.com): the item's own price is in the main box, and most pages also
+ * show a "You may also like" strip whose cards repeat the same price style. The first page has no strip, so a value
+ * picked there is unique on its own page but not on the others.
+ */
+export interface ShelfItem {
+  slug: string;
+  name: string;
+  price: string;
+  related: string[];
+}
+export const SHELF: readonly ShelfItem[] = [
+  { slug: "quiet-harbour", name: "Quiet Harbour", price: "£12.40", related: [] },
+  { slug: "north-light", name: "North Light", price: "£18.05", related: ["quiet-harbour", "paper-moons"] },
+  { slug: "paper-moons", name: "Paper Moons", price: "£9.99", related: ["north-light"] },
+];
+
+/**
+ * Quotes laid out with an HTML table used for layout and no class names (quotes.toscrape.com/tableful): each quote is
+ * a cell in its own row, its tags are in the next row, and a side cell spans the rows. Only inline styles differ.
+ */
+export interface LayoutQuote {
+  text: string;
+  author: string;
+  tags: string[];
+}
+export const LAYOUT_QUOTES: readonly LayoutQuote[] = [
+  { text: "A synthetic sentence about lighthouses.", author: "Ada Example", tags: ["sea", "light"] },
+  { text: "Another made-up line, kept short.", author: "Ben Sample", tags: ["light"] },
+  { text: "Tides keep their own timetable.", author: "Ada Example", tags: ["sea"] },
+  { text: "Lamps are patient things.", author: "Cy Placeholder", tags: ["light", "home"] },
+];
+/** What a layout-quotes page shows for a tag, as AnyMCP reads each quote cell (text, then "Author: …"). */
+export const layoutQuotesFor = (tag: string): string[] => LAYOUT_QUOTES.filter((q) => q.tags.includes(tag)).map((q) => `“${q.text}” Author: ${q.author}`);
+
+/** Lists drawn by a timer after the page has loaded: 1.5 s (within a recorded tool's default 5 s step timeout) and 6.5 s. */
+export const SLOW_LIST_DELAY_MS = 1500;
+export const SLOWER_LIST_DELAY_MS = 6500;
+export const slowListItems = (page: string): string[] => [1, 2, 3, 4, 5].map((i) => `Item ${page}.${i}`);
+
 export interface FixtureState {
   chaos: Chaos;
   orders: Order[];
@@ -574,6 +616,50 @@ document.getElementById('find').addEventListener('acme-press', async () => {
 <tr class="team"><td>Alpha Rovers</td><td>1990</td><td>44</td></tr>
 <tr class="team"><td>Beta United</td><td>1991</td><td>37</td></tr>
 <tr class="team"><td>Gamma City</td><td>1992</td><td>51</td></tr></table>`,
+          ),
+        );
+      }
+      const shelf = /^\/shelf\/([a-z0-9-]+)$/.exec(path);
+      if (shelf && req.method === "GET") {
+        const item = SHELF.find((x) => x.slug === shelf[1]);
+        if (!item) return send(res, 404, page("Not found", `<h1>Shelf</h1><p>No such item.</p>`));
+        const related = item.related.map((slug) => SHELF.find((x) => x.slug === slug)!);
+        return send(
+          res,
+          200,
+          page(
+            item.name,
+            `<h1>Shelf</h1>
+<div class="product_main"><h2>${esc(item.name)}</h2><p class="price_color">${esc(item.price)}</p><p class="availability">In stock</p></div>
+${related.length ? `<section class="related"><h3>You may also like</h3>${related.map((r) => `<article class="product_pod"><h4><a href="/shelf/${r.slug}">${esc(r.name)}</a></h4><p class="price_color">${esc(r.price)}</p></article>`).join("")}</section>` : ""}`,
+          ),
+        );
+      }
+      const lq = /^\/layout-quotes\/([a-z0-9-]+)$/.exec(path);
+      if (lq && req.method === "GET") {
+        const tag = lq[1]!;
+        const hits = LAYOUT_QUOTES.filter((q) => q.tags.includes(tag));
+        const allTags = [...new Set(LAYOUT_QUOTES.flatMap((q) => q.tags))];
+        const side = `<td rowspan="${Math.max(1, hits.length * 2)}" style="padding-left: 50px;"><h2>Tags</h2>${allTags.map((t) => `<a href="/layout-quotes/${t}">${t}</a>`).join("<br>")}</td>`;
+        const rows = hits.length
+          ? hits
+              .map((q, i) => `<tr><td style="padding-top: 2em;">“${esc(q.text)}” Author: ${esc(q.author)}</td>${i === 0 ? side : ""}</tr><tr><td style="padding-bottom: 2em;">Tags: ${q.tags.map((t) => `<a href="/layout-quotes/${t}">${t}</a>`).join(" ")}</td></tr>`)
+              .join("")
+          : `<tr><td style="padding-top: 2em;"></td>${side}</tr>`;
+        // like the real page: a "viewing tag" cell beside the side cell, and an empty spacer cell at the end
+        return send(res, 200, page("Quotes by tag", `<h1>Quotes by tag</h1><table><tr><td>Viewing tag: <a href="/layout-quotes/${esc(tag)}">${esc(tag)}</a></td></tr>${rows}<tr><td></td></tr></table>`));
+      }
+      const slow = /^\/(slow|slower)-list\/([0-9]{1,3})$/.exec(path);
+      if (slow && req.method === "GET") {
+        const delay = slow[1] === "slow" ? SLOW_LIST_DELAY_MS : SLOWER_LIST_DELAY_MS;
+        const items = JSON.stringify(slowListItems(slow[2]!));
+        return send(
+          res,
+          200,
+          page(
+            "Slow list",
+            `<h1>Slow list</h1><ul aria-label="Slow items"></ul>`,
+            `setTimeout(() => { document.querySelector('ul').innerHTML = ${items}.map((t) => '<li class="slow-item">' + t + '</li>').join(''); }, ${delay});`,
           ),
         );
       }

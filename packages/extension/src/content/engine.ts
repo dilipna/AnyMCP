@@ -505,7 +505,8 @@ function extractTable(source: Extract<ExtractSource, { type: "table" }>, args: A
   return { ok: true, value: rows };
 }
 
-function doExtract(ctx: RunContext, step: Extract<Step, { op: "extract" }>): StepResult {
+/** One reading of the page. `doExtract` repeats it while what it reads is not there (yet). */
+function extractOnce(ctx: RunContext, step: Extract<Step, { op: "extract" }>): StepResult {
   const src = step.source;
   if (src.type === "table") return extractTable(src, ctx.args);
   const r = resolveLocator(src.locator, ctx.args);
@@ -554,6 +555,30 @@ function doExtract(ctx: RunContext, step: Extract<Step, { op: "extract" }>): Ste
   return { ok: true, value: text };
 }
 
+/**
+ * Read values. Pages often draw what a tool reads some time after they load (a timer, a late request), so a reading
+ * that finds nothing, or several where one is expected, is repeated until the step timeout, as a locate is. The page
+ * is only declared changed after that. A count, and an optional value, are read once: none is a valid answer.
+ */
+async function doExtract(ctx: RunContext, step: Extract<Step, { op: "extract" }>, watch: Watch, timeoutMs: number): Promise<StepResult> {
+  const src = step.source;
+  if (src.type === "count" || (src.type === "text" && src.optional)) return extractOnce(ctx, step);
+  let last: StepResult = { ok: false, code: "locator_missing", detail: "No matching element was found." };
+  let ambiguousStreak = 0;
+  const hit = await pollUntil<StepResult>(() => {
+    last = extractOnce(ctx, step);
+    if (last.ok) return last;
+    if (last.code === "locator_ambiguous") {
+      if (++ambiguousStreak >= 3) return last; // still several after the page settled: never guess
+    } else if (last.code === "locator_missing") ambiguousStreak = 0;
+    else return last; // a sensitive field, a value that is not a number, a missing parameter: waiting cannot help
+    const t = terminalNow(watch, ctx.args);
+    if (t) return terminalFailure(t);
+    return undefined;
+  }, timeoutMs);
+  return hit ?? last;
+}
+
 export async function runStep(ctx: RunContext, step: Step, watch: Watch, timeoutMs: number): Promise<StepResult> {
   switch (step.op) {
     case "locate": return doLocate(ctx, step, watch, timeoutMs);
@@ -561,7 +586,7 @@ export async function runStep(ctx: RunContext, step: Step, watch: Watch, timeout
     case "click": return doClick(ctx, step);
     case "press": return doPress(ctx, step);
     case "waitFor": return doWaitFor(ctx, step, watch, step.timeoutMs ?? timeoutMs);
-    case "extract": return doExtract(ctx, step);
+    case "extract": return doExtract(ctx, step, watch, timeoutMs);
     case "assert": {
       const r = evalCondition(step.condition, ctx.args);
       return r.passed ? { ok: true } : { ok: false, code: "precondition_unmet", detail: `A check failed (${r.detail}).` };
