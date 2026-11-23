@@ -1,6 +1,6 @@
 # AnyMCP — Privacy Policy
 
-**Effective date:** 16 November 2026 · **Publisher:** dilipna ([GitHub](https://github.com/dilipna)) ·
+**Effective date:** 22 November 2026 · **Publisher:** dilipna ([GitHub](https://github.com/dilipna)) ·
 **Applies to:** the AnyMCP Extension for Chrome and the AnyMCP bridge (`@dilipna/anymcp-bridge`)
 
 **Contact:** questions about this policy: [open an issue](https://github.com/dilipna/AnyMCP/issues). To report a
@@ -28,6 +28,7 @@ app you choose (an MCP client) run website tasks you taught and approved.
 | **3. Bridge → your AI app** (MCP client) | The list of tools you enabled, and each run's result, including the values read from the page and, for link results, the link addresses (with session or token parameters removed). | Your AI app, over `127.0.0.1` (HTTP with a token) or through a program the app starts (stdio). | Not by AnyMCP. Your AI app may keep it in its conversation history. |
 | **4. Your AI app → its model provider** | Whatever your AI app sends, usually including tool results. | Decided by your AI app (for example, Claude Code sends conversations to Anthropic). | Under that provider's policy. AnyMCP cannot see or control this. |
 | **Websites** | Ordinary page requests from your browser. | The website you allowed. | The website may log visits as usual. |
+| **Getting the bridge** | A download request for the bridge package: by you, or by `npx` when you or an app that starts AnyMCP (stdio) uses the `npx --package=<release address>` command the bridge prints. It contains nothing about your tools, sites or results. | GitHub, which hosts AnyMCP's releases. | GitHub may log it like any download, under [GitHub's privacy statement](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement). npm keeps a copy in its cache on your computer. |
 
 **Never collected or forwarded:** passwords, payment-card details (number, expiry, security code), one-time and
 verification codes and similar fields (ignored when recording, refused when running; recognised by field type, by

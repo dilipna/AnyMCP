@@ -1,6 +1,6 @@
 {
   "name": "anymcp-fixture",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "type": "module",
   "description": "Acme Support Portal: SYNTHETIC fixture website for AnyMCP development and evaluation.",

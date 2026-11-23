@@ -26,6 +26,16 @@ Evidence labels used below:
 | Docked side panel in a real window | Prepared but untested | tests render the same panel page in a tab |
 | Chrome's "allow this site" prompt | Prepared but untested | cannot be automated; the form that requests it is tested |
 
+## Installing the bridge
+
+The bridge package is attached to each GitHub release; it is not on the npm registry.
+
+| How | Status | Evidence |
+|---|---|---|
+| `npx --package=<release address> anymcp-bridge` | Verified locally (Windows 11, Node 24.11, npm 11.6.1) | 2026-11-22 with the published v0.1.1 package, fresh npm cache outside the checkout: `--version` and `/health` answer 0.1.1. The stdio entry v0.1.1 printed when started this way named the npm registry and could not work; fixed in 0.1.2, whose entry form (`npx -y --package=<address> anymcp-bridge --stdio`) passed `npm run smoke:stdio -- --npx=<v0.1.1 address>` (official SDK client: tools listed, status answered) |
+| `npm install -g <release address>`, then `anymcp-bridge` | Verified locally (Windows 11) | 2026-11-22 with v0.1.1 into a separate prefix: `--version`, `/health`; the printed stdio entry names Node and the installed file |
+| Either way on macOS or Linux | Prepared but untested | CI installs the same tarball from a file (`npm run package:check`), not from the release address |
+
 ## MCP clients
 
 | Client | Transport | Status | Evidence |

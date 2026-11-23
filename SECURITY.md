@@ -14,15 +14,19 @@ or `anymcp-bridge --help`). **Never include your bridge token, pairing secret or
 
 ## Supported versions
 
-The latest release (0.1.1, a developer-beta pre-release) and the latest commit on the default branch.
+The latest release (0.1.2, a developer-beta pre-release) and the latest commit on the default branch.
 
 ## Checking a download
 
 Files attached to a published GitHub release are rebuilt and compared byte for byte by
 `.github/workflows/release.yml`, which then signs build-provenance attestations for them. Check one with the GitHub
-CLI, for example `gh attestation verify anymcp-extension-0.1.1.zip --repo dilipna/AnyMCP`, and compare SHA-256
+CLI, for example `gh attestation verify anymcp-extension-0.1.2.zip --repo dilipna/AnyMCP`, and compare SHA-256
 values with `SHA256SUMS.txt`. The build is reproducible: `npm ci && npm run package -- --verify` from the release's
 tag gives byte-identical files.
+
+The bridge package (`dilipna-anymcp-bridge-<version>.tgz`) is installed from its release address, for example with
+`npx --package=<address> anymcp-bridge`. AnyMCP publishes nothing to the npm registry: a package there that claims to be
+the AnyMCP bridge is not from this project.
 
 ## In scope
 

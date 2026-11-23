@@ -440,7 +440,7 @@ async function main() {
   const lines = [
     "# AnyMCP public-site read-only validation",
     "",
-    "> Three public scraping sandboxes, a handful of inputs each. This shows the workflow works on these pages today; it says nothing about other sites.",
+    `> ${SITES.length} practice pages on ${new Set(SITES.map((c) => c.origin)).size} public scraping sandbox sites, a handful of inputs each. This shows the workflow works on these pages today; it says nothing about other sites.`,
     "",
     "## Environment",
     "",

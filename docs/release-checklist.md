@@ -1,7 +1,7 @@
 # Release checklist — AnyMCP 0.1.x (developer beta)
 
 **Overall: developer beta. Pushed to https://github.com/dilipna/AnyMCP (public) on 2026-11-15. v0.1.0 (2026-11-16) and
-v0.1.1 (2026-11-17, the build for the store: in-product data notice) published as GitHub PRE-RELEASES (https://github.com/dilipna/AnyMCP/releases/tag/v0.1.1). NOT published to npm, NOT submitted to the Chrome Web Store.** Labels: **Verified end to end** · **Verified locally** · **Mock-tested** · **Prepared but untested** ·
+v0.1.1 (2026-11-17, in-product data notice) published as GitHub PRE-RELEASES (https://github.com/dilipna/AnyMCP/releases/tag/v0.1.1). v0.1.2 (the build for the store) PREPARED as a draft, not published. The bridge is installed from each release's address and is NOT on the npm registry (owner's decision, 2026-11-22). NOT submitted to the Chrome Web Store.** Labels: **Verified end to end** · **Verified locally** · **Mock-tested** · **Prepared but untested** ·
 **Blocked** · **Owner** (needs a decision, an account or someone else). Re-run the command to re-check.
 
 ## Gates
@@ -35,7 +35,7 @@ v0.1.1 (2026-11-17, the build for the store: in-product data notice) published a
 | Fixture evaluation (protocol v2) | `npm run eval` | 170/170 correct |
 | Public sandboxes + Claude Code | `npm run eval:public -- --with-claude` | 7/7 SDK runs equal an independent reading; revocation 3/3; Claude Code HTTP ✓, stdio ✓ |
 | Public sandboxes in branded Chrome | `npm run eval:public -- --chrome` | 7/7, revocation 3/3 |
-| Five public sandboxes, Playwright Chromium (2026-11-18) | `npm run eval:public` | 11/11 runs equal an independent reading or stop safely; revocation 5/5 (`eval/results/public-sites-2026-11-18T22-32-10`) |
+| Five practice pages on four public sandbox sites, Playwright Chromium (2026-11-18) | `npm run eval:public` | 11/11 runs equal an independent reading or stop safely; revocation 5/5 (`eval/results/public-sites-2026-11-18T22-32-10`) |
 | Reproducible package | `npm run package -- --verify` | byte-identical |
 | npm tarball outside the checkout | `npm run package:check` | 7/7 checks |
 | Packaged bridge over stdio | `npm run smoke:stdio` | PASS |
@@ -48,7 +48,7 @@ v0.1.1 (2026-11-17, the build for the store: in-product data notice) published a
   23 (odd-numbered lines), Chromium browsers other than Chrome, Edge and Brave.
 * Claude Desktop, Cursor and other MCP clients.
 * Chrome's "allow this site" prompt and the docked side panel in a real window.
-* Any signed-in website, any write on a real website, any site beyond the five practice sandboxes.
+* Any signed-in website, any write on a real website, any site beyond the four practice sandboxes.
 * Long-running stability, many tools, very large pages; screen readers; non-English UI.
 * Security: no external review or penetration test. In-house property-based fuzzing (protocol code and both bridge
   network endpoints) and automated CodeQL analysis only.
@@ -64,9 +64,10 @@ v0.1.1 (2026-11-17, the build for the store: in-product data notice) published a
 4. **Run the first-time-user test** with 3–5 people; try Claude Desktop or Cursor with the manual test in the sheet.
 5. ~~Host the privacy policy~~ **done 2026-11-15** (GitHub Pages). Still open: a lawyer's review of it, and real
    docked-panel screenshots (list in `docs/quick-start.md`) to supplement the labelled renders.
-6. ~~Publish the GitHub release~~ **done 2026-11-16** as a pre-release (owner's decision). Still open: **publish**
-   `@dilipna/anymcp-bridge` (needs `npm login`; publish `release/dilipna-anymcp-bridge-0.1.1.tgz`, the file attached
-   to the v0.1.1 release) and, later, submit the extension (developer account).
+6. ~~Publish the GitHub release~~ **done 2026-11-16** as a pre-release (owner's decision). ~~Publish to npm~~
+   **dropped 2026-11-22** (owner's decision): the bridge is installed from the release address
+   (`npx --package=<address> anymcp-bridge`; see `docs/compatibility.md`, "Installing the bridge"). Still open: submit
+   the extension (developer account).
 7. **CodeQL alerts 5 and 6** (`js/http-to-file-access` in `packages/eval/src/external.ts` and
    `scripts/verify-npm-package.mjs`): both scripts write their own reports, which is their purpose; dismiss them as
    "won't fix" if you agree (Security tab → Code scanning).

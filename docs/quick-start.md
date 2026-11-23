@@ -2,12 +2,19 @@
 
 From nothing to a working, read-only tool your AI app can call. About 15 minutes the first time.
 
-**You need:** Chrome 116 or newer · Node.js 20.19 or newer · git · an MCP client (an "AI app" that supports MCP,
+**You need:** Chrome 116 or newer · Node.js 20.19 or newer · an MCP client (an "AI app" that supports MCP,
 for example Claude Code). No account, API key or paid service. Verified end to end on Windows 11. The automated test
 suites also pass on macOS and Linux, but nobody has followed this guide there yet (see
 [compatibility.md](compatibility.md)).
 
-## 1. Get AnyMCP and build it
+## 1. Get AnyMCP
+
+**Easiest, no build:** from the [v0.1.2 pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.2) download
+`anymcp-extension-0.1.2.zip` and unzip it. That folder is the extension (step 2). The bridge needs no download: step 3
+starts it straight from the same release. To check the files first, see "Checking a download" in
+[SECURITY.md](https://github.com/dilipna/AnyMCP/blob/main/SECURITY.md).
+
+**Or build from source** (needs git):
 
 ```bash
 git clone https://github.com/dilipna/AnyMCP anymcp && cd anymcp
@@ -18,18 +25,10 @@ npm run build
 `npm run build` writes the extension to `packages/extension/dist/prod` and the bridge to
 `packages/bridge/dist/anymcp-bridge.mjs`.
 
-> The bridge is also prepared as an npm package, `@dilipna/anymcp-bridge` (`npm run package` → `release/`). It is
-> **not published yet**; once it is, `npx @dilipna/anymcp-bridge` replaces `npm run bridge` below.
-
-> **Or skip building:** from the [v0.1.1 pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.1) download `anymcp-extension-0.1.1.zip` and
-> `anymcp-bridge-0.1.1.mjs`. Unzip the extension and choose that folder in step 2; in step 3 run
-> `node anymcp-bridge-0.1.1.mjs` instead of `npm run bridge`. To check the files first, see "Checking a download" in
-> [SECURITY.md](https://github.com/dilipna/AnyMCP/blob/main/SECURITY.md).
-
 ## 2. Install the extension
 
 1. Open `chrome://extensions` and turn on **Developer mode** (top right).
-2. **Load unpacked** → choose the `packages/extension/dist/prod` folder.
+2. **Load unpacked** → choose the unzipped `anymcp-extension-0.1.2` folder (from source: `packages/extension/dist/prod`).
 3. Click the AnyMCP toolbar icon (pin it from the puzzle-piece menu if you do not see it). The side panel opens on
    **Tools**, with a **Getting started** checklist.
 
@@ -38,6 +37,18 @@ turn on **Developer mode** there, and load the same folder. In every browser the
 checked only by automation, rendered in a tab.
 
 ## 3. Start the bridge and pair
+
+Without a build, run this in a terminal (on Windows, use Command Prompt: PowerShell may refuse to run `npx`, see
+[troubleshooting](troubleshooting.md)). npm fetches the bridge from the
+release; type `y` if it asks to install:
+
+```bash
+npx --package=https://github.com/dilipna/AnyMCP/releases/download/v0.1.2/dilipna-anymcp-bridge-0.1.2.tgz anymcp-bridge
+```
+
+The bridge is not on the npm registry, so use this release address rather than a package name. To install it once
+instead, run `npm install -g` followed by the same address; afterwards `anymcp-bridge` starts it. From source, in the
+`anymcp` folder:
 
 ```bash
 npm run bridge
@@ -60,7 +71,12 @@ In the side panel: **Settings → Show the client command**.
   The token is a password for your bridge: do not paste it anywhere public. **Disconnect the AI client** in
   Settings replaces it.
 * **Apps that start MCP servers themselves (stdio)**, such as Claude Desktop or Cursor: add the printed entry to the
-  app's MCP settings. It looks like
+  app's MCP settings. Copy it exactly as printed; its form depends on how you started the bridge. Started with
+  `npx --package=…`, it starts the same release again through npx (on Windows through `cmd /c`):
+  ```json
+  { "mcpServers": { "anymcp": { "command": "npx", "args": ["-y", "--package=https://github.com/dilipna/AnyMCP/releases/download/v0.1.2/dilipna-anymcp-bridge-0.1.2.tgz", "anymcp-bridge", "--stdio"] } } }
+  ```
+  Installed or built, it names Node and the bridge file:
   ```json
   { "mcpServers": { "anymcp": { "command": "<path to node>", "args": ["<path>/anymcp-bridge.mjs", "--stdio"] } } }
   ```

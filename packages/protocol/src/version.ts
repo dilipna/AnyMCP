@@ -1,5 +1,5 @@
 /** Single source of truth for the product version. A test asserts every package.json matches it. */
-export const ANYMCP_VERSION = "0.1.1";
+export const ANYMCP_VERSION = "0.1.2";
 export const PRODUCT_NAME = "AnyMCP";
 export const EXTENSION_DISPLAY_NAME = "AnyMCP Extension";
 export const PRODUCT_STATEMENT = "Teach a website task once, review it, and let your AI app run it as an MCP tool.";

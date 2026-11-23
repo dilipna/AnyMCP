@@ -19,7 +19,7 @@ serves `docs/` at https://dilipna.github.io/AnyMCP/ (privacy policy: `/privacy-p
   engine, recorder, banner), React side panel. `scripts/build.mjs --target=prod|e2e`.
 - `packages/fixture` — synthetic sites (orders portal, catalog, single-page app, self-saving settings, header-less table,
   rich text inbox with a model-keeping editor and an Enter-to-send chat).
-- `packages/eval` — frozen fixture evaluation (protocol v2), `public-sites.ts` (3 public sandboxes, optional Claude Code).
+- `packages/eval` — frozen fixture evaluation (protocol v2), `public-sites.ts` (5 pages on 4 public sandboxes, optional Claude Code).
 - `e2e/` — Playwright: real Chromium or branded Chrome + built extension + bridge + MCP SDK client.
 - `scripts/` — build-all, package-release (ZIP + npm tarball), verify-npm-package, clean-install-check, stdio-smoke, demo-claude.
 
@@ -29,7 +29,7 @@ serves `docs/` at https://dilipna.github.io/AnyMCP/ (privacy policy: `/privacy-p
 | Typecheck / unit + integration + property tests | `npm run typecheck` / `npm test` | clean / 160 pass (2026-11-16) |
 | Browser suite | `npm run test:e2e` (Chromium 158); `ANYMCP_E2E_BROWSER=chrome` (157.0.8103.52), `=msedge` (Edge 157.0.4341.60), `=brave` (1.99.57) | 67/67 each (2026-11-16) |
 | Fixture evaluation | `npm run eval` | 170/170, 0 false success, 0 unapproved |
-| Public sites (5 sandboxes, 2026-11-18) | `npm run eval:public` | 11/11, revocation 5/5 |
+| Public sites (5 pages, 4 sandboxes, 2026-11-18) | `npm run eval:public` | 11/11, revocation 5/5 |
 | Public sites (3 sandboxes) | `npm run eval:public -- --with-claude` (Chromium) and `-- --chrome` | 7/7 equal independent reading in both; Claude Code HTTP + stdio ✓ |
 | Packaging | `npm run package -- --verify`, `npm run package:check` | reproducible; tarball installs and runs outside the checkout |
 | Clean checkout | `node scripts/clean-install-check.mjs` | PASSED |
@@ -37,18 +37,19 @@ serves `docs/` at https://dilipna.github.io/AnyMCP/ (privacy policy: `/privacy-p
 | Release v0.1.0 (pre-release) | `release.yml` on publication (run 44007518598); `gh attestation verify` | 7/7 files identical to a clean build from the tag; attestations verify for all 3 artifacts |
 | CI 2026-11-16 | GitHub Actions run 43929412593 at c4e474b (macOS 26 arm64, Ubuntu 26.04 Node 24 + 22 + 20.19, Windows Server 2025) | all green; artifacts byte-identical on every job and to the local build |
 
-## Next (state on 2026-11-22)
-Released: v0.1.0 and v0.1.1 as GitHub PRE-RELEASES (verified, attested). main has UNRELEASED fixes from a code
-review (CHANGELOG "Unreleased"): a v0.1.2 needs the owner's explicit go-ahead (prepare + dry-run as a draft first).
-1. npm NOT published. Owner is logged in as `dilipna`, 2FA is on (recovery codes were pasted into a chat: owner must
-   regenerate them). Publishing failed: EOTP without a real authenticator code; with a recovery code the PUT returned
-   E404. Easiest fix: add a passkey / security key (Windows Hello) as the 2FA method on npmjs.com, then
-   `npm publish ./release/dilipna-anymcp-bridge-0.1.1.tgz --access public --auth-type=web` (approve in the browser),
-   or use a 6-digit code from Microsoft/Google Authenticator. The leading `./` is required. After publishing:
-   verify from the registry and update README/quick start/listing ("not published yet" → npx).
-2. Owner tries v0.1.1 from the release with Claude Code; takes real docked-panel screenshots (docs/quick-start.md).
-3. 3–5 first-time users (docs/first-time-user-test.md). 4. Chrome Web Store: upload anymcp-extension-0.1.1.zip,
-   Unlisted, fields in store/listing.md, tick Limited Use. 5. Later: lawyer review, external security review.
+## Next (state on 2026-11-23)
+Released: v0.1.0 and v0.1.1 as GitHub PRE-RELEASES (verified, attested). v0.1.2 (code-review fixes + the bridge's
+npx stdio entry + release-address install docs) is being prepared: owner approved preparing it on 2026-11-22; it is
+published only after a draft + release.yml dry run AND the owner's final yes.
+1. npm: DROPPED (owner, 2026-11-22). The bridge package is installed from the release address:
+   `npx --package=https://github.com/dilipna/AnyMCP/releases/download/vX.Y.Z/dilipna-anymcp-bridge-X.Y.Z.tgz anymcp-bridge`
+   or `npm install -g <address>`. Docs must never tell people to run `npx @dilipna/anymcp-bridge`.
+   Owner should still regenerate the npm recovery codes that were pasted into a chat, if the account is reachable.
+2. After v0.1.2 is published: verify downloads + attestations, the release-address install (npx and -g, fresh cache),
+   `npm run smoke:stdio -- --npx=<v0.1.2 address>`, then update compatibility "Installing the bridge" and checklist gate 11.
+3. Owner tries v0.1.2 with Claude Code; takes real docked-panel screenshots (docs/quick-start.md).
+4. Chrome Web Store: upload anymcp-extension-0.1.2.zip, Unlisted, fields in store/listing.md, tick Limited Use.
+5. 3–5 first-time users (docs/first-time-user-test.md). 6. Later: lawyer review, external security review.
 
 ## Decisions that matter (docs/decisions.md)
 - Extension is the source of truth for tools; the bridge only gets manifests. Nothing is fetched remotely.
@@ -68,4 +69,5 @@ from npm 11.6 lacked entries npm 11.19 requires (CI `npm ci` failed everywhere) 
 menu on macOS (3 tests) · fuzz tests (2026-11-16): `__proto__` vanished from canonical JSON (hash collisions),
 inherited `constructor`/`toString` passed argument validation or were substituted as values, autocomplete token lists
 and `cvv2`/"Security code" fields were not recognised as sensitive · `getByText(tool).first()` clicked the header's `Running “tool”` pill while a run was
-ending (flaky on macOS CI; scope panel clicks to `<main>`) · store promo tile clipped its text (no border-box).
+ending (flaky on macOS CI; scope panel clicks to `<main>`) · store promo tile clipped its text (no border-box) · bridge started with `npx --package=<release .tgz>` told stdio apps to run `npx @dilipna/anymcp-bridge@v`,
+which is not on the registry (2026-11-22; now the release address).

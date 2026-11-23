@@ -1,8 +1,18 @@
 # Troubleshooting
 
+## The bridge command does not start
+
+* **Windows PowerShell says "npx.ps1 cannot be loaded because running scripts is disabled on this system".**
+  PowerShell's default policy blocks npm's PowerShell scripts. Run the same command in **Command Prompt** instead, or
+  type `npx.cmd` instead of `npx`.
+* **"404 Not Found" for `@dilipna/anymcp-bridge`.** That command uses a package name; the bridge is not on the npm
+  registry. Use the command with the release address from the quick start (`npx --package=https://github.com/…`).
+* **"npx: command not found" / "'npx' is not recognized".** Node.js is not installed or not on the PATH: install
+  Node.js 20.19 or newer from nodejs.org and open a new terminal.
+
 ## The side panel says "Bridge offline" / "Not connected to the bridge"
 
-1. Is the bridge running? In the AnyMCP folder run `npm run bridge` (or `node anymcp-bridge-<version>.mjs`). It must stay open.
+1. Is the bridge running? Start it with the `npx --package=<release address> anymcp-bridge` command from the quick start (or `anymcp-bridge` if you installed it, or `npm run bridge` in the AnyMCP folder). It must stay open.
 2. Did it print *"An AnyMCP bridge is already running on this computer"*? Then one is already there, often started
    by an app such as Claude Desktop (`--stdio`). You do not need a second one; the message shows the pairing code
    and the setup commands for it. If something else uses 47820/47821, choose other ports:

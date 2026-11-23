@@ -7,9 +7,9 @@
 **AnyMCP lets your AI app use website tasks that you teach once in your own Chrome and approve: a Chrome extension
 records the task, and a small local bridge offers it to your AI app as an MCP tool.**
 
-> **Status: developer beta**, available as a [GitHub pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.1); not on the Chrome Web Store or npm.
+> **Status: developer beta**, available as a [GitHub pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.2); not on the Chrome Web Store or the npm registry.
 > Verified on Windows 11 with Chromium 158
-> and Chrome 157, on a synthetic test site and five public scraping sandboxes, with Claude Code as a real client; the
+> and Chrome 157, on a synthetic test site and five practice pages on four public scraping sandboxes, with Claude Code as a real client; the
 > automated suites also pass on macOS and Linux in CI. It is not production software, has not
 > had a security review, and does not work on every website. See [docs/compatibility.md](docs/compatibility.md).
 
@@ -64,18 +64,27 @@ Read-only lookups on public pages, recorded through the real recorder and then c
   table rows. Claude Code returned the right rows over **stdio** through the packaged bridge.
 * **"Quotes on a page"** on `quotes.toscrape.com/js/`: the page draws its content with JavaScript after loading.
 
-Two more practice sites (the Web Scraper test shop and a 250-entry countries page) pass the same way. All 11 SDK-client
-runs on the five sites equalled an independent reading of the same page or stopped safely. That shows these pages work today; it
+Two more practice pages (the Web Scraper test shop, and a 250-entry countries page on scrapethissite.com) pass the same way. All 11 SDK-client
+runs on the five pages equalled an independent reading of the same page or stopped safely. That shows these pages work today; it
 says nothing about other sites.
 
-## Quick start (from source, about 10 minutes)
+## Quick start (about 10 minutes)
 
-Requirements: **Chrome ≥ 116** (Microsoft Edge and Brave also pass the test suites), **Node.js ≥ 20.19**, git. No
+Requirements: **Chrome ≥ 116** (Microsoft Edge and Brave also pass the test suites), **Node.js ≥ 20.19**. No
 account or paid service.
 
-**No build needed:** from the [v0.1.1 pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.1) download `anymcp-extension-0.1.1.zip` (unzip it and load
-that folder in step 1) and `anymcp-bridge-0.1.1.mjs` (run `node anymcp-bridge-0.1.1.mjs` instead of the commands
-below). To build from source:
+**No build needed (easiest):** from the [v0.1.2 pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.2)
+download `anymcp-extension-0.1.2.zip` and unzip it (that folder is what you load in step 1). Start the bridge with one
+command; npm fetches it from the same release (type `y` if it asks to install):
+
+```bash
+npx --package=https://github.com/dilipna/AnyMCP/releases/download/v0.1.2/dilipna-anymcp-bridge-0.1.2.tgz anymcp-bridge
+```
+
+It prints a pairing code and how to connect your AI app. The bridge is not on the npm registry: use this release
+address, not a package name. To check the files first, see "Checking a download" in [SECURITY.md](SECURITY.md).
+
+**From source** (needs git):
 
 ```bash
 git clone https://github.com/dilipna/AnyMCP anymcp && cd anymcp
@@ -84,8 +93,8 @@ npm run build          # builds the extension (packages/extension/dist/prod) and
 npm run bridge         # starts the bridge; prints a pairing code and how to connect your AI app
 ```
 
-1. **Install the extension:** `chrome://extensions` → *Developer mode* → *Load unpacked* →
-   `packages/extension/dist/prod`. Click the AnyMCP toolbar icon to open the side panel.
+1. **Install the extension:** `chrome://extensions` → *Developer mode* → *Load unpacked* → the unzipped folder
+   (from source: `packages/extension/dist/prod`). Click the AnyMCP toolbar icon to open the side panel.
 2. **Pair:** in the side panel enter the 8-digit code the bridge printed.
 3. **Connect your AI app:** *Settings → Show the client command*. Claude Code: run the printed
    `claude mcp add --transport http anymcp … --header "Authorization: Bearer …"`. Apps that start MCP servers
@@ -120,7 +129,7 @@ to your AI app is marked untrusted. Details and the limits of all this: [docs/th
 | `npm test` | unit and integration tests |
 | `npm run test:e2e` | browser tests: real Chromium + built extension + bridge + MCP client (`ANYMCP_E2E_BROWSER=chrome` for branded Chrome) |
 | `npm run eval` | frozen evaluation on the synthetic fixture |
-| `npm run eval:public` | read-only validation on five public sandboxes (`-- --with-claude` also drives Claude Code) |
+| `npm run eval:public` | read-only validation on five practice pages (four public sandbox sites) (`-- --with-claude` also drives Claude Code) |
 | `npm run package` | reproducible extension ZIP + npm package of the bridge in `release/` (nothing is published) |
 | `npm run package:check` | install the packed bridge outside the checkout and run it |
 
@@ -135,5 +144,5 @@ to your AI app is marked untrusted. Details and the limits of all this: [docs/th
 
 MIT for the original code ([LICENSE](LICENSE)). Bundled third-party code keeps its own licences; `npm run package`
 writes the notices into each artifact. "AnyMCP" was renamed from the pre-release name "MyCP". It is not related to
-the npm package named `anymcp`; this project's bridge will be published as `@dilipna/anymcp-bridge`
-(see the [naming check](docs/naming-check.md)).
+the npm package named `anymcp`; this project's bridge package is `@dilipna/anymcp-bridge`, attached to each GitHub
+release and not published to the npm registry (see the [naming check](docs/naming-check.md)).

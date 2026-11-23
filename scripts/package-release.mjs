@@ -26,6 +26,9 @@ const extDir = resolve(root, "packages/extension/dist/prod");
 const version = /ANYMCP_VERSION = "([^"]+)"/.exec(readFileSync(resolve(root, "packages/protocol/src/version.ts"), "utf8"))[1];
 const releaseDir = resolve(root, "release");
 export const NPM_NAME = "@dilipna/anymcp-bridge";
+// The npm package is attached to each GitHub release; it is not on the npm registry (same address as the bridge's
+// RELEASE_PACKAGE_URL in packages/bridge/src/launch.ts).
+const RELEASE_TGZ = `https://github.com/dilipna/AnyMCP/releases/download/v${version}/dilipna-anymcp-bridge-${version}.tgz`;
 
 // ---------------------------------------------------------------- deterministic zip
 const crcTable = new Uint32Array(256).map((_, n) => {
@@ -111,17 +114,27 @@ account. It does nothing useful without the AnyMCP extension.
 
 ## Use
 
-Requires Node.js 20.19 or newer.
+Requires Node.js 20.19 or newer. This package is attached to AnyMCP's GitHub releases; it is **not** on the npm
+registry, so install it from its release address (the release workflow proves this file is identical to a clean build
+of the tagged source and signs it: \`gh attestation verify <file> --repo dilipna/AnyMCP\`).
 
 \`\`\`bash
-npx ${NPM_NAME}            # starts the bridge; prints a pairing code and setup commands
+npx --package=${RELEASE_TGZ} anymcp-bridge
+\`\`\`
+
+That starts the bridge and prints a pairing code and setup commands. To install it once instead, so that the
+command \`anymcp-bridge\` works from any terminal:
+
+\`\`\`bash
+npm install -g ${RELEASE_TGZ}
 \`\`\`
 
 * Pair: in the AnyMCP side panel choose *Connect* and enter the 8-digit code.
 * Claude Code (HTTP): run the \`claude mcp add …\` command the bridge prints (it contains a local token).
-* Apps that start MCP servers themselves (stdio): add the printed \`mcpServers\` entry (\`anymcp-bridge --stdio\`).
+* Apps that start MCP servers themselves (stdio), such as Claude Desktop or Cursor: add the \`mcpServers\` entry the
+  bridge prints. It starts this same version again (through npx from the release address, or from the installed copy).
 * Stop: Ctrl+C in its terminal. A stdio bridge stops when the app that started it quits.
-* Update: run the newer version; pairing and token are kept in \`~/.anymcp\`.
+* Update: run the newer release's command; pairing and token are kept in \`~/.anymcp\`.
 * Uninstall: \`npm uninstall -g ${NPM_NAME}\` (if installed globally), remove \`anymcp\` from your AI app's settings,
   and delete \`~/.anymcp\` (it holds the pairing secret and the client token).
 

@@ -40,7 +40,7 @@ boundaries of what was built and verified.
     loop (by design: tools have no loops).
 15. Branded Chrome 137+ cannot load an unpacked extension from the command line; automated tests there use the
     DevTools protocol (`--enable-unsafe-extension-debugging`). Manual *Load unpacked* is unaffected.
-16. **Many real sites offer no semantic handles.** On all five public sandboxes tested, the recorder had to use CSS
+16. **Many real sites offer no semantic handles.** On all five public sandbox pages tested (four sites), the recorder had to use CSS
     selectors for the results (flagged "may break if the site changes"). Such tools stop when the markup changes.
 17. **Some sites refuse automated browsing.** Wikipedia answered HTTP 429 and its robots.txt disallows `/w/`. AnyMCP
     runs in your browser but in a tab it opens itself; respect each site's terms and robots rules.
@@ -82,4 +82,8 @@ boundaries of what was built and verified.
 ## Naming and publication
 
 29. The name "AnyMCP" has a live conflict: an unrelated npm package `anymcp` does something similar. The owner kept
-    the name; the bridge is prepared as `@dilipna/anymcp-bridge` (see naming-check.md). Nothing has been published.
+    the name; the bridge package is `@dilipna/anymcp-bridge` (see naming-check.md). It is attached to each GitHub release
+    and **not published to the npm registry**, so `npx @dilipna/anymcp-bridge` does not work: install it from its
+    release address (`npx --package=<address> anymcp-bridge`, or `npm install -g <address>`). Started through npx,
+    it may need a connection to GitHub each time (whether npm's cache alone is enough offline was not tested); an
+    installed copy (`npm install -g`) does not.

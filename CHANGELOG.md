@@ -3,16 +3,26 @@
 Versions follow [semantic versioning](https://semver.org) once a version is published. Changes that affect what
 data AnyMCP handles or where it goes are marked **Data**, as the [privacy policy](docs/privacy-policy.md) promises.
 
-## Unreleased
+## 0.1.2 — 2026-11-22 (developer beta, GitHub pre-release)
 
-Found by a code review of the changes since 2026-11-15; the first is the most important.
+Published as a [GitHub pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.2); not on the Chrome Web
+Store. **The bridge is not published to the npm registry**: install it from the release address,
+`npx --package=https://github.com/dilipna/AnyMCP/releases/download/v0.1.2/dilipna-anymcp-bridge-0.1.2.tgz anymcp-bridge`
+(README, quick start). The build to submit to the Chrome Web Store (instead of 0.1.1). Extension and bridge 0.1.1
+and 0.1.2 work together (same protocol version).
 
-* Bridge: started with npx from a release package (`npx --package=<release .tgz address> anymcp-bridge`), it told
-  Claude Desktop, Cursor and other stdio apps to run `npx -y @dilipna/anymcp-bridge@<version>`, which fails because
-  the package is not on the npm registry. It now prints `npx -y --package=<this version's GitHub release package>
-  anymcp-bridge --stdio`. Found 2026-11-22 by running v0.1.1 that way; `npm run smoke:stdio -- --npx=<address>`
-  checks the printed form end to end. Bridges started any other way (a global install, the release's .mjs file) were
-  not affected.
+* **Data:** Bridge: started with npx from a release package (`npx --package=<release .tgz address> anymcp-bridge`), it
+  told Claude Desktop, Cursor and other stdio apps to run `npx -y @dilipna/anymcp-bridge@<version>`, which fails
+  because the package is not on the npm registry. It now prints `npx -y --package=<this version's GitHub release
+  package> anymcp-bridge --stdio`, so such an app downloads the bridge from GitHub (the privacy policy now lists that
+  download). Found 2026-11-22 by running v0.1.1 that way; `npm run smoke:stdio -- --npx=<address>` checks the printed
+  form end to end. Bridges started any other way (a global install, the release's .mjs file) were not affected.
+* The bridge package's README, the project README, quick start, troubleshooting and store listing give the release
+  address instead of an npm package name; SECURITY.md says that a registry package claiming to be the bridge is not
+  from this project.
+
+Also, found by a code review of the changes since 2026-11-15 (the first is the most important):
+
 * Release workflow: run by hand for an already-published release, it built the release's target branch instead of its
   tag before signing. It now always builds the tag of a published release, and records the commit it built.
 * More names that every object inherits (`constructor`) are handled as ordinary names: a single output named

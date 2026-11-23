@@ -22,8 +22,9 @@
 > structured result that says whether the task really worked.
 >
 > **Requires the AnyMCP bridge**, a small free program you run on your computer (Node.js 20.19 or newer). The bridge
-> is the MCP server your AI app connects to; the extension does nothing useful without it. Setup is manual: load the
-> bridge, pair it with a one-time code, and add it to your AI app's settings.
+> is the MCP server your AI app connects to; the extension does nothing useful without it. Setup is manual: start the
+> bridge with one command from the project's GitHub releases page, pair it with a one-time code, and add it to your AI
+> app's settings.
 >
 > **How it works**
 > 1. Start the bridge and pair it with the extension.

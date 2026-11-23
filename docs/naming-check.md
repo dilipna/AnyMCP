@@ -25,6 +25,9 @@ check for "MyCP" found an npm conflict and a possible Class 42 trademark; it is 
 | `@anymcp/bridge` | Not found (404). A 404 does not prove that the `@anymcp` scope is free to register. |
 | `@dilipna/anymcp-bridge`, `@dilipna/anymcp` | Not found (404). A scope tied to the owner's npm account cannot be taken by anyone else. |
 
+2026-11-22: AnyMCP does not publish to the npm registry. The bridge package keeps the name `@dilipna/anymcp-bridge`
+inside its tarball, which is attached to each GitHub release and installed from that address.
+
 ## What this means
 
 * **Recommended package name for the bridge: `@dilipna/anymcp-bridge`** (command: `anymcp-bridge`). It cannot be
