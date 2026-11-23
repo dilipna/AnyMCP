@@ -52,7 +52,7 @@ v0.1.1 (2026-11-17, in-product data notice) and v0.1.2 (2026-11-23, the build fo
 * macOS and Linux by hand (CI runs the automated suites there, not the public sites or a real AI app), Node 21 and
   23 (odd-numbered lines), Chromium browsers other than Chrome, Edge and Brave.
 * Claude Desktop, Cursor and other MCP clients.
-* Chrome's "allow this site" prompt and the docked side panel in a real window.
+* Chrome's "allow this site" prompt and the docked side panel in a real window. A person runs `docs/manual-release-test.md` (40 minutes) before each store submission to cover them.
 * Any signed-in website, any write on a real website, any site beyond the five practice sites.
 * Long-running stability, many tools, very large pages; screen readers; non-English UI.
 * Security: no external review or penetration test. In-house property-based fuzzing (protocol code and both bridge
