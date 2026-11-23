@@ -35,7 +35,7 @@ v0.1.1 (2026-11-17, in-product data notice) published as GitHub PRE-RELEASES (ht
 | Fixture evaluation (protocol v2) | `npm run eval` | 170/170 correct |
 | Public sandboxes + Claude Code | `npm run eval:public -- --with-claude` | 7/7 SDK runs equal an independent reading; revocation 3/3; Claude Code HTTP ✓, stdio ✓ |
 | Public sandboxes in branded Chrome | `npm run eval:public -- --chrome` | 7/7, revocation 3/3 |
-| Five practice pages on four public sandbox sites, Playwright Chromium (2026-11-18) | `npm run eval:public` | 11/11 runs equal an independent reading or stop safely; revocation 5/5 (`eval/results/public-sites-2026-11-18T22-32-10`) |
+| Five practice pages on four public sandbox sites, Playwright Chromium (2026-11-18; again 2026-11-23 with 0.1.2 at c16b201) | `npm run eval:public` | 11/11 runs equal an independent reading or stop safely; revocation 5/5 (`eval/results/public-sites-2026-11-18T22-32-10`, `public-sites-2026-11-23T06-47-50`) |
 | Reproducible package | `npm run package -- --verify` | byte-identical |
 | npm tarball outside the checkout | `npm run package:check` | 7/7 checks |
 | Packaged bridge over stdio | `npm run smoke:stdio` | PASS |

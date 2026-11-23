@@ -1,0 +1,520 @@
+{
+  "env": {
+    "anymcpVersion": "0.1.2",
+    "sourceTreeSha256": "adedc6df6058e512c3e3ea587acea90c937ce89e14d404ff3f513e67f45e7e5f",
+    "git": {
+      "head": "c16b201dead1c417f36c80c49462e00649e73ee3",
+      "dirty": false
+    },
+    "browser": "Playwright Chromium 158.0.8127.18",
+    "os": "Windows_NT 10.0.26300 x64",
+    "node": "v24.11.0",
+    "finishedAt": "2026-11-23T06:47:50.411Z",
+    "authorization": "host access pre-granted in the test build (Chrome's prompt cannot be automated); AnyMCP's own per-site grant recorded through the panel"
+  },
+  "results": [
+    {
+      "site": "https://books.toscrape.com",
+      "label": "Books to Scrape (category listing)",
+      "structure": "static HTML; part of the path is the input; results are links",
+      "recorded": {
+        "pickedAs": "link",
+        "pickedKind": "list",
+        "locator": {
+          "by": "css",
+          "selector": "article.product_pod > h3 > a"
+        },
+        "entryPath": "/catalogue/category/books/travel_2/index.html",
+        "query": []
+      },
+      "tool": {
+        "id": "books_in_category",
+        "entry": {
+          "path": "/catalogue/category/books/{category}/index.html"
+        },
+        "steps": [
+          "waitFor",
+          "extract"
+        ],
+        "warnings": []
+      },
+      "test": {
+        "status": "success",
+        "message": "Verified: 1 postcondition(s) observed on the page."
+      },
+      "listedByClient": true,
+      "runs": [
+        {
+          "args": {
+            "category": "mystery_3"
+          },
+          "expect": "items",
+          "status": "success",
+          "reason": "ok",
+          "message": "Verified: 1 postcondition(s) observed on the page.",
+          "source": {
+            "origin": "https://books.toscrape.com",
+            "path": "/catalogue/category/books/mystery_3/index.html",
+            "capturedAt": "2026-11-23T06:46:54.048Z"
+          },
+          "untrusted": true,
+          "items": 20,
+          "sample": [
+            {
+              "text": "Sharp Objects",
+              "url": "https://books.toscrape.com/catalogue/sharp-objects_997/index.html"
+            },
+            {
+              "text": "In a Dark, Dark ...",
+              "url": "https://books.toscrape.com/catalogue/in-a-dark-dark-wood_963/index.html"
+            }
+          ],
+          "groundTruth": {
+            "equal": true,
+            "gotCount": 20,
+            "wantCount": 20,
+            "mismatches": []
+          },
+          "provenance": true,
+          "pass": true
+        },
+        {
+          "args": {
+            "category": "poetry_23"
+          },
+          "expect": "items",
+          "status": "success",
+          "reason": "ok",
+          "message": "Verified: 1 postcondition(s) observed on the page.",
+          "source": {
+            "origin": "https://books.toscrape.com",
+            "path": "/catalogue/category/books/poetry_23/index.html",
+            "capturedAt": "2026-11-23T06:46:57.902Z"
+          },
+          "untrusted": true,
+          "items": 19,
+          "sample": [
+            {
+              "text": "A Light in the ...",
+              "url": "https://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html"
+            },
+            {
+              "text": "The Black Maria",
+              "url": "https://books.toscrape.com/catalogue/the-black-maria_991/index.html"
+            }
+          ],
+          "groundTruth": {
+            "equal": true,
+            "gotCount": 19,
+            "wantCount": 19,
+            "mismatches": []
+          },
+          "provenance": true,
+          "pass": true
+        },
+        {
+          "args": {
+            "category": "nope_999"
+          },
+          "expect": "stopped",
+          "status": "precondition_failed",
+          "reason": "precondition_unmet",
+          "message": "Stopped before doing anything: expected that the alert named \"Warning! This is a demo website for web scraping purposes. Prices and ratings here were randomly assigned and have no real meaning.\" is on the page, but the page does not match.",
+          "source": null,
+          "untrusted": false,
+          "items": 0,
+          "sample": [],
+          "pass": true
+        }
+      ],
+      "afterRevoke": {
+        "listedByClient": false,
+        "grantKept": false
+      }
+    },
+    {
+      "site": "https://www.scrapethissite.com",
+      "label": "Scrape This Site (hockey team search)",
+      "structure": "query-string search form results; results are table rows",
+      "recorded": {
+        "pickedAs": "string",
+        "pickedKind": "table",
+        "locator": {
+          "by": "css",
+          "selector": "table.table"
+        },
+        "entryPath": "/pages/forms/",
+        "query": [
+          "q:fixed"
+        ]
+      },
+      "tool": {
+        "id": "hockey_team_search",
+        "entry": {
+          "path": "/pages/forms/",
+          "query": "q={team}"
+        },
+        "steps": [
+          "waitFor",
+          "extract"
+        ],
+        "warnings": []
+      },
+      "test": {
+        "status": "success",
+        "message": "Verified: 1 postcondition(s) observed on the page."
+      },
+      "listedByClient": true,
+      "runs": [
+        {
+          "args": {
+            "team": "rangers"
+          },
+          "expect": "items",
+          "status": "success",
+          "reason": "ok",
+          "message": "Verified: 1 postcondition(s) observed on the page.",
+          "source": {
+            "origin": "https://www.scrapethissite.com",
+            "path": "/pages/forms/",
+            "capturedAt": "2026-11-23T06:47:12.662Z"
+          },
+          "untrusted": true,
+          "items": 21,
+          "sample": [
+            {
+              "losses": 31,
+              "team_name": "New York Rangers",
+              "wins": 36,
+              "year": 1990
+            },
+            {
+              "losses": 25,
+              "team_name": "New York Rangers",
+              "wins": 50,
+              "year": 1991
+            }
+          ],
+          "groundTruth": {
+            "equal": true,
+            "gotCount": 21,
+            "wantCount": 21,
+            "mismatches": []
+          },
+          "provenance": true,
+          "pass": true
+        },
+        {
+          "args": {
+            "team": "zzqqxx"
+          },
+          "expect": "items",
+          "status": "success",
+          "reason": "ok",
+          "message": "Verified: 1 postcondition(s) observed on the page.",
+          "source": {
+            "origin": "https://www.scrapethissite.com",
+            "path": "/pages/forms/",
+            "capturedAt": "2026-11-23T06:47:16.464Z"
+          },
+          "untrusted": true,
+          "items": 0,
+          "sample": [],
+          "groundTruth": {
+            "equal": true,
+            "gotCount": 0,
+            "wantCount": 0,
+            "mismatches": []
+          },
+          "provenance": true,
+          "pass": true
+        }
+      ],
+      "afterRevoke": {
+        "listedByClient": false,
+        "grantKept": false
+      }
+    },
+    {
+      "site": "https://quotes.toscrape.com",
+      "label": "Quotes to Scrape (JavaScript-drawn page)",
+      "structure": "the raw HTML has no quotes; they are drawn by JavaScript after load; part of the path is the input",
+      "recorded": {
+        "pickedAs": "string",
+        "pickedKind": "list",
+        "locator": {
+          "by": "css",
+          "selector": "span.text"
+        },
+        "entryPath": "/js/page/2/",
+        "query": []
+      },
+      "tool": {
+        "id": "quotes_page",
+        "entry": {
+          "path": "/js/page/{page}/"
+        },
+        "steps": [
+          "waitFor",
+          "extract"
+        ],
+        "warnings": []
+      },
+      "test": {
+        "status": "success",
+        "message": "Verified: 1 postcondition(s) observed on the page."
+      },
+      "listedByClient": true,
+      "runs": [
+        {
+          "args": {
+            "page": "3"
+          },
+          "expect": "items",
+          "status": "success",
+          "reason": "ok",
+          "message": "Verified: 1 postcondition(s) observed on the page.",
+          "source": {
+            "origin": "https://quotes.toscrape.com",
+            "path": "/js/page/3/",
+            "capturedAt": "2026-11-23T06:47:23.095Z"
+          },
+          "untrusted": true,
+          "items": 10,
+          "sample": [
+            "“I love you without knowing how, or when, or from where. I love you simply, without problems or pride: I love you in this way because I do not know any other way of loving but this, in which there is no I or you, so intimate that your hand upon my chest is my hand, so intimate that when I fall asleep your eyes close.”",
+            "“For every minute you are angry you lose sixty seconds of happiness.”"
+          ],
+          "groundTruth": {
+            "equal": true,
+            "gotCount": 10,
+            "wantCount": 10,
+            "mismatches": []
+          },
+          "provenance": true,
+          "pass": true
+        },
+        {
+          "args": {
+            "page": "5"
+          },
+          "expect": "items",
+          "status": "success",
+          "reason": "ok",
+          "message": "Verified: 1 postcondition(s) observed on the page.",
+          "source": {
+            "origin": "https://quotes.toscrape.com",
+            "path": "/js/page/5/",
+            "capturedAt": "2026-11-23T06:47:26.655Z"
+          },
+          "untrusted": true,
+          "items": 10,
+          "sample": [
+            "“A reader lives a thousand lives before he dies, said Jojen. The man who never reads lives only one.”",
+            "“You can never get a cup of tea large enough or a book long enough to suit me.”"
+          ],
+          "groundTruth": {
+            "equal": true,
+            "gotCount": 10,
+            "wantCount": 10,
+            "mismatches": []
+          },
+          "provenance": true,
+          "pass": true
+        }
+      ],
+      "afterRevoke": {
+        "listedByClient": false,
+        "grantKept": false
+      }
+    },
+    {
+      "site": "https://webscraper.io",
+      "label": "Web Scraper test shop (laptop listing)",
+      "structure": "a different site: product cards; the page number is in the query string; results are links; past the last page there are no cards and the run must stop",
+      "recorded": {
+        "pickedAs": "link",
+        "pickedKind": "list",
+        "locator": {
+          "by": "css",
+          "selector": "a.title"
+        },
+        "entryPath": "/test-sites/e-commerce/static/computers/laptops",
+        "query": [
+          "page:fixed"
+        ]
+      },
+      "tool": {
+        "id": "laptops_page",
+        "entry": {
+          "path": "/test-sites/e-commerce/static/computers/laptops",
+          "query": "page={page}"
+        },
+        "steps": [
+          "waitFor",
+          "extract"
+        ],
+        "warnings": []
+      },
+      "test": {
+        "status": "success",
+        "message": "Verified: 1 postcondition(s) observed on the page."
+      },
+      "listedByClient": true,
+      "runs": [
+        {
+          "args": {
+            "page": "3"
+          },
+          "expect": "items",
+          "status": "success",
+          "reason": "ok",
+          "message": "Verified: 1 postcondition(s) observed on the page.",
+          "source": {
+            "origin": "https://webscraper.io",
+            "path": "/test-sites/e-commerce/static/computers/laptops",
+            "capturedAt": "2026-11-23T06:47:34.466Z"
+          },
+          "untrusted": true,
+          "items": 6,
+          "sample": [
+            {
+              "text": "ThinkPad Yoga",
+              "url": "https://webscraper.io/test-sites/e-commerce/static/product/43"
+            },
+            {
+              "text": "HP 350 G1",
+              "url": "https://webscraper.io/test-sites/e-commerce/static/product/44"
+            }
+          ],
+          "groundTruth": {
+            "equal": true,
+            "gotCount": 6,
+            "wantCount": 6,
+            "mismatches": []
+          },
+          "provenance": true,
+          "pass": true
+        },
+        {
+          "args": {
+            "page": "20"
+          },
+          "expect": "items",
+          "status": "success",
+          "reason": "ok",
+          "message": "Verified: 1 postcondition(s) observed on the page.",
+          "source": {
+            "origin": "https://webscraper.io",
+            "path": "/test-sites/e-commerce/static/computers/laptops",
+            "capturedAt": "2026-11-23T06:47:38.003Z"
+          },
+          "untrusted": true,
+          "items": 3,
+          "sample": [
+            {
+              "text": "Toshiba Porteg...",
+              "url": "https://webscraper.io/test-sites/e-commerce/static/product/145"
+            },
+            {
+              "text": "Asus ASUSPRO B...",
+              "url": "https://webscraper.io/test-sites/e-commerce/static/product/146"
+            }
+          ],
+          "groundTruth": {
+            "equal": true,
+            "gotCount": 3,
+            "wantCount": 3,
+            "mismatches": []
+          },
+          "provenance": true,
+          "pass": true
+        },
+        {
+          "args": {
+            "page": "999"
+          },
+          "expect": "stopped",
+          "status": "precondition_failed",
+          "reason": "locator_missing",
+          "message": "Step “Read the text and link address of every match of the element matching CSS \"a.title\" (fragile: depends on the page's layout) (up to 10) into “laptops”” could not be completed: No list items were found. AnyMCP stopped without guessing. The page may have changed; review or re-record the tool.",
+          "source": null,
+          "untrusted": false,
+          "items": 0,
+          "sample": [],
+          "pass": true
+        }
+      ],
+      "afterRevoke": {
+        "listedByClient": false,
+        "grantKept": false
+      }
+    },
+    {
+      "site": "https://www.scrapethissite.com",
+      "label": "Scrape This Site (countries, a long page with no input)",
+      "structure": "one static page with 250 cards and no input; the tool returns the first 25 (its row cap)",
+      "recorded": {
+        "pickedAs": "string",
+        "pickedKind": "list",
+        "locator": {
+          "by": "css",
+          "selector": "h3.country-name"
+        },
+        "entryPath": "/pages/simple/",
+        "query": []
+      },
+      "tool": {
+        "id": "countries_list",
+        "entry": {
+          "path": "/pages/simple/"
+        },
+        "steps": [
+          "waitFor",
+          "extract"
+        ],
+        "warnings": [
+          "The check “Countries of the World: A Simple Example 250 items” contains a number. If that number changes between runs (a count, a date, a price), the check fails and the tool stops. If so, mark a part of the page without it."
+        ]
+      },
+      "test": {
+        "status": "success",
+        "message": "Verified: 1 postcondition(s) observed on the page."
+      },
+      "listedByClient": true,
+      "runs": [
+        {
+          "args": {},
+          "expect": "items",
+          "status": "success",
+          "reason": "ok",
+          "message": "Verified: 1 postcondition(s) observed on the page.",
+          "source": {
+            "origin": "https://www.scrapethissite.com",
+            "path": "/pages/simple/",
+            "capturedAt": "2026-11-23T06:47:47.732Z"
+          },
+          "untrusted": true,
+          "items": 25,
+          "sample": [
+            "Andorra",
+            "United Arab Emirates"
+          ],
+          "groundTruth": {
+            "equal": true,
+            "gotCount": 25,
+            "wantCount": 25,
+            "mismatches": []
+          },
+          "provenance": true,
+          "pass": true
+        }
+      ],
+      "afterRevoke": {
+        "listedByClient": false,
+        "grantKept": false
+      }
+    }
+  ],
+  "claude": "not run (pass --with-claude)"
+}
