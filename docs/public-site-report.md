@@ -6,7 +6,7 @@ pages from 2026-11-14; two more (the Web Scraper test shop and the Scrape This S
 `eval/results/public-sites-2026-11-18T22-32-10.{md,json}`, Playwright Chromium 158). Four more on 2026-11-23 (a single
 value, a layout table, a page drawn 10 s late, and a fifth site, the-internet.herokuapp.com): they first exposed three
 defects (`public-sites-2026-11-23T19-55-49`), fixed the same day; then all nine pages on five sites passed together
-(20/20 runs, the slow-page check, revocation 9/9; `eval/results/public-sites-2026-11-23T20-26-36`). The first runs used
+(20/20 runs, the slow-page check, revocation 9/9; `eval/results/public-sites-2026-11-23T20-51-52`, clean tree at 05adf6f). The first runs used
 Playwright Chromium 158 (with Claude Code) and, separately, Google Chrome 157.0.8103.52 (SDK client only). Read-only: pages are opened by address and read; no form is submitted, no account used, no
 message sent. About 25 page loads, paced. Raw results: `eval/results/public-sites-2026-11-14T05-49-41.{md,json}` (Chromium + Claude Code) and
 `eval/results/public-sites-2026-11-14T06-45-27.{md,json}` (Chrome). Re-runs on 2026-11-16 in Microsoft Edge and Brave
@@ -43,7 +43,7 @@ automated. In the product, the person uses **Allow a website** and confirms Chro
 | scrapethissite.com countries (2026-11-18) | one long static page (250 cards), no input; capped at the tool's 25 rows | `countries_list` | CSS `h3.country-name` | the page (25) | yes, 25/25 |
 | books.toscrape.com book page (2026-11-23) | ONE value (the price); book in the path; a recommended-books strip repeats the same price style | `book_price` | CSS `div.col-sm-6.product_main p.price_color` | tipping-the-velvet_999, sharp-objects_997, zzqqxx_9999 → stopped safely (404 page) | yes, 2/2 prices |
 | quotes.toscrape.com/tableful (2026-11-23) | a table used for layout, no class names: quote cell, tags row, side cell, empty spacer; tag in the path | `quotes_by_tag` | CSS `table > tbody > tr > td[style="padding-top: 2em;"]` | life (10), humor (10), zzqqxx → stopped safely (no quotes) | yes, 20/20 |
-| quotes.toscrape.com/js-delayed (2026-11-23) | quotes drawn by a 10-second timer after load; page in the path | `delayed_quotes_page` | CSS `span.text` | first test at the default 5 s step timeout → stopped safely after 5.5 s, nothing returned; version 2 with 15 s: page 3 (10), page 4 (10) | yes, 20/20 |
+| quotes.toscrape.com/js-delayed (2026-11-23) | quotes drawn by a 10-second timer after load; page in the path | `delayed_quotes_page` | CSS `span.text` | first test at the default 5 s step timeout → stopped safely after 5.3 s, nothing returned; version 2 with 15 s: page 3 (10), page 4 (10) | yes, 20/20 |
 | the-internet.herokuapp.com/tables (2026-11-23) | another site, built for test-automation practice; a data table with a column of action links; no input | `practice_table` | CSS `#table1` | the page (4 rows, 3 columns kept) | yes, 4/4 |
 
 * Removing each site removed its tool from the client (3/3 on 2026-11-14; 5/5 on 2026-11-18; 9/9 on 2026-11-23).
