@@ -649,6 +649,13 @@ ${related.length ? `<section class="related"><h3>You may also like</h3>${related
         // like the real page: a "viewing tag" cell beside the side cell, and an empty spacer cell at the end
         return send(res, 200, page("Quotes by tag", `<h1>Quotes by tag</h1><table><tr><td>Viewing tag: <a href="/layout-quotes/${esc(tag)}">${esc(tag)}</a></td></tr>${rows}<tr><td></td></tr></table>`));
       }
+      // the same quotes with NO attributes at all on the cells: nothing tells a quote cell from a tags cell
+      const pq = /^\/plain-quotes\/([a-z0-9-]+)$/.exec(path);
+      if (pq && req.method === "GET") {
+        const hits = LAYOUT_QUOTES.filter((q) => q.tags.includes(pq[1]!));
+        const rows = hits.map((q) => `<tr><td>“${esc(q.text)}” Author: ${esc(q.author)}</td></tr><tr><td>Tags: ${q.tags.map((t) => `<a href="/plain-quotes/${t}">${t}</a>`).join(" ")}</td></tr>`).join("");
+        return send(res, 200, page("Plain quotes", `<h1>Plain quotes</h1><table><tr><td>Viewing tag: <a href="/plain-quotes/${esc(pq[1]!)}">${esc(pq[1]!)}</a></td></tr>${rows}</table>`));
+      }
       const slow = /^\/(slow|slower)-list\/([0-9]{1,3})$/.exec(path);
       if (slow && req.method === "GET") {
         const delay = slow[1] === "slow" ? SLOW_LIST_DELAY_MS : SLOWER_LIST_DELAY_MS;

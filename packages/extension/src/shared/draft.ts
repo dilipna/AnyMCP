@@ -82,6 +82,8 @@ export interface DraftOutput {
   maxRows?: number;
   /** label shown in the approval sheet */
   approvalLabel?: string;
+  /** Lists found by a pattern with no class: how many matched items looked different from the clicked one. */
+  unlike?: number;
 }
 
 export type SignalKind = "success" | "expired" | "error" | "empty";
@@ -304,6 +306,8 @@ export function buildDraft(spec: DraftSpec, version: number): BuildResult {
       if (!o.optional) outRequired.push(name);
     } else if (o.kind === "list") {
       const maxItems = o.maxRows ?? 50;
+      if (o.unlike)
+        warnings.push(`“${o.name}”: ${o.unlike} of the items it matched look different from the one you clicked (the page gives them no class names to tell them apart). Check that the list holds only what you want: the tool returns every item it matches, and an extra item can look like a real result.`);
       outProps[name] = { type: "array", description: o.description, items: o.as === "number" ? { type: "number" } : o.as === "link" ? LINK_SCHEMA : { type: "string", maxLength: 2000 }, maxItems };
       extracts.push({ id: nextId(), op: "extract", into: name, source: { type: "list", locator: loc, as: o.as, maxItems } });
       outRequired.push(name);

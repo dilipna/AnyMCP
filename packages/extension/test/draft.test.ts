@@ -42,6 +42,15 @@ describe("buildDraft: recording → reviewed tool definition", () => {
     expect(def.limits.stepTimeoutMs).toBe(5000);
   });
 
+  it("warns in review when a list matched items that look different from the one clicked", () => {
+    const list = (unlike?: number) =>
+      spec({ outputs: [{ id: "o1", name: "quotes", kind: "list", locator: { by: "css", selector: "table > tbody > tr > td" }, as: "string", optional: false, use: "result", ...(unlike ? { unlike } : {}) }] });
+    expect(buildDraft(list(3), 1).warnings.join(" ")).toMatch(/“quotes”: 3 of the items it matched look different from the one you clicked/);
+    expect(buildDraft(list(), 1).warnings.join(" ")).not.toMatch(/look different/);
+    // the count is recording information only: it never reaches the saved tool definition
+    expect(JSON.stringify(buildDraft(list(3), 1).definition)).not.toContain("unlike");
+  });
+
   it("recognises the example value inside locator text and the start path", () => {
     const params = spec().params;
     expect(parameterizeText("A-1012", params)).toEqual({ param: "order_id" });

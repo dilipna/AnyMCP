@@ -42,6 +42,8 @@ export interface PickResult {
   rows?: number;
   /** For lists: every item is (or holds exactly one) link, so the default is to return text + address. */
   links?: boolean;
+  /** For lists found by a pattern with no class: matched items built differently from the clicked one. */
+  unlike?: number;
 }
 
 const CONTAINER_ROLES: Role[] = ["form", "table", "region", "dialog", "main", "navigation"];
@@ -139,7 +141,12 @@ function narrowByAttribute(sel: string, items: Element[], el: Element, many: (lo
 export interface SuggestedList extends SuggestedLocator {
   /** The elements the locator matches right now, in page order. */
   items: Element[];
+  /** For a pattern with no class: how many matched items with text are built differently from the clicked one. */
+  unlike?: number;
 }
+
+/** Items with text whose make-up differs from the clicked item's (only asked for patterns without a class). */
+const countUnlike = (items: Element[], el: Element): number => items.filter((x) => norm(x.textContent) !== "" && shapeOf(x) !== shapeOf(el)).length;
 
 /**
  * A locator for "this item and the others like it" (search results, cards, rows of a list).
@@ -185,8 +192,8 @@ export function suggestListLocator(clicked: Element): SuggestedList | null {
     }
     if (fallback) {
       const narrowed = narrowByAttribute(fallback.sel, fallback.items, el, many);
-      if (narrowed) return { locator: { by: "css", selector: narrowed.sel }, quality: "fragile", items: narrowed.items };
-      return { locator: { by: "css", selector: fallback.sel }, quality: "fragile", items: fallback.items };
+      if (narrowed) return { locator: { by: "css", selector: narrowed.sel }, quality: "fragile", items: narrowed.items, unlike: countUnlike(narrowed.items, el) };
+      return { locator: { by: "css", selector: fallback.sel }, quality: "fragile", items: fallback.items, unlike: countUnlike(fallback.items, el) };
     }
   }
   return null;
@@ -489,7 +496,8 @@ function finishPick(target: Element) {
     const first = list.items.slice(0, 3).map((x) => `“${previewOf(x).slice(0, 30)}”`).join(", ");
     setPickMode(null);
     const links = list.items.every((x) => !!linkOf(x));
-    onPickCb?.({ mode, locator: list.locator, quality: list.quality, preview: `${list.items.length} items: ${first}${list.items.length > 3 ? ", …" : ""}`, rows: list.items.length, links });
+    const unlike = list.unlike ? ` (${list.unlike} look different from the one you clicked)` : "";
+    onPickCb?.({ mode, locator: list.locator, quality: list.quality, preview: `${list.items.length} items${unlike}: ${first}${list.items.length > 3 ? ", …" : ""}`, rows: list.items.length, links, ...(list.unlike ? { unlike: list.unlike } : {}) });
     return;
   }
   const s = suggestLocator(target, mode === "success" ? "static-text" : "value");

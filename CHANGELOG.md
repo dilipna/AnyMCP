@@ -18,6 +18,9 @@ Found by extending the public-site evaluation to four more practice pages (2026-
   match count are left as they are. A first version of that rule worked on the synthetic copy but not on the real page,
   whose empty `<td></td>` spacer made the two signals disagree (`public-sites-2026-11-23T20-20-42`); the synthetic
   page now has the same spacer.
+* When a list found without class names still holds items built differently from the one clicked (nothing on the
+  page tells them apart), the recording screen says how many, and the review warns before saving, instead of relying
+  on the person to compare the match count with the page.
 * **Content drawn after the page loads was read too early.** Reading a value, list or table looked once, right after
   the page's "loaded" check, and stopped with `locator_missing` if the content was not there yet (quotes drawn by a
   10-second timer stopped after 0.4 s). Reading now waits for what it reads, up to the step timeout, as finding an

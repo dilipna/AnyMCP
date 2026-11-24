@@ -99,6 +99,7 @@ test("layout table without classes: the list holds only the quotes, and a page w
   spec.params.push(pathPart("tag", "light"));
   const built = buildDraft(spec, 1);
   expect(built.errors).toEqual([]);
+  expect(built.warnings.join(" ")).not.toMatch(/look different/); // narrowed: every item is a quote
   const def = built.definition!;
   const tested = await saveAndTest(def, { tag: "light" });
   expect(tested.status, tested.message).toBe("success");
@@ -114,6 +115,19 @@ test("layout table without classes: the list holds only the quotes, and a page w
   expect(none.status, JSON.stringify(none.output)).not.toBe("success");
   expect(none.actionMayHaveOccurred).toBe(false);
   await client.close();
+});
+
+test("layout table with nothing to tell cells apart: the review warns that items look different", async () => {
+  // no attribute narrows this pattern, so the person must be told before saving, not left to notice the count
+  const spec = await record("/plain-quotes/light", "td", "list", 'td:has-text("Author:")', "h1");
+  expect(spec.outputs[0]!.unlike).toBeGreaterThan(0);
+  spec.id = "plain_quotes";
+  spec.title = "Plain quotes";
+  spec.description = "Quotes on the synthetic page whose cells have no attributes.";
+  spec.outputs[0]!.name = "quotes";
+  const built = buildDraft(spec, 1);
+  expect(built.errors).toEqual([]);
+  expect(built.warnings.join(" ")).toMatch(/“quotes”: \d+ of the items it matched look different from the one you clicked/);
 });
 
 test("a list drawn 1.5 s after load: reading waits for it instead of stopping at once", async () => {

@@ -100,5 +100,7 @@ boundaries of what was built and verified.
     test ids, the recorder falls back to a tag pattern and can take in neighbouring elements that share the tag (on a
     table used for layout: rows of tags, side cells). It narrows the pattern only when an attribute of the clicked
     item removes exactly the items built differently from it (checked on quotes.toscrape.com/tableful and a synthetic
-    copy). Otherwise the list may still hold extra items; the recording screen shows how many it matched and the first
-    few, so compare that with the page. A tool built on such a list can return those extra items as results.
+    copy). Otherwise the list may still hold extra items. Then the recording screen says how many of the matched items
+    look different from the one clicked, and the review shows a warning before saving. It compares how items are built
+    (their child elements), so it also warns about genuine items that differ, for example one with a "new" badge.
+    A tool saved despite the warning can return the extra items as results.
