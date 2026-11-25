@@ -26,9 +26,10 @@ serves `docs/` at https://dilipna.github.io/AnyMCP/ (privacy policy: `/privacy-p
 ## Verified (2026-11-14 unless dated; re-run to confirm)
 | Check | Command | Result |
 |---|---|---|
-| Typecheck / unit + integration + property tests | `npm run typecheck` / `npm test` | clean / 208 pass (2026-11-25, 1943928) |
+| Typecheck / unit + integration + property tests | `npm run typecheck` / `npm test` | clean / 209 pass (2026-11-25, 23981ab) |
 | Browser suite | `npm run test:e2e` (Chromium 158); `ANYMCP_E2E_BROWSER=chrome` (157.0.8103.52), `=msedge` (Edge 157.0.4341.60), `=brave` (1.99.57) | 67/67 each (2026-11-16) |
 | Fixture evaluation | `npm run eval` | 170/170, 0 false success, 0 unapproved |
+| Public sites (12 pages, 5 sites, 2026-11-25, code of 23981ab) | `npm run eval:public` | 25/25, both slow-page checks, revocation 12/12 (`public-sites-2026-11-25T09-55-48`) |
 | Public sites (12 pages, 5 sites, 2026-11-25, code of 1943928: new-content rule for recorded changes only) | `npm run eval:public` | 25/25, both slow-page checks, revocation 12/12 (`public-sites-2026-11-25T09-35-46`) |
 | Public sites (12 pages, 5 sites, 2026-11-25, code of 17967c9: hidden text, numbers, new content after actions) | `npm run eval:public` | 25/25, both slow-page checks, revocation 12/12 (`public-sites-2026-11-25T09-15-36`) |
 | Public sites (12 pages, 5 sites, 2026-11-25, code of b55f22c: merged cells, numbers) | `npm run eval:public` | 25/25, both slow-page checks, revocation 12/12 (`public-sites-2026-11-25T08-42-14`) |

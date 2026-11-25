@@ -42,8 +42,8 @@ boundaries of what was built and verified.
     Reading stops waiting as soon as what it reads is there: a list that a page draws a few items at a time can be
     read before it is complete. Marking a success check that appears only when the page has finished avoids that.
     After a click, Enter or typing that stays on the page, a value the recorder saw change after that action is read
-    only once it changed again or its part of the page was redrawn and then quiet for 0.3 s (checked on a synthetic
-    filter page and a cookie-banner page). So a choice whose result the site does not draw again (it already shows
+    only once its text changed or its own elements were replaced, and the part of the page around it has been quiet
+    for 0.3 s (checked on a synthetic filter page with a "Loading…" line, and a cookie-banner page). So a choice whose result the site does not draw again (it already shows
     exactly that, and the site leaves the page untouched) stops after the step timeout instead of returning; a site
     that draws the new results in two steps more than 0.3 s apart can still be read after the first; and a value that
     did not change while recording (the filter you clicked happened to show the same items) is not protected.
