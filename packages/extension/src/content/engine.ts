@@ -485,7 +485,8 @@ function extractTable(source: Extract<ExtractSource, { type: "table" }>, args: A
   for (const places of layout.rows.slice(0, source.maxRows)) {
     const rec: Record<string, string | number> = {};
     for (const [field, col] of Object.entries(source.columns)) {
-      const raw = norm(places[colIndex[field]!]?.textContent);
+      const cell = places[colIndex[field]!];
+      const raw = cell ? visibleText(cell) : ""; // what the page shows: not a hidden sort key (display:none) before it
       if (col.as === "number") {
         const n = parseNumber(raw);
         if (n === null) return { ok: false, code: "output_invalid", detail: `Could not read a number for “${field}”.` };

@@ -4,7 +4,7 @@
 // a row's own children instead put values under the wrong heading after any merged cell, and that was returned as a
 // success (2026-11-25, e2e/site-patterns.spec.ts).
 
-import { norm } from "./locator";
+import { norm, visibleText } from "./locator";
 
 const isCell = (e: Element) => e.localName === "td" || e.localName === "th";
 const span = (v: number, max: number) => (Number.isFinite(v) && v >= 1 ? Math.min(Math.floor(v), max) : 1);
@@ -30,8 +30,8 @@ export interface TableLayout {
   /** One heading per column. Under a heading that spans several columns, the heading above is put in front
    * ("Population 2020"). Headings that would still repeat get " (2)", " (3)"; blank ones stay "". */
   headers: string[];
-  /** Every heading cell's text with the first column it covers (finds columns of tools recorded before 2026-11-25,
-   * which named a column by the top heading row only). */
+  /** Every heading cell's full text (hidden parts included) with the first column it covers: finds the columns of
+   * tools recorded before 2026-11-25, which named a column by the top heading row only, with hidden text. */
   headingCells: { text: string; col: number }[];
   /** The data rows (not the heading rows, not <tfoot>), each as its places. */
   rows: (Element | undefined)[][];
@@ -50,9 +50,9 @@ export function tableLayout(table: Element): TableLayout | null {
     const covering: Element[] = [];
     for (const row of head) {
       const cell = row[c];
-      if (cell && !covering.includes(cell) && norm(cell.textContent)) covering.push(cell);
+      if (cell && !covering.includes(cell) && visibleText(cell)) covering.push(cell);
     }
-    headers.push(covering.map((x) => norm(x.textContent)).join(" "));
+    headers.push(covering.map((x) => visibleText(x)).join(" "));
   }
   const seen = new Map<string, number>();
   const unique = headers.map((h) => {

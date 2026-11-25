@@ -8,7 +8,7 @@
 //    timeout), and the tool editor's per-step timeout must be what decides how long (quotes.toscrape.com/js-delayed).
 
 import { expect, test, type Page } from "@playwright/test";
-import { GROUPED, SCORES, SHELF, SLOWER_LIST_DELAY_MS, layoutQuotesFor, slowListItems } from "anymcp-fixture";
+import { GROUPED, PAYMENTS, SCORES, SHELF, SLOWER_LIST_DELAY_MS, layoutQuotesFor, slowListItems } from "anymcp-fixture";
 import type { ResultEnvelope, ToolDefinition } from "anymcp-protocol";
 import { PATH_PART_PATTERN, buildDraft, type DraftSpec } from "../packages/extension/src/shared/draft";
 import type { TabCandidate } from "../packages/extension/src/shared/panel-api";
@@ -173,6 +173,22 @@ test("two heading rows, a cell over two rows and a totals row: rows are read as 
   expect(tested.status, tested.message).toBe("success");
   // the region spans two rows, so both rows have it; the totals row in <tfoot> is not a town
   expect(tested.output).toEqual({ towns: GROUPED.map((r) => ({ region: r.region, town: r.town, population_2020: r.p2020, population_2021: r.p2021, area: r.area })) });
+});
+
+test("hidden text in a table cell (a sort key) is not read: cells give what the page shows", async () => {
+  // 2026-11-25: cells were read with textContent, which includes display:none text, so a hidden sort key came first:
+  // "2024011515 Jan 2024", and a column marked as a number read the hidden key instead of the amount shown
+  const spec = await record("/sortable-table", "table.payments", "table", "table.payments td", "h1");
+  spec.id = "payments";
+  spec.title = "Payments";
+  spec.description = "Rows of the synthetic payments table.";
+  spec.outputs[0]!.name = "payments";
+  spec.outputs[0]!.columns!.Amount!.as = "number";
+  const built = buildDraft(spec, 1);
+  expect(built.errors).toEqual([]);
+  const tested = await saveAndTest(built.definition!, {});
+  expect(tested.status, tested.message).toBe("success");
+  expect(tested.output).toEqual({ payments: PAYMENTS.map((r) => ({ date: r.date, amount: Number(r.amount.replace(/[£,]/g, "")) })) });
 });
 
 test("layout table without classes: the list holds only the quotes, and a page without quotes stops", async () => {

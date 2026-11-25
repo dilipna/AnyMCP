@@ -287,6 +287,12 @@ export const GROUPED = [
   { region: "South", town: "Cedar", p2020: "2,100", p2021: "2,300", area: "21" },
 ] as const;
 
+/** A sortable table as many sites draw it: each cell starts with a hidden sort key (display:none) before what it shows. */
+export const PAYMENTS = [
+  { date: "15 Jan 2024", key: "20240115", amount: "£1,200.50", cents: "120050" },
+  { date: "3 Feb 2024", key: "20240203", amount: "£75.00", cents: "7500" },
+] as const;
+
 export const SLOW_LIST_DELAY_MS = 1500;
 export const SLOWER_LIST_DELAY_MS = 6500;
 export const slowListItems = (page: string): string[] => [1, 2, 3, 4, 5].map((i) => `Item ${page}.${i}`);
@@ -657,6 +663,19 @@ ${related.length ? `<section class="related"><h3>You may also like</h3>${related
       }
       // the same items, but the page gives elements ids it makes up on every load (a UUID, a framework counter), as
       // the-internet.herokuapp.com/challenging_dom does: a tool must never find anything by such an id
+      if (path === "/sortable-table" && req.method === "GET") {
+        const hide = (k: string) => `<span style="display:none">${k}</span>`;
+        return send(
+          res,
+          200,
+          page(
+            "Payments",
+            `<h1>Payments</h1>
+<table class="payments"><thead><tr><th>Date</th><th>Amount</th></tr></thead>
+<tbody>${PAYMENTS.map((r) => `<tr><td>${hide(r.key)}${r.date}</td><td>${hide(r.cents)}${r.amount}</td></tr>`).join("")}</tbody></table>`,
+          ),
+        );
+      }
       if (path === "/score-table" && req.method === "GET") {
         return send(
           res,
