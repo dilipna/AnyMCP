@@ -90,6 +90,30 @@ test("shelf: a price picked where its style is unique stays the item's own price
   await client.close();
 });
 
+test("a value shown in a heading is read from its place, not found by its own text", async () => {
+  // 2026-11-25: the recorder found a picked heading by its own text ("the heading named Quiet Harbour"), so on another
+  // item's page the tool looked for that same name: it could only ever return the recorded value, or stop
+  const spec = await record("/shelf/quiet-harbour", ".product_main", "text", ".product_main h2", "h1");
+  spec.id = "shelf_name";
+  spec.title = "Shelf item name";
+  spec.description = "Name of one synthetic shelf item.";
+  spec.outputs[0]!.name = "name";
+  spec.params.push(pathPart("item", "quiet-harbour"));
+  const built = buildDraft(spec, 1);
+  expect(built.errors).toEqual([]);
+  expect(JSON.stringify(built.definition)).not.toContain("Quiet Harbour");
+  const def = built.definition!;
+  const tested = await saveAndTest(def, { item: "quiet-harbour" });
+  expect(tested.status, tested.message).toBe("success");
+  expect(tested.output).toEqual({ name: "Quiet Harbour" });
+  await enable(def);
+  const client = await s.mcp();
+  const env = await s.run(client, def.id, { item: "north-light" });
+  expect(env.status, env.message).toBe("success");
+  expect(env.output).toEqual({ name: "North Light" });
+  await client.close();
+});
+
 test("layout table without classes: the list holds only the quotes, and a page without quotes stops", async () => {
   const spec = await record("/layout-quotes/light", 'td[style="padding-top: 2em;"]', "list", 'td[style="padding-top: 2em;"]', "h1");
   spec.id = "layout_quotes";

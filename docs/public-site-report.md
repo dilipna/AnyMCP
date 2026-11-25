@@ -6,7 +6,10 @@ pages from 2026-11-14; two more (the Web Scraper test shop and the Scrape This S
 `eval/results/public-sites-2026-11-18T22-32-10.{md,json}`, Playwright Chromium 158). Four more on 2026-11-23 (a single
 value, a layout table, a page drawn 10 s late, and a fifth site, the-internet.herokuapp.com): they first exposed three
 defects (`public-sites-2026-11-23T19-55-49`), fixed the same day; then all nine pages on five sites passed together
-(20/20 runs, the slow-page check, revocation 9/9; `eval/results/public-sites-2026-11-23T20-51-52`, clean tree at 05adf6f). The first runs used
+(20/20 runs, the slow-page check, revocation 9/9; `eval/results/public-sites-2026-11-23T20-51-52`, clean tree at 05adf6f).
+Two more on 2026-11-25 that need clicks while recording (press Start; click a year), which exposed one more defect
+(a picked value found by its own text), fixed the same day; then all eleven pages passed together (24/24 runs, both
+slow-page checks, revocation 11/11; `CLEAN_RUN`). The first runs used
 Playwright Chromium 158 (with Claude Code) and, separately, Google Chrome 157.0.8103.52 (SDK client only). Read-only: pages are opened by address and read; no form is submitted, no account used, no
 message sent. About 25 page loads, paced. Raw results: `eval/results/public-sites-2026-11-14T05-49-41.{md,json}` (Chromium + Claude Code) and
 `eval/results/public-sites-2026-11-14T06-45-27.{md,json}` (Chrome). Re-runs on 2026-11-16 in Microsoft Edge and Brave
@@ -44,9 +47,12 @@ automated. In the product, the person uses **Allow a website** and confirms Chro
 | books.toscrape.com book page (2026-11-23) | ONE value (the price); book in the path; a recommended-books strip repeats the same price style | `book_price` | CSS `div.col-sm-6.product_main p.price_color` | tipping-the-velvet_999, sharp-objects_997, zzqqxx_9999 → stopped safely (404 page) | yes, 2/2 prices |
 | quotes.toscrape.com/tableful (2026-11-23) | a table used for layout, no class names: quote cell, tags row, side cell, empty spacer; tag in the path | `quotes_by_tag` | CSS `table > tbody > tr > td[style="padding-top: 2em;"]` | life (10), humor (10), zzqqxx → stopped safely (no quotes) | yes, 20/20 |
 | quotes.toscrape.com/js-delayed (2026-11-23) | quotes drawn by a 10-second timer after load; page in the path | `delayed_quotes_page` | CSS `span.text` | first test at the default 5 s step timeout → stopped safely after 5.3 s, nothing returned; version 2 with 15 s: page 3 (10), page 4 (10) | yes, 20/20 |
+| the-internet.herokuapp.com/dynamic_loading/2 (2026-11-25) | a click on Start, then text drawn 5 s later (exactly the default step timeout); no input | `loading_message` | CSS `div.example > div > h4` | first test at the default: success after 5.4 s (either outcome counts as honest here); version 2 with 12 s: the message | yes, 1/1 |
+| scrapethissite.com films (2026-11-25) | a click on a year link, made an input; the films table is filled by a request and drawn 1.5 s later; the address does not change | `films_of_year` | CSS `table.table` (the click: the link named by the year input) | 2012 (15), 2010 (13), 1999 → stopped safely (no such year link) | yes, 28/28 rows against the page's own JSON |
 | the-internet.herokuapp.com/tables (2026-11-23) | another site, built for test-automation practice; a data table with a column of action links; no input | `practice_table` | CSS `#table1` | the page (4 rows, 3 columns kept) | yes, 4/4 |
 
-* Removing each site removed its tool from the client (3/3 on 2026-11-14; 5/5 on 2026-11-18; 9/9 on 2026-11-23).
+* Removing each site removed its tool from the client (3/3 on 2026-11-14; 5/5 on 2026-11-18; 9/9 on 2026-11-23;
+  11/11 on 2026-11-25).
 * Empty pages: the hockey search shows its table even with no matches, so "zzqqxx" is a valid empty result. The shop
   shows nothing at all past its last page (no "no products" message), so AnyMCP cannot tell that from a wrong page
   and stops. On a site that does show such a message, marking it while recording with **Mark a message → "Means:
@@ -78,6 +84,10 @@ automated. In the product, the person uses **Allow a website** and confirms Chro
 * **A value unique on one page was ambiguous on the next** (2026-11-23): `p.price_color` also matched the
   recommended-books strip on other books (AnyMCP stopped with `locator_ambiguous`, never a wrong price). Picked
   values are now anchored to their container.
+* **A picked value was found by its own text** (2026-11-25). The message on the Start page was recorded as "the
+  heading named Hello World!". Harmless there, but the same rule turns a product name picked on one page into "the
+  heading named <that product>", which no other product's page has. Reproduced on the synthetic shelf page (item name
+  in a heading), fixed: picked values are never found by their own text.
 * **Every tool here relies on CSS selectors**, because these practice pages have no labels, roles or test ids on
   their results. The review screen flags such tools ("may break if the site changes"); if the markup changes, the tool
   stops with `locator_missing` instead of guessing.

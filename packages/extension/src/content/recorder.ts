@@ -60,7 +60,11 @@ export function suggestLocator(el: Element, purpose: "action" | "value" | "stati
 
   const labelText = (el as HTMLInputElement).labels?.[0]?.textContent;
   if (labelText && norm(labelText)) candidates.push({ loc: { by: "label", text: norm(labelText) }, q: "semantic" });
-  if (role && name) candidates.push({ loc: { by: "role", role, name }, q: "semantic" });
+  // A picked value is what the tool READS, so it must not be found by its own text: on another page (another product,
+  // another order) that text differs, and the tool could only ever return the recorded value, or stop. A name that
+  // comes from aria-label or similar, not from the element's text, still identifies it.
+  const nameIsItsText = !!name && norm(el.textContent).includes(name);
+  if (role && name && !(purpose === "value" && nameIsItsText)) candidates.push({ loc: { by: "role", role, name }, q: "semantic" });
   if (purpose === "static-text") {
     const t = visibleText(el);
     if (t && t.length <= 80) candidates.push({ loc: { by: "text", text: t }, q: "semantic" });

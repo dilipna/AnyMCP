@@ -9,7 +9,7 @@ records the task, and a small local bridge offers it to your AI app as an MCP to
 
 > **Status: developer beta**, available as a [GitHub pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.2); not on the Chrome Web Store or the npm registry.
 > Verified on Windows 11 with Chromium 158
-> and Chrome 157, on a synthetic test site and nine practice pages on five public practice sites, with Claude Code as a real client; the
+> and Chrome 157, on a synthetic test site and eleven practice pages on five public practice sites, with Claude Code as a real client; the
 > automated suites also pass on macOS and Linux in CI. It is not production software, has not
 > had a security review, and does not work on every website. See [docs/compatibility.md](docs/compatibility.md).
 
@@ -66,7 +66,8 @@ Read-only lookups on public pages, recorded through the real recorder and then c
 
 Six more practice pages pass the same way: the Web Scraper test shop, a 250-entry countries page, one book's price
 (a single value), quotes laid out in a table with no class names, quotes drawn 10 seconds after the page loads, and a
-data table on a test-automation practice site. All 20 SDK-client runs on the nine pages equalled an independent reading of the same page or stopped safely. That shows these pages work today; it
+data table on a test-automation practice site, plus two that need clicks (press Start and wait; click a year and
+read the table a request fills in). All 24 SDK-client runs on the eleven pages equalled an independent reading of the same page or stopped safely. That shows these pages work today; it
 says nothing about other sites.
 
 ## Quick start (about 10 minutes)
@@ -130,7 +131,7 @@ to your AI app is marked untrusted. Details and the limits of all this: [docs/th
 | `npm test` | unit and integration tests |
 | `npm run test:e2e` | browser tests: real Chromium + built extension + bridge + MCP client (`ANYMCP_E2E_BROWSER=chrome` for branded Chrome) |
 | `npm run eval` | frozen evaluation on the synthetic fixture |
-| `npm run eval:public` | read-only validation on nine practice pages (five public practice sites) (`-- --with-claude` also drives Claude Code) |
+| `npm run eval:public` | read-only validation on eleven practice pages (five public practice sites) (`-- --with-claude` also drives Claude Code) |
 | `npm run package` | reproducible extension ZIP + npm package of the bridge in `release/` (nothing is published) |
 | `npm run package:check` | install the packed bridge outside the checkout and run it |
 

@@ -46,7 +46,7 @@ boundaries of what was built and verified.
     loop (by design: tools have no loops).
 15. Branded Chrome 137+ cannot load an unpacked extension from the command line; automated tests there use the
     DevTools protocol (`--enable-unsafe-extension-debugging`). Manual *Load unpacked* is unaffected.
-16. **Many real sites offer no semantic handles.** On all nine public practice pages tested (five sites), the recorder had to use CSS
+16. **Many real sites offer no semantic handles.** On all eleven public practice pages tested (five sites), the recorder had to use CSS
     selectors for the results (flagged "may break if the site changes"). Such tools stop when the markup changes.
 17. **Some sites refuse automated browsing.** Wikipedia answered HTTP 429 and its robots.txt disallows `/w/`. AnyMCP
     runs in your browser but in a tab it opens itself; respect each site's terms and robots rules.

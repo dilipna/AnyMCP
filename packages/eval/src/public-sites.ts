@@ -22,6 +22,10 @@
 //                                   version (as the tool editor does) and the runs must return the right quotes
 //   - the-internet.herokuapp.com/tables  another site, built for test-automation practice: a data table with a column
 //                                   of action links (robots.txt allows everything)
+//   - the-internet.herokuapp.com/dynamic_loading/2  a CLICK (Start), then text drawn 5 s later: exactly the default
+//                                   step timeout, so the first test may succeed or stop; after raising it, it must work
+//   - scrapethissite.com/pages/ajax-javascript  a CLICK on a year link (made an input), then a table filled by a request
+//                                   and drawn 1.5 s later, without the address changing
 // Wikipedia was tried first and refused automated browsing (HTTP 429); its robots.txt disallows /w/. It is not used.
 //
 // Read-only and paced: pages are opened by address and read. AnyMCP submits no form, uses no account, sends no
@@ -36,6 +40,7 @@ import { execFile, execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import { join, resolve } from "node:path";
+import type { Page } from "@playwright/test";
 import type { ResultEnvelope, ToolDefinition } from "anymcp-protocol";
 import { ANYMCP_VERSION } from "anymcp-protocol";
 import { PATH_PART_PATTERN, buildDraft, type DraftSpec } from "../../extension/src/shared/draft";
@@ -46,6 +51,8 @@ import { gitRevision, sourceTreeHash } from "./revision";
 
 const ROOT = resolve(import.meta.dirname, "../../..");
 const WITH_CLAUDE = process.argv.includes("--with-claude");
+/** --only=<words>: run just the pages whose label contains them (for working on one page; reports say so). */
+const ONLY = process.argv.find((a) => a.startsWith("--only="))?.slice("--only=".length).toLowerCase();
 if (process.argv.includes("--chrome")) process.env.ANYMCP_E2E_BROWSER = "chrome";
 const UA = "AnyMCP-readonly-check/0.1 (+https://github.com/dilipna/AnyMCP)";
 const PAUSE_MS = 1500;
@@ -116,6 +123,18 @@ const parseHerokuTable = (html: string) => {
   });
 };
 
+const HEROKU_LOADING = `${HEROKU}/dynamic_loading/2`;
+/** The text the page draws after the Start click, as written in its own script. */
+const parseLoading = (html: string) => {
+  const m = /\$\('#loading'\)\.before\("<div id='finish'[^>]*><h4>([^<]+)<\/h4>/.exec(html);
+  return m ? [norm(m[1]!)] : [];
+};
+
+const FILMS_URL = `${HOCKEY}/pages/ajax-javascript/`;
+/** The films of a year, from the same request the page makes (it returns JSON). */
+const filmsTruthUrl = (year: string) => `${FILMS_URL}?${new URLSearchParams({ ajax: "true", year })}`;
+const parseFilms = (json: string) => (JSON.parse(json) as { title: string; nominations: number; awards: number }[]).map((f) => ({ title: norm(f.title), nominations: f.nominations, awards: f.awards }));
+
 // ---- the sites ------------------------------------------------------------------------------------------------
 interface Run {
   args: Record<string, unknown>;
@@ -139,7 +158,11 @@ interface SiteCase {
   runs: Run[];
   /** The page is slower than a recorded tool's default step timeout: the first test must stop honestly; then a new
    * version with this per-step timeout (the tool editor's "Per-step timeout") is tested, enabled and run. */
-  slow?: { stepTimeoutMs: number };
+  slow?: { stepTimeoutMs: number; /** "either": the page takes about as long as the default, so success is honest too */ atDefault?: "stop" | "either" };
+  /** What the person does on the page while recording, before picking (clicks are recorded as steps). */
+  actions?: (page: Page) => Promise<void>;
+  /** What to wait for before recording starts, when what is picked only appears after `actions`. */
+  readySelector?: string;
   claude?: { transport: "http" | "stdio"; prompt: string; truthUrl: string; mustContain: (truth: unknown[]) => string[] };
 }
 
@@ -413,6 +436,71 @@ const SITES: SiteCase[] = [
     test: {},
     runs: [{ args: {}, expect: "items", truthUrl: HEROKU_TABLES }],
   },
+  {
+    origin: HEROKU,
+    label: "The Internet (click Start, text drawn 5 seconds later)",
+    structure: "a click on a button, then text drawn 5 s later, exactly the default step timeout; no input",
+    recordUrl: HEROKU_LOADING,
+    readySelector: "#start button",
+    actions: async (page) => {
+      await page.getByRole("button", { name: "Start" }).click();
+      await page.locator("#finish h4").waitFor({ timeout: 20_000 });
+    },
+    pickMode: "text",
+    pickSelector: "#finish h4",
+    successSelector: "#finish h4",
+    slow: { stepTimeoutMs: 12000, atDefault: "either" },
+    edit: (spec) => {
+      spec.id = "loading_message";
+      spec.title = "Message after loading";
+      spec.description = "Presses Start on the-internet.herokuapp.com/dynamic_loading/2 and returns the message it shows. Read-only.";
+      spec.outputs[0]!.name = "message";
+    },
+    outputKey: "message",
+    max: 1,
+    links: false,
+    parse: (h) => parseLoading(h),
+    test: {},
+    runs: [{ args: {}, expect: "items", truthUrl: HEROKU_LOADING }],
+  },
+  {
+    origin: HOCKEY,
+    label: "Scrape This Site (click a year, films loaded by a request)",
+    structure: "a click on a year link (made an input), then a table filled by a request and drawn 1.5 s later; the address does not change",
+    recordUrl: FILMS_URL,
+    readySelector: "a.year-link",
+    actions: async (page) => {
+      await page.getByRole("link", { name: "2015", exact: true }).click();
+      await page.locator("tr.film").first().waitFor({ timeout: 20_000 });
+    },
+    pickMode: "table",
+    pickSelector: "table.table",
+    successSelector: "table.table th",
+    edit: (spec) => {
+      spec.id = "films_of_year";
+      spec.title = "Award-winning films of a year";
+      spec.description = "Clicks a year on the Scrape This Site films page and returns that year's films (title, nominations, awards). Read-only.";
+      const t = spec.outputs[0]!;
+      t.name = "films";
+      t.maxRows = 20;
+      t.columns = { Title: { header: "Title", as: "string" }, Nominations: { header: "Nominations", as: "number" }, Awards: { header: "Awards", as: "number" } };
+      // review screen: "Make “2015” an input" on the recorded click
+      const i = spec.steps.findIndex((x) => x.kind === "click" && x.label === "2015");
+      if (i < 0) throw new Error(`the click on 2015 was not recorded: ${JSON.stringify(spec.steps.map((x) => `${x.kind}:${x.label}`))}`);
+      spec.params.push({ name: "year", description: "A year from 2010 to 2015", type: "string", example: "2015", maxLength: 4 });
+      spec.steps[i]!.asParam = "year";
+    },
+    outputKey: "films",
+    max: 20,
+    links: false,
+    parse: (h) => parseFilms(h),
+    test: { year: "2015" },
+    runs: [
+      { args: { year: "2012" }, expect: "items", truthUrl: filmsTruthUrl("2012") },
+      { args: { year: "2010" }, expect: "items", truthUrl: filmsTruthUrl("2010") },
+      { args: { year: "1999" }, expect: "stopped" }, // no such year link: must stop, not click something else
+    ],
+  },
 ];
 
 function claude(prompt: string, allowed: string[], cfg: string): Promise<{ code: number | null; result: string; stderr: string }> {
@@ -435,7 +523,7 @@ async function record(s: Stack, c: SiteCase): Promise<DraftSpec> {
   const page = await s.context.newPage();
   try {
     await page.goto(c.recordUrl, { waitUntil: "load" });
-    await page.locator(c.pickSelector).first().waitFor(); // what the person waits for before acting (JS-drawn pages)
+    await page.locator(c.readySelector ?? c.pickSelector).first().waitFor(); // what the person waits for before acting (JS-drawn pages)
     const listed = await s.call<TabCandidate[]>({ type: "tabs.candidates" });
     const tabs = listed.ok ? (listed.data ?? []) : [];
     const tab = tabs.find((t) => t.url === page.url()) ?? tabs.find((t) => t.origin === c.origin);
@@ -443,6 +531,10 @@ async function record(s: Stack, c: SiteCase): Promise<DraftSpec> {
     const started = await s.call({ type: "record.start", tabId: tab.tabId });
     if (!started.ok) throw new Error(`record.start: ${started.error}`);
     await page.locator("[data-anymcp-banner]").waitFor({ state: "attached" });
+    if (c.actions) {
+      await c.actions(page);
+      await waitForState(s, (x) => (x.recording?.steps.length ?? 0) >= 1);
+    }
 
     const pick = async (mode: "list" | "table" | "text" | "success", selector: string, outputs: number, signals: number) => {
       await s.call({ type: "record.pick", mode });
@@ -471,10 +563,12 @@ function compare(got: unknown[], want: unknown[], max: number) {
 }
 
 async function main() {
+  const cases = ONLY ? SITES.filter((c) => c.label.toLowerCase().includes(ONLY)) : SITES;
+  if (cases.length === 0) throw new Error(`--only=${ONLY} matches no page`);
   if (WITH_CLAUDE) execFileSync(process.execPath, [resolve(ROOT, "scripts/build-all.mjs")], { stdio: "inherit" }); // packaged bridge for the stdio client
   execFileSync(process.execPath, [resolve(ROOT, "packages/extension/scripts/build.mjs"), "--target=e2e"], {
     stdio: "inherit",
-    env: { ...process.env, ANYMCP_E2E_HOSTS: SITES.map((c) => `${c.origin}/*`).join(",") },
+    env: { ...process.env, ANYMCP_E2E_HOSTS: cases.map((c) => `${c.origin}/*`).join(",") },
   });
 
   const s = await startStack({ tools: [] });
@@ -482,7 +576,7 @@ async function main() {
   const claudeRuns: Record<string, unknown>[] = [];
   const tmp = mkdtempSync(join(os.tmpdir(), "anymcp-public-"));
   try {
-    for (const c of SITES) {
+    for (const c of cases) {
       const site: Record<string, unknown> = { site: c.origin, label: c.label, structure: c.structure };
       results.push(site);
       try {
@@ -515,7 +609,9 @@ async function main() {
             message: first.env.message,
             ms: first.ms,
             actionMayHaveOccurred: first.env.actionMayHaveOccurred,
-            pass: first.env.status !== "success" && first.env.status !== "empty" && first.env.actionMayHaveOccurred === false,
+            pass:
+              first.env.actionMayHaveOccurred === false &&
+              (c.slow.atDefault === "either" ? first.env.status === "success" || (first.env.status !== "empty" && first.env.status !== "unknown_outcome") : first.env.status !== "success" && first.env.status !== "empty"),
           };
           // the tool editor's "Per-step timeout" saves a new version, which must be tested before it can be enabled
           version = 2;
@@ -599,6 +695,7 @@ async function main() {
     browser: browserLabel(s.browserVersion),
     os: `${os.type()} ${os.release()} ${os.arch()}`,
     node: process.version,
+    ...(ONLY ? { only: ONLY } : {}),
     finishedAt: new Date().toISOString(),
     authorization: "host access pre-granted in the test build (Chrome's prompt cannot be automated); AnyMCP's own per-site grant recorded through the panel",
   };
@@ -609,7 +706,7 @@ async function main() {
   const lines = [
     "# AnyMCP public-site read-only validation",
     "",
-    `> ${SITES.length} practice pages on ${new Set(SITES.map((c) => c.origin)).size} public practice sites (made for scraping or test-automation practice), a handful of inputs each. This shows the workflow works on these pages today; it says nothing about other sites.`,
+    `> ${cases.length} practice pages on ${new Set(cases.map((c) => c.origin)).size} public practice sites${ONLY ? ` (only pages matching "${ONLY}")` : ""} (made for scraping or test-automation practice), a handful of inputs each. This shows the workflow works on these pages today; it says nothing about other sites.`,
     "",
     "## Environment",
     "",

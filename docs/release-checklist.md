@@ -37,6 +37,7 @@ v0.1.1 (2026-11-17, in-product data notice) and v0.1.2 (2026-11-23, the build fo
 | Fixture evaluation (protocol v2) | `npm run eval` | 170/170 correct |
 | Public sandboxes + Claude Code | `npm run eval:public -- --with-claude` | 7/7 SDK runs equal an independent reading; revocation 3/3; Claude Code HTTP ✓, stdio ✓ |
 | Public sandboxes in branded Chrome | `npm run eval:public -- --chrome` | 7/7, revocation 3/3 |
+| Eleven practice pages on five public practice sites, two with clicks, Playwright Chromium (2026-11-25) | `npm run eval:public` | 24/24 runs equal an independent reading or stop safely; both slow-page checks; revocation 11/11 (`CLEAN_RUN`) |
 | Nine practice pages on five public practice sites, Playwright Chromium (2026-11-23, after the fixes in CHANGELOG "Unreleased") | `npm run eval:public` | 20/20 runs equal an independent reading or stop safely; slow page stops safely at the default timeout and passes after raising it; revocation 9/9 (`eval/results/public-sites-2026-11-23T20-51-52`, clean tree at 05adf6f) |
 | Five practice pages on four public sandbox sites, Playwright Chromium (2026-11-18; again 2026-11-23 with 0.1.2 at c16b201) | `npm run eval:public` | 11/11 runs equal an independent reading or stop safely; revocation 5/5 (`eval/results/public-sites-2026-11-18T22-32-10`, `public-sites-2026-11-23T06-47-50`) |
 | Reproducible package | `npm run package -- --verify` | byte-identical |
@@ -53,7 +54,7 @@ v0.1.1 (2026-11-17, in-product data notice) and v0.1.2 (2026-11-23, the build fo
   23 (odd-numbered lines), Chromium browsers other than Chrome, Edge and Brave.
 * Claude Desktop, Cursor and other MCP clients.
 * Chrome's "allow this site" prompt and the docked side panel in a real window. A person runs `docs/manual-release-test.md` (40 minutes) before each store submission to cover them.
-* Any signed-in website, any write on a real website, any site beyond the five practice sites.
+* Any signed-in website, any write on a real website, any site beyond the five practice sites (eleven pages).
 * Long-running stability, many tools, very large pages; screen readers; non-English UI.
 * Security: no external review or penetration test. In-house property-based fuzzing (protocol code and both bridge
   network endpoints) and automated CodeQL analysis only.
