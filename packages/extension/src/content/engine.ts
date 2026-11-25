@@ -9,6 +9,7 @@
 
 import { isCredentialQueryKey, isSensitiveField, resolveText, type FieldDescriptor } from "anymcp-protocol/light";
 import type { Condition, ExtractSource, Locator, NamedCondition, ReasonCode, Step, ValueRef } from "anymcp-protocol";
+import { columnOf, tableLayout } from "./table";
 import { PRIVATE_AREA, accessibleName, composedClosest, isEditableRoot, computeRole, deepQueryAll, fingerprintElement, isVisible, norm, resolveLocator, visibleText, type Args } from "./locator";
 
 export interface Watch {
@@ -475,25 +476,21 @@ function extractTable(source: Extract<ExtractSource, { type: "table" }>, args: A
   const r = resolveLocator(source.locator, args);
   if (r.problem || r.elements.length === 0) return { ok: false, code: "locator_missing", detail: "The table was not found.", matches: 0 };
   if (r.elements.length > 1) return { ok: false, code: "locator_ambiguous", detail: `${r.elements.length} tables match.`, matches: r.elements.length };
-  const table = r.elements[0] as HTMLTableElement;
-  const headerRow = table.querySelector("thead tr") ?? table.querySelector("tr");
-  if (!headerRow) return { ok: false, code: "locator_missing", detail: "The table has no header row." };
-  const headers = [...headerRow.children].map((c) => norm(c.textContent));
+  const layout = tableLayout(r.elements[0]!);
+  if (!layout) return { ok: false, code: "locator_missing", detail: "The table has no header row." };
+  // columns by their place on screen, so merged cells (colspan / rowspan) do not shift values under another heading
   const colIndex: Record<string, number> = {};
   for (const [field, col] of Object.entries(source.columns)) {
-    const i = headers.indexOf(col.header);
+    const i = columnOf(layout, col.header);
     if (i < 0) return { ok: false, code: "locator_missing", detail: `Column “${col.header}” was not found. The page may have changed.` };
     colIndex[field] = i;
   }
-  // Data rows: every row of THIS table except the header row. (A table written without <thead> gets an automatic
-  // <tbody> that also holds the header row, so "all tbody rows" would return the headings as the first record.)
-  const bodyRows = [...table.querySelectorAll("tr")].filter((tr) => tr.closest("table") === table && tr !== headerRow && !tr.closest("thead"));
+  // data rows: not the heading rows (a table without <thead> has its heading row in the automatic <tbody>), not <tfoot>
   const rows: Record<string, string | number>[] = [];
-  for (const tr of bodyRows.slice(0, source.maxRows)) {
-    const cells = [...tr.children];
+  for (const places of layout.rows.slice(0, source.maxRows)) {
     const rec: Record<string, string | number> = {};
     for (const [field, col] of Object.entries(source.columns)) {
-      const raw = norm(cells[colIndex[field]!]?.textContent);
+      const raw = norm(places[colIndex[field]!]?.textContent);
       if (col.as === "number") {
         const n = parseNumber(raw);
         if (n === null) return { ok: false, code: "output_invalid", detail: `Could not read a number for “${field}”.` };

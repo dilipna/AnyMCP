@@ -11,6 +11,7 @@
 // pointer position or focus), so controls inside web components are recorded like any others. `change` does
 // not leave a shadow root, so typed text is ALSO captured when the field loses focus (`focusout` does).
 
+import { tableLayout } from "./table";
 import type { Locator, LocatorLeaf, Role } from "anymcp-protocol";
 import { isSensitiveField } from "anymcp-protocol/light";
 import { defaultButton, fieldDescriptor, isChecked, linkOf, optionLabel, toggleKind } from "./engine";
@@ -489,10 +490,11 @@ function finishPick(target: Element) {
     const table = composedClosest(target, "table");
     if (!table) return; // keep picking; ignore clicks that are not on a table
     const s = suggestLocator(table);
-    const headerRow = table.querySelector("thead tr") ?? table.querySelector("tr");
-    const headers = [...(headerRow?.children ?? [])].map((c) => norm(c.textContent)).filter(Boolean);
+    // the same columns the engine reads (merged heading cells cover every column under them)
+    const layout = tableLayout(table);
+    const headers = (layout?.headers ?? []).filter(Boolean);
     setPickMode(null);
-    onPickCb?.({ mode, locator: s.locator, quality: s.quality, preview: `${headers.length} columns`, headers, rows: table.querySelectorAll("tbody tr").length });
+    onPickCb?.({ mode, locator: s.locator, quality: s.quality, preview: `${headers.length} columns`, headers, rows: layout?.rows.length ?? 0 });
     return;
   }
   if (isFormFieldSensitive(target) || composedClosest(target, PRIVATE_AREA)) return;

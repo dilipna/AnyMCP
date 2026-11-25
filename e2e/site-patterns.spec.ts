@@ -8,7 +8,7 @@
 //    timeout), and the tool editor's per-step timeout must be what decides how long (quotes.toscrape.com/js-delayed).
 
 import { expect, test, type Page } from "@playwright/test";
-import { SHELF, SLOWER_LIST_DELAY_MS, layoutQuotesFor, slowListItems } from "anymcp-fixture";
+import { GROUPED, SCORES, SHELF, SLOWER_LIST_DELAY_MS, layoutQuotesFor, slowListItems } from "anymcp-fixture";
 import type { ResultEnvelope, ToolDefinition } from "anymcp-protocol";
 import { PATH_PART_PATTERN, buildDraft, type DraftSpec } from "../packages/extension/src/shared/draft";
 import type { TabCandidate } from "../packages/extension/src/shared/panel-api";
@@ -25,7 +25,7 @@ test.afterAll(async () => {
 const pathPart = (name: string, example: string) => ({ name, description: name, type: "string" as const, example, maxLength: 100, pattern: PATH_PART_PATTERN, fromPath: true });
 
 /** Opens `path`, waits for `ready`, records one pick (`mode` on `pickSelector`) and a success check, returns the spec. */
-async function record(path: string, ready: string, mode: "text" | "list", pickSelector: string, successSelector: string): Promise<DraftSpec> {
+async function record(path: string, ready: string, mode: "text" | "list" | "table", pickSelector: string, successSelector: string): Promise<DraftSpec> {
   const page: Page = await s.context.newPage();
   try {
     await page.goto(`${s.fixture.origin}${path}`);
@@ -142,6 +142,37 @@ test("ids a page makes up on every load are never used to find a value", async (
     expect(env.output).toEqual({ [output]: output === "price" ? item.price : item.name });
     await client.close();
   }
+});
+
+test("a heading over two columns: every value stays under its own heading, and both columns can be kept", async () => {
+  // 2026-11-25: cells were matched to headings by position in the heading row, so after "Score" (two columns wide)
+  // "Rank" read the second-round score: wrong data, reported as success
+  const spec = await record("/score-table", "table.scores", "table", "table.scores td", "h1");
+  spec.id = "scores";
+  spec.title = "Scores";
+  spec.description = "Rows of the synthetic scores table.";
+  spec.outputs[0]!.name = "rows";
+  expect(Object.keys(spec.outputs[0]!.columns ?? {})).toEqual(["Player", "Score", "Score (2)", "Rank"]);
+  const built = buildDraft(spec, 1);
+  expect(built.errors).toEqual([]);
+  const tested = await saveAndTest(built.definition!, {});
+  expect(tested.status, tested.message).toBe("success");
+  expect(tested.output).toEqual({ rows: SCORES.map((r) => ({ player: r.player, score: r.first, score_2: r.second, rank: r.rank })) });
+});
+
+test("two heading rows, a cell over two rows and a totals row: rows are read as the page shows them", async () => {
+  const spec = await record("/grouped-table", "table.towns", "table", "table.towns td", "h1");
+  spec.id = "towns";
+  spec.title = "Towns";
+  spec.description = "Rows of the synthetic towns table.";
+  spec.outputs[0]!.name = "towns";
+  expect(Object.keys(spec.outputs[0]!.columns ?? {})).toEqual(["Region", "Town", "Population 2020", "Population 2021", "Area"]);
+  const built = buildDraft(spec, 1);
+  expect(built.errors).toEqual([]);
+  const tested = await saveAndTest(built.definition!, {});
+  expect(tested.status, tested.message).toBe("success");
+  // the region spans two rows, so both rows have it; the totals row in <tfoot> is not a town
+  expect(tested.output).toEqual({ towns: GROUPED.map((r) => ({ region: r.region, town: r.town, population_2020: r.p2020, population_2021: r.p2021, area: r.area })) });
 });
 
 test("layout table without classes: the list holds only the quotes, and a page without quotes stops", async () => {

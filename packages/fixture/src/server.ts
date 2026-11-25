@@ -270,6 +270,23 @@ export const LAYOUT_QUOTES: readonly LayoutQuote[] = [
 export const layoutQuotesFor = (tag: string): string[] => LAYOUT_QUOTES.filter((q) => q.tags.includes(tag)).map((q) => `“${q.text}” Author: ${q.author}`);
 
 /** Lists drawn by a timer after the page has loaded: 1.5 s (within a recorded tool's default 5 s step timeout) and 6.5 s. */
+/**
+ * Tables with merged cells, as real sites draw them. SCORES: one heading spans two columns ("Score": first and second
+ * round), so the cells after it sit one place further right than the heading row's own cells. GROUPED: two heading
+ * rows ("Population" over "2020" and "2021", "Region" and "Area" spanning both rows), a region cell spanning two body
+ * rows, and a totals row in <tfoot> that is not a record.
+ */
+export const SCORES = [
+  { player: "Ada", first: "7", second: "9", rank: "2" },
+  { player: "Ben", first: "8", second: "10", rank: "1" },
+  { player: "Cy", first: "5", second: "6", rank: "3" },
+] as const;
+export const GROUPED = [
+  { region: "North", town: "Alder", p2020: "1,200", p2021: "1,250", area: "14" },
+  { region: "North", town: "Birch", p2020: "800", p2021: "790", area: "9" },
+  { region: "South", town: "Cedar", p2020: "2,100", p2021: "2,300", area: "21" },
+] as const;
+
 export const SLOW_LIST_DELAY_MS = 1500;
 export const SLOWER_LIST_DELAY_MS = 6500;
 export const slowListItems = (page: string): string[] => [1, 2, 3, 4, 5].map((i) => `Item ${page}.${i}`);
@@ -640,6 +657,36 @@ ${related.length ? `<section class="related"><h3>You may also like</h3>${related
       }
       // the same items, but the page gives elements ids it makes up on every load (a UUID, a framework counter), as
       // the-internet.herokuapp.com/challenging_dom does: a tool must never find anything by such an id
+      if (path === "/score-table" && req.method === "GET") {
+        return send(
+          res,
+          200,
+          page(
+            "Scores",
+            `<h1>Scores</h1>
+<table class="scores"><thead><tr><th>Player</th><th colspan="2">Score</th><th>Rank</th></tr></thead>
+<tbody>${SCORES.map((r) => `<tr><td>${r.player}</td><td>${r.first}</td><td>${r.second}</td><td>${r.rank}</td></tr>`).join("")}</tbody></table>`,
+          ),
+        );
+      }
+      if (path === "/grouped-table" && req.method === "GET") {
+        const rows = GROUPED.map((r, i) => {
+          const region = i === 0 ? `<td rowspan="2">${r.region}</td>` : i === 1 ? "" : `<td>${r.region}</td>`;
+          return `<tr>${region}<td>${r.town}</td><td>${r.p2020}</td><td>${r.p2021}</td><td>${r.area}</td></tr>`;
+        }).join("");
+        return send(
+          res,
+          200,
+          page(
+            "Towns",
+            `<h1>Towns</h1>
+<table class="towns"><thead><tr><th rowspan="2">Region</th><th rowspan="2">Town</th><th colspan="2">Population</th><th rowspan="2">Area</th></tr>
+<tr><th>2020</th><th>2021</th></tr></thead>
+<tbody>${rows}</tbody>
+<tfoot><tr><td colspan="2">Total</td><td>4,100</td><td>4,340</td><td>44</td></tr></tfoot></table>`,
+          ),
+        );
+      }
       const madeIds = /^\/made-ids\/([a-z0-9-]+)$/.exec(path);
       if (madeIds && req.method === "GET") {
         const item = SHELF.find((x) => x.slug === madeIds[1]);
