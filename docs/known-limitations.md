@@ -41,12 +41,14 @@ boundaries of what was built and verified.
     fixed 5-second wait for their success check, so a success check that itself appears late needs re-recording.
     Reading stops waiting as soon as what it reads is there: a list that a page draws a few items at a time can be
     read before it is complete. Marking a success check that appears only when the page has finished avoids that.
-    After a click, Enter or typing that stays on the page, a value that was already shown is read only once it
-    changed or its part of the page was redrawn and then quiet for 0.3 s (checked on a synthetic filter page). So a
-    choice whose result the site does not draw again (it already shows exactly that, and the site leaves the page
-    untouched) stops after the step timeout instead of returning; and a site that draws the new results in two steps
-    more than 0.3 s apart can still be read after the first. Changes inside shadow roots are seen only when the text
-    itself changes.
+    After a click, Enter or typing that stays on the page, a value the recorder saw change after that action is read
+    only once it changed again or its part of the page was redrawn and then quiet for 0.3 s (checked on a synthetic
+    filter page and a cookie-banner page). So a choice whose result the site does not draw again (it already shows
+    exactly that, and the site leaves the page untouched) stops after the step timeout instead of returning; a site
+    that draws the new results in two steps more than 0.3 s apart can still be read after the first; and a value that
+    did not change while recording (the filter you clicked happened to show the same items) is not protected.
+    Changes inside shadow roots are seen only when the text itself changes. Tools recorded before 2026-11-25 are not
+    protected: re-record them.
 14. **Lists are read in page order and bounded** (`maxItems`). Blank items are skipped. If the site paginates, only
     the current page is read (backlog #17). Tables, too, are read from the current page only; there is no "next page"
     loop (by design: tools have no loops). Columns are found by their heading text, so a tool stops if a heading is

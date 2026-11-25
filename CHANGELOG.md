@@ -36,11 +36,14 @@ Found by extending the public-site evaluation to four more practice pages (2026-
 * **After a click that stays on the page, the old content could be returned as the new result.** Filters, tabs and
   searches in web apps often leave the previous results on screen until the site answers. Reading started at once,
   found those (the success check was already met) and returned them as a success: on a synthetic page, asking for
-  "Fruit" returned all five items shown before the click. Now, before the first click, Enter or typing of a group,
-  the page notes what each value read after it shows, and a read waits until that value changed, appeared, or its part
-  of the page was redrawn (the same items drawn again count), and that part has been quiet for 0.3 s. If the page
-  does not update within the step timeout, the tool stops ("The page still showed what it showed before the last
-  action") instead of returning what was there before. Reads after such actions take at least 0.3 s longer.
+  "Fruit" returned all five items shown before the click. While recording, AnyMCP now notes which parts of the page
+  were redrawn after your last click, Enter or typing; a value you pick inside one is marked as changed by the action
+  (`fresh`). When the tool runs, the page notes what each such value shows before the first action of its group, and
+  the read waits until it changed, appeared, or its part of the page was redrawn (the same items drawn again count),
+  and that part has been quiet for 0.3 s. If the page does not update within the step timeout, the tool stops ("The
+  page still showed what it showed before the last action") instead of returning what was there before. Values the
+  action did not touch (a price behind a cookie banner that the click closes) are read at once. Tools recorded before
+  have no such marks and behave as before; re-record a tool that reads after a click on the same page to get this.
 * **Table cells included hidden text.** Cells were read with all their text, including parts the page hides
   (`display:none`). Sortable tables often start a cell with a hidden sort key, so a date came back as "2024011515 Jan
   2024" and an amount column marked as a number returned the hidden key (120050 instead of 1200.5), as a success.
