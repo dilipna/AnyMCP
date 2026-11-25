@@ -54,12 +54,12 @@ unknown operations are rejected. There are seven operations:
 
 | op | meaning | safety rule enforced in the page |
 |---|---|---|
-| `locate` | bind a name to **exactly one** visible element via a semantic locator (role+name, label, test id, text; optionally inside a named container) | 0 matches ⇒ `locator_missing`; >1 ⇒ `locator_ambiguous`. Never "best guess". |
+| `locate` | bind a name to **exactly one** visible element via a semantic locator (role+name, label, test id, text; optionally inside a named container) or, as a last resort flagged fragile, a CSS selector; waits up to the step timeout | 0 matches ⇒ `locator_missing`; >1 ⇒ `locator_ambiguous`. Never "best guess". |
 | `fill` | put a value into a text box, dropdown, checkbox/switch or option button; `effect: "commit"` marks a field that saves by itself | refuses password / payment / secret / `data-anymcp-ignore` fields; sets a *state* (never a blind toggle); verifies it stuck; a `commit` fill is reachable only through the approval path, and one that would change nothing is reported as `no_change_needed` without asking |
 | `click` | `ui` / `navigate` / `commit` | only buttons, links, tabs, menu choices and dropdown openers; refuses links/forms that leave the allowed origins; `commit` is reachable only through the approval path |
 | `press` | press Enter in a text box (`ui` / `navigate` / `commit`) | dispatches the key events, then does exactly what the browser would (click the form's default button, or submit a one-field form) unless the page cancelled the key; refuses forms that post to another origin |
 | `waitFor` | wait for an observable state | also watches the site-declared *empty*, *error* and *session-expired* states, so those are reported as what they are |
-| `extract` | read text / a number / a table / a count | refuses sensitive fields; output validated against the schema |
+| `extract` | read text / a number / a list / a table / a count | waits up to the step timeout for what it reads (0 matches, or several where one is expected, are retried; then `locator_missing` / `locator_ambiguous`); a count and an optional value are read once; refuses sensitive fields; output validated against the schema |
 | `assert` | check a condition | — |
 
 A tool also carries: origins (exact, no wildcards), an entry path, input/output JSON-Schema subsets,

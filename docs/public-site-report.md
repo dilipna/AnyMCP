@@ -9,7 +9,7 @@ defects (`public-sites-2026-11-23T19-55-49`), fixed the same day; then all nine 
 (20/20 runs, the slow-page check, revocation 9/9; `eval/results/public-sites-2026-11-23T20-51-52`, clean tree at 05adf6f).
 Two more on 2026-11-25 that need clicks while recording (press Start; click a year), which exposed one more defect
 (a picked value found by its own text), fixed the same day; then all eleven pages passed together (24/24 runs, both
-slow-page checks, revocation 11/11; `CLEAN_RUN`). The first runs used
+slow-page checks, revocation 11/11; `eval/results/public-sites-2026-11-25T01-50-00`, code of 8cceee9: source tree 99e53c98…). The first runs used
 Playwright Chromium 158 (with Claude Code) and, separately, Google Chrome 157.0.8103.52 (SDK client only). Read-only: pages are opened by address and read; no form is submitted, no account used, no
 message sent. About 25 page loads, paced. Raw results: `eval/results/public-sites-2026-11-14T05-49-41.{md,json}` (Chromium + Claude Code) and
 `eval/results/public-sites-2026-11-14T06-45-27.{md,json}` (Chrome). Re-runs on 2026-11-16 in Microsoft Edge and Brave
