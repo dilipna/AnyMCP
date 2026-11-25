@@ -16,7 +16,7 @@ import type { Locator, LocatorLeaf, Role } from "anymcp-protocol";
 import { isSensitiveField } from "anymcp-protocol/light";
 import { defaultButton, fieldDescriptor, isChecked, linkOf, optionLabel, toggleKind } from "./engine";
 import { showBanner, hideBanner } from "./banner";
-import { PRIVATE_AREA, accessibleName, composedClosest, isEditableRoot, composedParent, computeRole, deepQueryAll, isVisible, norm, resolveLocator, shadowRootOf, visibleText, regionOf } from "./locator";
+import { PRIVATE_AREA, accessibleName, composedClosest, isEditableRoot, composedParent, computeRole, deepQueryAll, isVisible, norm, resolveLocator, shadowRootOf, visibleText } from "./locator";
 
 export type PickMode = "text" | "table" | "list" | "success" | null;
 
@@ -45,7 +45,7 @@ export interface PickResult {
   links?: boolean;
   /** For lists found by a pattern with no class: matched items built differently from the clicked one. */
   unlike?: number;
-  /** The picked content's part of the page was redrawn after the last recorded action (filters, tabs, searches). */
+  /** The picked content itself was added or changed after the last recorded action (filters, tabs, searches). */
   fresh?: boolean;
 }
 
@@ -294,31 +294,31 @@ function deepTarget(ev: Event): Element | null {
 function emit(e: RecordedEvent) {
   if (!active || location.origin !== allowedOrigin) return;
   if (e.t !== "skipped") {
-    // a new action: what is redrawn from now on is its effect
+    // a new action: what changes from now on is its effect
     actionSeen = true;
-    redrawnSinceAction = [];
+    changedSinceAction = [];
   }
   onEventCb?.(e);
 }
 
 // ---- what the last action changed -----------------------------------------------------
-// Parts of the page redrawn since the last recorded action. A value picked inside one is marked `fresh`: when the tool
-// runs, the content shown before that action is never returned as its result (engine armChange). A value the action did
-// not touch (a price behind a cookie banner the click closed) is read as it is.
+// Changes since the last recorded action. A value picked whose own elements were added or changed inside since then is
+// marked `fresh`: when the tool runs, the content shown before that action is never returned as its result (engine
+// armChange). A value the action did not touch (a price behind a cookie banner the click closed, even in the same box)
+// is read as it is.
 let actionSeen = false;
-let redrawnSinceAction: { target: Node; removed: Node[] }[] = [];
-const redrawObserver = new MutationObserver((records) => {
+let changedSinceAction: { target: Node; added: Node[] }[] = [];
+const changeObserver = new MutationObserver((records) => {
   if (!actionSeen) return;
   for (const m of records) {
-    if (redrawnSinceAction.length >= 5000) return;
+    if (changedSinceAction.length >= 5000) return;
     if (m.target instanceof Element && (composedClosest(m.target, "[data-anymcp-banner]") || m.target === overlay)) continue;
-    redrawnSinceAction.push({ target: m.target, removed: [...m.removedNodes] });
+    changedSinceAction.push({ target: m.target, added: [...m.addedNodes] });
   }
 });
 function changedByLastAction(els: Element[]): boolean {
-  const region = regionOf(els);
-  if (!actionSeen || !region) return false;
-  return redrawnSinceAction.some((m) => region.contains(m.target) || m.removed.some((n) => n === region || n.contains(region)));
+  if (!actionSeen || !els.length) return false;
+  return changedSinceAction.some((m) => els.some((el) => el.contains(m.target) || m.added.some((n) => n.contains(el))));
 }
 
 const lastValue = new WeakMap<Element, string>();
@@ -579,15 +579,15 @@ export function startRecording(origin: string, onEvent: (e: RecordedEvent) => vo
   document.addEventListener("keydown", handleEsc, true);
   document.addEventListener("mousemove", handleMove, true);
   actionSeen = false;
-  redrawnSinceAction = [];
-  redrawObserver.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+  changedSinceAction = [];
+  changeObserver.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
   showBanner("AnyMCP is recording — nothing is saved until you finish", "recording", onStopRequested);
 }
 
 export function stopRecording(): void {
   active = false;
-  redrawObserver.disconnect();
-  redrawnSinceAction = [];
+  changeObserver.disconnect();
+  changedSinceAction = [];
   pickMode = null;
   document.removeEventListener("change", handleChange, true);
   document.removeEventListener("focusin", handleFocusIn, true);

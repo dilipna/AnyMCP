@@ -49,16 +49,21 @@ export interface RunContext {
 // ---- "is this the new content?" -----------------------------------------------------
 // A click, Enter or typing that stays on the page (filters, tabs, search in a web app) can leave the previous content
 // in place until the site's request comes back. Reading at once returned that old content as a success (2026-11-25,
-// e2e/site-patterns.spec.ts). Values the recorder saw change after an action are marked `fresh`; before the first
-// action of a group, the page notes what each fresh value read next shows, and watches the part of the page around it.
-// (Unmarked values, such as a price behind a cookie banner that a click closes, are read as before.) Such a value is then accepted only when it is new: it changed, it was
-// not there before, or its part of the page was redrawn; and that part has been quiet for QUIET_MS.
+// e2e/site-patterns.spec.ts). Values the recorder saw change after an action are marked `fresh`. Before the first
+// action of a group, the page notes what each fresh value read next shows (its elements and text). Such a value is
+// then accepted only when it is new: its text changed, it was not there before, or its own elements were replaced or
+// changed inside (the same items drawn again count); and the part of the page around it has been quiet for QUIET_MS.
+// Changes NEXT to the value do not count: a "Loading…" line beside the results appears at once, while the old results
+// are still there (2026-11-25). Unmarked values (a price behind a cookie banner that a click closes) are read as before.
 const QUIET_MS = 300;
+interface Noted {
+  text: string | null;
+  els: Element[];
+  touched: boolean;
+}
 interface ChangeWatch {
-  before: Map<string, string | null>;
-  regions: Element[];
+  noted: Map<string, Noted>;
   lastMutation: number;
-  redrawn: boolean;
   observer: MutationObserver;
 }
 const locKey = (loc: Locator) => JSON.stringify(loc);
@@ -66,24 +71,21 @@ const signature = (els: Element[]) => (els.length ? els.map((e) => visibleText(e
 
 export function armChange(ctx: RunContext, locators: Locator[]): void {
   ctx.change?.observer.disconnect();
-  const before = new Map<string, string | null>();
+  const noted = new Map<string, Noted>();
   const regions: Element[] = [];
   for (const loc of locators) {
     const r = resolveLocator(loc, ctx.args);
     const els = r.problem ? [] : r.elements;
-    before.set(locKey(loc), signature(els));
+    noted.set(locKey(loc), { text: signature(els), els, touched: false });
     const region = regionOf(els);
     if (region && !regions.includes(region)) regions.push(region);
   }
-  const w: ChangeWatch = { before, regions, lastMutation: 0, redrawn: false, observer: new MutationObserver(() => undefined) };
+  const w: ChangeWatch = { noted, lastMutation: 0, observer: new MutationObserver(() => undefined) };
   w.observer = new MutationObserver((records) => {
     for (const m of records) {
       if (m.target instanceof Element && composedClosest(m.target, "[data-anymcp-banner]")) continue;
-      const inside = regions.some((g) => g.contains(m.target) || [...m.removedNodes].some((n) => n === g || n.contains(g)));
-      if (inside) {
-        w.redrawn = true;
-        w.lastMutation = Date.now();
-      }
+      if (regions.some((g) => g.contains(m.target) || [...m.removedNodes].some((n) => n === g || n.contains(g)))) w.lastMutation = Date.now();
+      for (const n of noted.values()) if (!n.touched && n.els.some((e) => e.contains(m.target))) n.touched = true;
     }
   });
   if (regions.length) w.observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
@@ -93,12 +95,12 @@ export function armChange(ctx: RunContext, locators: Locator[]): void {
 /** For a value noted before the actions: is what is there now the new content? `undefined`: not watched. */
 function isNew(ctx: RunContext, loc: Locator): boolean | undefined {
   const w = ctx.change;
-  const was = w?.before.get(locKey(loc));
-  if (!w || was === undefined || was === null) return undefined; // not watched, or it was not there before
+  const n = w?.noted.get(locKey(loc));
+  if (!w || !n || n.text === null) return undefined; // not watched, or it was not there before
   if (w.lastMutation && Date.now() - w.lastMutation < QUIET_MS) return false; // still being redrawn
-  if (w.redrawn) return true;
+  if (n.touched || n.els.some((e) => !e.isConnected)) return true; // its own elements were changed or replaced
   const r = resolveLocator(loc, ctx.args);
-  return signature(r.problem ? [] : r.elements) !== was;
+  return signature(r.problem ? [] : r.elements) !== n.text;
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));

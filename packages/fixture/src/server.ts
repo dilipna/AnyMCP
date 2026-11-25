@@ -702,13 +702,16 @@ ${related.length ? `<section class="related"><h3>You may also like</h3>${related
             "Market",
             `<h1>Market</h1>
 <div role="group" aria-label="Category"><button type="button" data-kind="Fruit">Fruit</button> <button type="button" data-kind="Veg">Veg</button> <button type="button" data-kind="All">All</button> <button type="button" data-kind="Stuck">Stuck</button></div>
-<ul class="items">${items(MARKET)}</ul>
+<div class="results"><p class="status" aria-live="polite"></p><ul class="items">${items(MARKET)}</ul></div>
 <script>
 const byKind = ${JSON.stringify(byKind)};
 for (const b of document.querySelectorAll("button[data-kind]")) b.addEventListener("click", () => {
+  // a "Loading…" line next to the list at once, as many sites show while the request runs
+  document.querySelector("p.status").textContent = "Loading…";
   if (!byKind[b.dataset.kind]) return;
   setTimeout(() => {
     document.querySelector("ul.items").innerHTML = byKind[b.dataset.kind].map((n) => '<li class="item">' + n + "</li>").join("");
+    document.querySelector("p.status").textContent = "";
   }, ${FILTER_DELAY_MS});
 });
 </script>`,
