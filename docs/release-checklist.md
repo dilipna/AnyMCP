@@ -28,6 +28,7 @@ v0.1.1 (2026-11-17, in-product data notice) and v0.1.2 (2026-11-23, the build fo
 | Types | `npm run typecheck` | clean |
 | Unit + integration, incl. property-based tests (2026-11-16) | `npm test` | 160/160 (fuzz suites at 400 cases per property; 25,000-case protocol runs with three seeds and 2,000-request network runs with nine seeds also passed) |
 | Browser suite, Playwright Chromium 158 | `npm run test:e2e` | 67/67 |
+| Browser suite and twelve practice pages in Google Chrome 158.0.8127.37 + Claude Code 2.1.207 (2026-11-25, code of 23981ab) | `ANYMCP_E2E_BROWSER=chrome npm run test:e2e`; `npm run eval:public -- --chrome --with-claude` | 79/79; 25/25 runs, both slow-page checks, revocation 12/12; Claude Code HTTP ✓ and stdio ✓ (`eval/results/public-sites-2026-11-25T10-04-22`) |
 | Browser suite, Google Chrome 157.0.8103.79 (2026-11-23, at a1c4d85) | `ANYMCP_E2E_BROWSER=chrome npm run test:e2e` | 71/71 |
 | Nine practice pages in Google Chrome 157.0.8103.79 + Claude Code 2.1.207 (2026-11-23, at a1c4d85, clean tree) | `npm run eval:public -- --chrome --with-claude` | 20/20 runs, slow-page check, revocation 9/9; Claude Code HTTP ✓ and stdio ✓ (`eval/results/public-sites-2026-11-23T22-07-25`) |
 | Browser suite, Google Chrome 157.0.8103.52 | `ANYMCP_E2E_BROWSER=chrome npm run test:e2e` | 67/67 |

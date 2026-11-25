@@ -36,6 +36,7 @@ serves `docs/` at https://dilipna.github.io/AnyMCP/ (privacy policy: `/privacy-p
 | Public sites (12 pages, 5 sites, 2026-11-25, code of 39f4141) | `npm run eval:public` | 25/25, both slow-page checks, revocation 12/12 |
 | Public sites (11 pages, 5 sites, 2026-11-25) | `npm run eval:public` | 24/24, both slow-page checks, revocation 11/11 |
 | Public sites (9 pages, 5 sites, 2026-11-23, after fixes) | `npm run eval:public` | 20/20, slow-page check, revocation 9/9 |
+| Chrome 158.0.8127.37 + Claude Code 2.1.207 (2026-11-25, 23981ab) | `ANYMCP_E2E_BROWSER=chrome npm run test:e2e`; `npm run eval:public -- --chrome --with-claude` | 79/79; 25/25 + Claude Code HTTP ✓ stdio ✓ (`public-sites-2026-11-25T10-04-22`) |
 | Chrome 157.0.8103.79 + Claude Code (2026-11-23, a1c4d85) | `ANYMCP_E2E_BROWSER=chrome npm run test:e2e`; `npm run eval:public -- --chrome --with-claude` | 71/71; 20/20 + Claude Code HTTP ✓ stdio ✓ |
 | Public sites (5 pages, 4 sandboxes, 2026-11-18; 2026-11-23 with 0.1.2) | `npm run eval:public` | 11/11, revocation 5/5 |
 | Public sites (3 sandboxes) | `npm run eval:public -- --with-claude` (Chromium) and `-- --chrome` | 7/7 equal independent reading in both; Claude Code HTTP + stdio ✓ |

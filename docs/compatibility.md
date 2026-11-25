@@ -18,6 +18,7 @@ Evidence labels used below:
 | Node 20.19 and 22 | Verified locally (CI, Ubuntu) | same run: Node 20.19.6 and 22.23.4 pass every step above |
 | Node 21, 23 | Prepared but untested | `engines: >=20.19`; odd-numbered lines, not run |
 | Playwright Chromium 158 | Verified end to end | 67/67 browser tests, fixture evaluation (170/170, protocol v2), public sites |
+| Google Chrome 158.0.8127.37 (branded) | Verified end to end | 2026-11-25 at 23981ab: full browser suite 79/79 (`ANYMCP_E2E_BROWSER=chrome`); twelve practice pages 25/25, both slow-page checks, revocation 12/12, with Claude Code 2.1.207 over HTTP ✓ and stdio ✓ (`eval/results/public-sites-2026-11-25T10-04-22`, source tree 3a706f6a…) |
 | Google Chrome 157.0.8103.79 (branded) | Verified end to end | 2026-11-23 at a1c4d85: full browser suite 71/71; nine practice pages 20/20 with Claude Code over HTTP and stdio (`eval/results/public-sites-2026-11-23T22-07-25`). Earlier, 157.0.8103.52: browser suite 67/67 on 2026-11-15 (the production-build test always uses Chromium); public sites 7/7 |
 | Microsoft Edge 157.0.4341.60 | Verified end to end | 2026-11-16: full browser suite 67/67 (`ANYMCP_E2E_BROWSER=msedge`); public sites 7/7, revocation 3/3 (SDK client). The extension was loaded unpacked over the DevTools protocol, not from a store |
 | Brave 1.99.57 (Chromium 157.0.8103.79) | Verified end to end | 2026-11-16: full browser suite 67/67 (`ANYMCP_E2E_BROWSER=brave`); public sites 7/7, revocation 3/3 (SDK client); default Shields settings in a fresh profile |

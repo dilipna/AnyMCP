@@ -9,7 +9,7 @@ records the task, and a small local bridge offers it to your AI app as an MCP to
 
 > **Status: developer beta**, available as a [GitHub pre-release](https://github.com/dilipna/AnyMCP/releases/tag/v0.1.2); not on the Chrome Web Store or the npm registry.
 > Verified on Windows 11 with Chromium 158
-> and Chrome 157, on a synthetic test site and twelve practice pages on five public practice sites, with Claude Code as a real client; the
+> and Chrome 157 and 158, on a synthetic test site and twelve practice pages on five public practice sites, with Claude Code as a real client; the
 > automated suites also pass on macOS and Linux in CI. It is not production software, has not
 > had a security review, and does not work on every website. See [docs/compatibility.md](docs/compatibility.md).
 
