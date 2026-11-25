@@ -8,7 +8,7 @@
 //    timeout), and the tool editor's per-step timeout must be what decides how long (quotes.toscrape.com/js-delayed).
 
 import { expect, test, type Page } from "@playwright/test";
-import { GROUPED, PAYMENTS, SCORES, SHELF, SLOWER_LIST_DELAY_MS, layoutQuotesFor, slowListItems } from "anymcp-fixture";
+import { FILTER_DELAY_MS, GROUPED, MARKET, PAYMENTS, SCORES, SHELF, SLOWER_LIST_DELAY_MS, layoutQuotesFor, slowListItems } from "anymcp-fixture";
 import type { ResultEnvelope, ToolDefinition } from "anymcp-protocol";
 import { PATH_PART_PATTERN, buildDraft, type DraftSpec } from "../packages/extension/src/shared/draft";
 import type { TabCandidate } from "../packages/extension/src/shared/panel-api";
@@ -25,7 +25,7 @@ test.afterAll(async () => {
 const pathPart = (name: string, example: string) => ({ name, description: name, type: "string" as const, example, maxLength: 100, pattern: PATH_PART_PATTERN, fromPath: true });
 
 /** Opens `path`, waits for `ready`, records one pick (`mode` on `pickSelector`) and a success check, returns the spec. */
-async function record(path: string, ready: string, mode: "text" | "list" | "table", pickSelector: string, successSelector: string): Promise<DraftSpec> {
+async function record(path: string, ready: string, mode: "text" | "list" | "table", pickSelector: string, successSelector: string, actions?: (page: Page) => Promise<void>): Promise<DraftSpec> {
   const page: Page = await s.context.newPage();
   try {
     await page.goto(`${s.fixture.origin}${path}`);
@@ -35,6 +35,7 @@ async function record(path: string, ready: string, mode: "text" | "list" | "tabl
     if (!tab) throw new Error("tab not found among candidates");
     expect((await s.call({ type: "record.start", tabId: tab.tabId })).ok).toBe(true);
     await page.locator("[data-anymcp-banner]").waitFor({ state: "attached" });
+    if (actions) await actions(page);
     await s.call({ type: "record.pick", mode });
     await waitForState(s, (x) => x.recording?.pick === mode);
     await page.locator(pickSelector).first().click();
@@ -189,6 +190,46 @@ test("hidden text in a table cell (a sort key) is not read: cells give what the 
   const tested = await saveAndTest(built.definition!, {});
   expect(tested.status, tested.message).toBe("success");
   expect(tested.output).toEqual({ payments: PAYMENTS.map((r) => ({ date: r.date, amount: Number(r.amount.replace(/[£,]/g, "")) })) });
+});
+
+test("a click that replaces a list in place: the list read is the new one, never the one shown before the click", async () => {
+  // 2026-11-25: after a click that stays on the page, reading started at once; the old list was still there, so it
+  // was returned (with the success check already met): every category gave the full list, as a success
+  const spec = await record("/filter-list", "li.item", "list", "li.item", "h1", async (page) => {
+    await page.getByRole("button", { name: "Fruit" }).click();
+    await expect(page.locator("li.item")).toHaveCount(2);
+  });
+  spec.id = "market";
+  spec.title = "Market items";
+  spec.description = "Items of one category on the synthetic market page.";
+  spec.outputs[0]!.name = "items";
+  const i = spec.steps.findIndex((x) => x.kind === "click" && x.label === "Fruit");
+  expect(i, JSON.stringify(spec.steps.map((x) => `${x.kind}:${x.label}`))).toBeGreaterThanOrEqual(0);
+  spec.params.push({ name: "kind", description: "Fruit, Veg, All or Stuck", type: "string", example: "Fruit", maxLength: 10 });
+  spec.steps[i]!.asParam = "kind";
+  const built = buildDraft(spec, 1);
+  expect(built.errors).toEqual([]);
+  const names = (k: string) => MARKET.filter((x) => x.kind === k).map((x) => x.name);
+  const tested = await saveAndTest(built.definition!, { kind: "Fruit" });
+  expect(tested.status, tested.message).toBe("success");
+  expect(tested.output).toEqual({ items: names("Fruit") });
+  await enable(built.definition!);
+  const client = await s.mcp();
+  const veg = await s.run(client, "market", { kind: "Veg" });
+  expect(veg.status, veg.message).toBe("success");
+  expect(veg.output).toEqual({ items: names("Veg") });
+  // the same items as before the click, but drawn again by the site: that is the new result
+  const all = await s.run(client, "market", { kind: "All" });
+  expect(all.status, all.message).toBe("success");
+  expect(all.output).toEqual({ items: MARKET.map((x) => x.name) });
+  // the site never answers: the old list must not be returned
+  const started = Date.now();
+  const stuck = await s.run(client, "market", { kind: "Stuck" });
+  expect(stuck.status, JSON.stringify(stuck.output)).toBe("precondition_failed");
+  expect(stuck.output ?? {}).toEqual({});
+  expect(stuck.actionMayHaveOccurred).toBe(false);
+  expect(Date.now() - started).toBeGreaterThan(FILTER_DELAY_MS);
+  await client.close();
 });
 
 test("layout table without classes: the list holds only the quotes, and a page without quotes stops", async () => {

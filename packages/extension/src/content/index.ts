@@ -28,11 +28,13 @@ if (!window.__anymcpContent) {
           return sendResponse(r);
         }
         case "begin": {
+          run?.change?.observer.disconnect();
           run = { runId: raw.runId, args: raw.args, origins: raw.origins, bindings: new Map() };
           showBanner(`AnyMCP is running “${raw.title}”`, "running", () => post({ kind: "content.stop", runId: raw.runId }));
           return sendResponse({ ok: true });
         }
         case "end": {
+          run?.change?.observer.disconnect();
           run = null;
           hideBanner();
           return sendResponse({ ok: true });
@@ -43,7 +45,7 @@ if (!window.__anymcpContent) {
           return sendResponse({ terminal: run ? terminalNow(raw.watch ?? NO_WATCH, run.args) : null });
         case "step":
           if (!run) return sendResponse({ ok: false, code: "stale_element", detail: "No run is active in this page." });
-          return sendResponse(await runStep(run, raw.step, raw.watch, raw.timeoutMs));
+          return sendResponse(await runStep(run, raw.step, raw.watch, raw.timeoutMs, raw.arm));
         case "prepare-commit":
           if (!run) return sendResponse({ ok: false, code: "stale_element", detail: "No run is active in this page." });
           return sendResponse(prepareCommit(run, raw.target, raw.fields, raw.action));

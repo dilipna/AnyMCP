@@ -32,6 +32,7 @@ import {
   type RunPhase,
   type RunRecord,
   type CommitStep,
+  type Locator,
   type Step,
   type ToolDefinition,
 } from "anymcp-protocol";
@@ -307,21 +308,29 @@ export class Orchestrator {
   /** Run steps in order. Returns an Outcome to stop early, or null to continue. */
   private async runSteps(run: ActiveRun, tabId: number, begin: Extract<ToContent, { kind: "begin" }>, steps: Step[], output: Record<string, unknown>, allowReconcile = true): Promise<Outcome | null> {
     const { tool } = run;
-    for (const step of steps) {
+    let armed = false;
+    for (const [index, step] of steps.entries()) {
       this.checkCancel(run);
 
       if (isCommitStep(step)) {
         const early = await this.doCommit(run, tabId, begin, step);
         if (early) return early;
+        armed = false;
         continue;
       }
 
       const timeoutMs = step.op === "waitFor" ? (step.timeoutMs ?? tool.limits.stepTimeoutMs) : tool.limits.stepTimeoutMs;
+      // the first action of a group: the page notes what the reads after it show now, so an old result left on the
+      // page is never returned as the new one (content/engine.ts, armChange)
+      const isAction = step.op === "click" || step.op === "press" || step.op === "fill";
+      const arm = isAction && !armed ? readsAfter(steps, index) : undefined;
+      if (isAction) armed = true;
+      if (step.op === "extract") armed = false;
       let result: StepResult;
       if (step.op === "click" || step.op === "press") {
-        result = await this.doClick(run, tabId, begin, step, timeoutMs);
+        result = await this.doClick(run, tabId, begin, step, timeoutMs, arm);
       } else {
-        result = await this.rpc<StepResult>(run, tabId, begin, { kind: "step", step, watch: run.watch, timeoutMs }, timeoutMs + 5000);
+        result = await this.rpc<StepResult>(run, tabId, begin, { kind: "step", step, watch: run.watch, timeoutMs, ...(arm?.length ? { arm } : {}) }, timeoutMs + 5000);
       }
 
       if (!result.ok) {
@@ -342,11 +351,11 @@ export class Orchestrator {
   }
 
   /** A click or key press that may replace the document. Never retried. */
-  private async doClick(run: ActiveRun, tabId: number, begin: Extract<ToContent, { kind: "begin" }>, step: Extract<Step, { op: "click" | "press" }>, timeoutMs: number): Promise<StepResult> {
+  private async doClick(run: ActiveRun, tabId: number, begin: Extract<ToContent, { kind: "begin" }>, step: Extract<Step, { op: "click" | "press" }>, timeoutMs: number, arm?: Locator[]): Promise<StepResult> {
     const before = { url: (await tabUrl(tabId)) ?? "", runIdBefore: run.req.executionId as string | null };
     let result: StepResult;
     try {
-      result = await this.race(run, send<StepResult>(tabId, { kind: "step", step, watch: run.watch, timeoutMs }, timeoutMs + 5000));
+      result = await this.race(run, send<StepResult>(tabId, { kind: "step", step, watch: run.watch, timeoutMs, ...(arm?.length ? { arm } : {}) }, timeoutMs + 5000));
     } catch (e) {
       if (e instanceof CancelledError) throw e;
       if (e instanceof TabError && e.kind === "closed") throw e;
@@ -741,3 +750,16 @@ export class Orchestrator {
 }
 
 export type { PingResult };
+
+/** The values read after the action at `index`, up to the next action that follows a read: what that action may change. */
+export function readsAfter(steps: Step[], index: number): Locator[] {
+  const out: Locator[] = [];
+  let sawRead = false;
+  for (const st of steps.slice(index + 1)) {
+    if (st.op === "extract") {
+      out.push(st.source.locator);
+      sawRead = true;
+    } else if (sawRead && (st.op === "click" || st.op === "press" || st.op === "fill")) break;
+  }
+  return out;
+}

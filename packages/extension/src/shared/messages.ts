@@ -9,7 +9,7 @@ export type ToContent =
   | { kind: "begin"; runId: string; args: Record<string, unknown>; origins: string[]; title: string }
   | { kind: "end" }
   | { kind: "eval"; list: NamedCondition[] }
-  | { kind: "step"; step: Step; watch: Watch; timeoutMs: number }
+  | { kind: "step"; step: Step; watch: Watch; timeoutMs: number; /** before this action: note what these read now (armChange) */ arm?: Locator[] }
   | { kind: "terminal"; watch: Watch }
   | { kind: "prepare-commit"; target: string; fields: { id: string; locator: Locator }[]; action: CommitAction }
   | { kind: "peek"; target: string; fields: { id: string; locator: Locator }[] }

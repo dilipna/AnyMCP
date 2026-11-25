@@ -42,6 +42,70 @@ export interface RunContext {
   args: Args;
   origins: string[];
   bindings: Map<string, Element>;
+  /** What the values read next showed before the actions that should change them (see armChange). */
+  change?: ChangeWatch;
+}
+
+// ---- "is this the new content?" -----------------------------------------------------
+// A click, Enter or typing that stays on the page (filters, tabs, search in a web app) can leave the previous content
+// in place until the site's request comes back. Reading at once returned that old content as a success (2026-11-25,
+// e2e/site-patterns.spec.ts). So before the first action of a group, the page notes what each value read next shows,
+// and watches the part of the page around it. Such a value is then accepted only when it is new: it changed, it was
+// not there before, or its part of the page was redrawn; and that part has been quiet for QUIET_MS.
+const QUIET_MS = 300;
+interface ChangeWatch {
+  before: Map<string, string | null>;
+  regions: Element[];
+  lastMutation: number;
+  redrawn: boolean;
+  observer: MutationObserver;
+}
+const locKey = (loc: Locator) => JSON.stringify(loc);
+const signature = (els: Element[]) => (els.length ? els.map((e) => visibleText(e)).join("") : null);
+/** The part of the page a value lives in: the parent of the matched elements' common container. */
+function regionOf(els: Element[]): Element | null {
+  if (!els.length) return null;
+  let c: Element | null = els[0]!;
+  while (c && !els.every((e) => c!.contains(e))) c = c.parentElement;
+  const region = c?.parentElement ?? c;
+  return region && region !== document.documentElement ? region : c;
+}
+
+export function armChange(ctx: RunContext, locators: Locator[]): void {
+  ctx.change?.observer.disconnect();
+  const before = new Map<string, string | null>();
+  const regions: Element[] = [];
+  for (const loc of locators) {
+    const r = resolveLocator(loc, ctx.args);
+    const els = r.problem ? [] : r.elements;
+    before.set(locKey(loc), signature(els));
+    const region = regionOf(els);
+    if (region && !regions.includes(region)) regions.push(region);
+  }
+  const w: ChangeWatch = { before, regions, lastMutation: 0, redrawn: false, observer: new MutationObserver(() => undefined) };
+  w.observer = new MutationObserver((records) => {
+    for (const m of records) {
+      if (m.target instanceof Element && composedClosest(m.target, "[data-anymcp-banner]")) continue;
+      const inside = regions.some((g) => g.contains(m.target) || [...m.removedNodes].some((n) => n === g || n.contains(g)));
+      if (inside) {
+        w.redrawn = true;
+        w.lastMutation = Date.now();
+      }
+    }
+  });
+  if (regions.length) w.observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
+  ctx.change = w;
+}
+
+/** For a value noted before the actions: is what is there now the new content? `undefined`: not watched. */
+function isNew(ctx: RunContext, loc: Locator): boolean | undefined {
+  const w = ctx.change;
+  const was = w?.before.get(locKey(loc));
+  if (!w || was === undefined || was === null) return undefined; // not watched, or it was not there before
+  if (w.lastMutation && Date.now() - w.lastMutation < QUIET_MS) return false; // still being redrawn
+  if (w.redrawn) return true;
+  const r = resolveLocator(loc, ctx.args);
+  return signature(r.problem ? [] : r.elements) !== was;
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -555,12 +619,19 @@ function extractOnce(ctx: RunContext, step: Extract<Step, { op: "extract" }>): S
  */
 async function doExtract(ctx: RunContext, step: Extract<Step, { op: "extract" }>, watch: Watch, timeoutMs: number): Promise<StepResult> {
   const src = step.source;
-  if (src.type === "count" || (src.type === "text" && src.optional)) return extractOnce(ctx, step);
+  const watched = isNew(ctx, src.locator) !== undefined;
+  if (!watched && (src.type === "count" || (src.type === "text" && src.optional))) return extractOnce(ctx, step);
   let last: StepResult = { ok: false, code: "locator_missing", detail: "No matching element was found." };
   let ambiguousStreak = 0;
+  let unchanged = false;
   const hit = await pollUntil<StepResult>(() => {
     last = extractOnce(ctx, step);
-    if (last.ok) return last;
+    if (last.ok) {
+      if (!watched || isNew(ctx, src.locator)) return last;
+      unchanged = true; // readable, but still what was there before the actions: maybe the old result
+      return undefined;
+    }
+    unchanged = false;
     if (last.code === "locator_ambiguous") {
       if (++ambiguousStreak >= 3) return last; // still several after the page settled: never guess
     } else if (last.code === "locator_missing") ambiguousStreak = 0;
@@ -569,10 +640,13 @@ async function doExtract(ctx: RunContext, step: Extract<Step, { op: "extract" }>
     if (t) return terminalFailure(t);
     return undefined;
   }, timeoutMs);
+  if (!hit && unchanged)
+    return { ok: false, code: "precondition_unmet", detail: "The page still showed what it showed before the last action, so AnyMCP cannot tell the new result from the old one. If the site is slow, raise the per-step timeout." };
   return hit ?? last;
 }
 
-export async function runStep(ctx: RunContext, step: Step, watch: Watch, timeoutMs: number): Promise<StepResult> {
+export async function runStep(ctx: RunContext, step: Step, watch: Watch, timeoutMs: number, arm?: Locator[]): Promise<StepResult> {
+  if (arm && (step.op === "click" || step.op === "press" || step.op === "fill")) armChange(ctx, arm);
   switch (step.op) {
     case "locate": return doLocate(ctx, step, watch, timeoutMs);
     case "fill": return doFill(ctx, step);

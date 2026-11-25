@@ -293,6 +293,19 @@ export const PAYMENTS = [
   { date: "3 Feb 2024", key: "20240203", amount: "£75.00", cents: "7500" },
 ] as const;
 
+/**
+ * A list that a click replaces in place: the page first shows every item; a category button loads that category's
+ * items FILTER_DELAY_MS later, without changing the address. Reading right after the click would see the old list.
+ */
+export const MARKET = [
+  { name: "Apple", kind: "Fruit" },
+  { name: "Banana", kind: "Fruit" },
+  { name: "Carrot", kind: "Veg" },
+  { name: "Daikon", kind: "Veg" },
+  { name: "Endive", kind: "Veg" },
+] as const;
+export const FILTER_DELAY_MS = 800;
+
 export const SLOW_LIST_DELAY_MS = 1500;
 export const SLOWER_LIST_DELAY_MS = 6500;
 export const slowListItems = (page: string): string[] => [1, 2, 3, 4, 5].map((i) => `Item ${page}.${i}`);
@@ -663,6 +676,31 @@ ${related.length ? `<section class="related"><h3>You may also like</h3>${related
       }
       // the same items, but the page gives elements ids it makes up on every load (a UUID, a framework counter), as
       // the-internet.herokuapp.com/challenging_dom does: a tool must never find anything by such an id
+      if (path === "/filter-list" && req.method === "GET") {
+        const items = (xs: readonly { name: string }[]) => xs.map((x) => `<li class="item">${x.name}</li>`).join("");
+        // "All" redraws the same list it started with; "Stuck" never answers (the list is left as it was)
+        const byKind: Record<string, string[]> = Object.fromEntries(["Fruit", "Veg"].map((k) => [k, MARKET.filter((x) => x.kind === k).map((x) => x.name)]));
+        byKind.All = MARKET.map((x) => x.name);
+        return send(
+          res,
+          200,
+          page(
+            "Market",
+            `<h1>Market</h1>
+<div role="group" aria-label="Category"><button type="button" data-kind="Fruit">Fruit</button> <button type="button" data-kind="Veg">Veg</button> <button type="button" data-kind="All">All</button> <button type="button" data-kind="Stuck">Stuck</button></div>
+<ul class="items">${items(MARKET)}</ul>
+<script>
+const byKind = ${JSON.stringify(byKind)};
+for (const b of document.querySelectorAll("button[data-kind]")) b.addEventListener("click", () => {
+  if (!byKind[b.dataset.kind]) return;
+  setTimeout(() => {
+    document.querySelector("ul.items").innerHTML = byKind[b.dataset.kind].map((n) => '<li class="item">' + n + "</li>").join("");
+  }, ${FILTER_DELAY_MS});
+});
+</script>`,
+          ),
+        );
+      }
       if (path === "/sortable-table" && req.method === "GET") {
         const hide = (k: string) => `<span style="display:none">${k}</span>`;
         return send(
