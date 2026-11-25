@@ -366,7 +366,8 @@ export function deriveReviewSummary(tool: ToolDefinition): ReviewSummary {
             : s.source.type === "list"
               ? `every match of ${describeLocator(s.source.locator)}`
               : `rows of ${describeLocator(s.source.locator)}`;
-      reads.push({ field: s.into, from });
+      // the engine enforces this (content/engine.ts armChange), so the review may say it
+      reads.push({ field: s.into, from: s.source.fresh ? `${from}, once the page shows the result of the action before it (never what was shown before)` : from });
     }
     if (s.op === "fill" && s.effect === "commit") commitLine = `Sets ${describeLocatorOf(s.target, locatorOf)}, which saves by itself — this CHANGES data on the website`;
     else if (s.op === "fill") uiLines.push(`Fills in ${describeLocatorOf(s.target, locatorOf)} (types text, or sets a dropdown, checkbox or option)`);

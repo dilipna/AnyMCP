@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { deriveReviewSummary } from "anymcp-protocol";
 import { buildDraft, parameterizeLocator, parameterizeText, type DraftSpec } from "../src/shared/draft";
 
 const spec = (over: Partial<DraftSpec> = {}): DraftSpec => ({
@@ -48,6 +49,18 @@ describe("buildDraft: recording → reviewed tool definition", () => {
     const items = (r.definition!.output.properties!.figures as { items: { properties: Record<string, unknown> } }).items.properties;
     expect(Object.keys(items).sort()).toEqual(Object.keys(cols).sort());
     expect(cols.col_2023?.header).toBe("2023"); // a number keeps its digits, behind a prefix
+  });
+
+  it("a value recorded as changed by the action is marked fresh, and the review says it waits for the new result", () => {
+    const out = (fresh: boolean) => buildDraft(spec({ outputs: [{ id: "o1", name: "status", kind: "text", locator: { by: "testid", id: "order-status" }, as: "string", optional: false, use: "result", ...(fresh ? { fresh: true } : {}) }] }), 1);
+    const yes = out(true);
+    expect(yes.errors).toEqual([]);
+    const ex = yes.definition!.steps.find((x) => x.op === "extract") as { source: { fresh?: true } };
+    expect(ex.source.fresh).toBe(true);
+    expect(deriveReviewSummary(yes.definition!).reads[0]!.from).toMatch(/once the page shows the result of the action before it/);
+    const no = out(false);
+    expect((no.definition!.steps.find((x) => x.op === "extract") as { source: { fresh?: true } }).source.fresh).toBeUndefined();
+    expect(deriveReviewSummary(no.definition!).reads[0]!.from).not.toMatch(/result of the action/);
   });
 
   it("the read barrier has no fixed timeout, so the tool's per-step timeout (editable in the tool editor) applies", () => {
