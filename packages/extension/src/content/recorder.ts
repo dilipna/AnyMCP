@@ -16,7 +16,7 @@ import type { Locator, LocatorLeaf, Role } from "anymcp-protocol";
 import { isSensitiveField } from "anymcp-protocol/light";
 import { defaultButton, fieldDescriptor, isChecked, linkOf, optionLabel, toggleKind } from "./engine";
 import { showBanner, hideBanner } from "./banner";
-import { PRIVATE_AREA, accessibleName, composedClosest, isEditableRoot, composedParent, computeRole, deepQueryAll, isVisible, norm, resolveLocator, shadowRootOf, visibleText } from "./locator";
+import { PRIVATE_AREA, accessibleName, composedClosest, isEditableRoot, composedParent, computeRole, deepQueryAll, isVisible, norm, resolveLocator, shadowRootOf, visibleText, regionOf } from "./locator";
 
 export type PickMode = "text" | "table" | "list" | "success" | null;
 
@@ -45,6 +45,8 @@ export interface PickResult {
   links?: boolean;
   /** For lists found by a pattern with no class: matched items built differently from the clicked one. */
   unlike?: number;
+  /** The picked content's part of the page was redrawn after the last recorded action (filters, tabs, searches). */
+  fresh?: boolean;
 }
 
 const CONTAINER_ROLES: Role[] = ["form", "table", "region", "dialog", "main", "navigation"];
@@ -290,7 +292,33 @@ function deepTarget(ev: Event): Element | null {
 }
 
 function emit(e: RecordedEvent) {
-  if (active && location.origin === allowedOrigin) onEventCb?.(e);
+  if (!active || location.origin !== allowedOrigin) return;
+  if (e.t !== "skipped") {
+    // a new action: what is redrawn from now on is its effect
+    actionSeen = true;
+    redrawnSinceAction = [];
+  }
+  onEventCb?.(e);
+}
+
+// ---- what the last action changed -----------------------------------------------------
+// Parts of the page redrawn since the last recorded action. A value picked inside one is marked `fresh`: when the tool
+// runs, the content shown before that action is never returned as its result (engine armChange). A value the action did
+// not touch (a price behind a cookie banner the click closed) is read as it is.
+let actionSeen = false;
+let redrawnSinceAction: { target: Node; removed: Node[] }[] = [];
+const redrawObserver = new MutationObserver((records) => {
+  if (!actionSeen) return;
+  for (const m of records) {
+    if (redrawnSinceAction.length >= 5000) return;
+    if (m.target instanceof Element && (composedClosest(m.target, "[data-anymcp-banner]") || m.target === overlay)) continue;
+    redrawnSinceAction.push({ target: m.target, removed: [...m.removedNodes] });
+  }
+});
+function changedByLastAction(els: Element[]): boolean {
+  const region = regionOf(els);
+  if (!actionSeen || !region) return false;
+  return redrawnSinceAction.some((m) => region.contains(m.target) || m.removed.some((n) => n === region || n.contains(region)));
 }
 
 const lastValue = new WeakMap<Element, string>();
@@ -494,7 +522,7 @@ function finishPick(target: Element) {
     const layout = tableLayout(table);
     const headers = (layout?.headers ?? []).filter(Boolean);
     setPickMode(null);
-    onPickCb?.({ mode, locator: s.locator, quality: s.quality, preview: `${headers.length} columns`, headers, rows: layout?.rows.length ?? 0 });
+    onPickCb?.({ mode, locator: s.locator, quality: s.quality, preview: `${headers.length} columns`, headers, rows: layout?.rows.length ?? 0, ...(changedByLastAction([table]) ? { fresh: true } : {}) });
     return;
   }
   if (isFormFieldSensitive(target) || composedClosest(target, PRIVATE_AREA)) return;
@@ -509,12 +537,12 @@ function finishPick(target: Element) {
     setPickMode(null);
     const links = list.items.every((x) => !!linkOf(x));
     const unlike = list.unlike ? ` (${list.unlike} look different from the one you clicked)` : "";
-    onPickCb?.({ mode, locator: list.locator, quality: list.quality, preview: `${list.items.length} items${unlike}: ${first}${list.items.length > 3 ? ", …" : ""}`, rows: list.items.length, links, ...(list.unlike ? { unlike: list.unlike } : {}) });
+    onPickCb?.({ mode, locator: list.locator, quality: list.quality, preview: `${list.items.length} items${unlike}: ${first}${list.items.length > 3 ? ", …" : ""}`, rows: list.items.length, links, ...(list.unlike ? { unlike: list.unlike } : {}), ...(changedByLastAction(list.items) ? { fresh: true } : {}) });
     return;
   }
   const s = suggestLocator(target, mode === "success" ? "static-text" : "value");
   setPickMode(null);
-  onPickCb?.({ mode, locator: s.locator, quality: s.quality, preview: previewOf(target) });
+  onPickCb?.({ mode, locator: s.locator, quality: s.quality, preview: previewOf(target), ...(mode !== "success" && changedByLastAction([target]) ? { fresh: true } : {}) });
 }
 
 function isFormFieldSensitive(el: Element): boolean {
@@ -550,11 +578,16 @@ export function startRecording(origin: string, onEvent: (e: RecordedEvent) => vo
   document.addEventListener("keydown", handleKeydown, true);
   document.addEventListener("keydown", handleEsc, true);
   document.addEventListener("mousemove", handleMove, true);
+  actionSeen = false;
+  redrawnSinceAction = [];
+  redrawObserver.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
   showBanner("AnyMCP is recording — nothing is saved until you finish", "recording", onStopRequested);
 }
 
 export function stopRecording(): void {
   active = false;
+  redrawObserver.disconnect();
+  redrawnSinceAction = [];
   pickMode = null;
   document.removeEventListener("change", handleChange, true);
   document.removeEventListener("focusin", handleFocusIn, true);

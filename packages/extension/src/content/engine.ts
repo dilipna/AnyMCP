@@ -11,7 +11,7 @@ import { isCredentialQueryKey, isSensitiveField, resolveText, type FieldDescript
 import type { Condition, ExtractSource, Locator, NamedCondition, ReasonCode, Step, ValueRef } from "anymcp-protocol";
 import { parseNumber } from "../shared/number";
 import { columnOf, tableLayout } from "./table";
-import { PRIVATE_AREA, accessibleName, composedClosest, isEditableRoot, computeRole, deepQueryAll, fingerprintElement, isVisible, norm, resolveLocator, visibleText, type Args } from "./locator";
+import { PRIVATE_AREA, accessibleName, composedClosest, isEditableRoot, computeRole, deepQueryAll, fingerprintElement, isVisible, norm, regionOf, resolveLocator, visibleText, type Args } from "./locator";
 
 export interface Watch {
   sessionExpired: NamedCondition[];
@@ -49,8 +49,9 @@ export interface RunContext {
 // ---- "is this the new content?" -----------------------------------------------------
 // A click, Enter or typing that stays on the page (filters, tabs, search in a web app) can leave the previous content
 // in place until the site's request comes back. Reading at once returned that old content as a success (2026-11-25,
-// e2e/site-patterns.spec.ts). So before the first action of a group, the page notes what each value read next shows,
-// and watches the part of the page around it. Such a value is then accepted only when it is new: it changed, it was
+// e2e/site-patterns.spec.ts). Values the recorder saw change after an action are marked `fresh`; before the first
+// action of a group, the page notes what each fresh value read next shows, and watches the part of the page around it.
+// (Unmarked values, such as a price behind a cookie banner that a click closes, are read as before.) Such a value is then accepted only when it is new: it changed, it was
 // not there before, or its part of the page was redrawn; and that part has been quiet for QUIET_MS.
 const QUIET_MS = 300;
 interface ChangeWatch {
@@ -62,14 +63,6 @@ interface ChangeWatch {
 }
 const locKey = (loc: Locator) => JSON.stringify(loc);
 const signature = (els: Element[]) => (els.length ? els.map((e) => visibleText(e)).join("") : null);
-/** The part of the page a value lives in: the parent of the matched elements' common container. */
-function regionOf(els: Element[]): Element | null {
-  if (!els.length) return null;
-  let c: Element | null = els[0]!;
-  while (c && !els.every((e) => c!.contains(e))) c = c.parentElement;
-  const region = c?.parentElement ?? c;
-  return region && region !== document.documentElement ? region : c;
-}
 
 export function armChange(ctx: RunContext, locators: Locator[]): void {
   ctx.change?.observer.disconnect();

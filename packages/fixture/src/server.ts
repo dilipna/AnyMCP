@@ -676,6 +676,20 @@ ${related.length ? `<section class="related"><h3>You may also like</h3>${related
       }
       // the same items, but the page gives elements ids it makes up on every load (a UUID, a framework counter), as
       // the-internet.herokuapp.com/challenging_dom does: a tool must never find anything by such an id
+      // a cookie banner outside the product box: closing it changes nothing the tool reads
+      if (path === "/banner-price" && req.method === "GET") {
+        return send(
+          res,
+          200,
+          page(
+            "Lamp",
+            `<div id="cookie-banner"><p>This page uses cookies.</p><button type="button">Close</button></div>
+<h1>Lamp</h1>
+<section class="product"><h2>Desk lamp</h2><p class="price">£4.20</p></section>
+<script>document.querySelector("#cookie-banner button").addEventListener("click", () => document.getElementById("cookie-banner").remove());</script>`,
+          ),
+        );
+      }
       if (path === "/filter-list" && req.method === "GET") {
         const items = (xs: readonly { name: string }[]) => xs.map((x) => `<li class="item">${x.name}</li>`).join("");
         // "All" redraws the same list it started with; "Stuck" never answers (the list is left as it was)

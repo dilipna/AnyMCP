@@ -199,6 +199,7 @@ test("a click that replaces a list in place: the list read is the new one, never
     await page.getByRole("button", { name: "Fruit" }).click();
     await expect(page.locator("li.item")).toHaveCount(2);
   });
+  expect(spec.outputs[0]!.fresh, "the list was redrawn by the click while recording").toBe(true);
   spec.id = "market";
   spec.title = "Market items";
   spec.description = "Items of one category on the synthetic market page.";
@@ -230,6 +231,28 @@ test("a click that replaces a list in place: the list read is the new one, never
   expect(stuck.actionMayHaveOccurred).toBe(false);
   expect(Date.now() - started).toBeGreaterThan(FILTER_DELAY_MS);
   await client.close();
+});
+
+test("a click that changes nothing the tool reads (closing a cookie banner): the value is read at once", async () => {
+  // the new-content rule applies only to what the recorder saw change after the action; a price the click did not
+  // touch never changes, so waiting for it to change would stop every run
+  const spec = await record("/banner-price", ".product .price", "text", ".product .price", "h1", async (page) => {
+    await page.getByRole("button", { name: "Close" }).click();
+    await expect(page.locator("#cookie-banner")).toHaveCount(0);
+  });
+  expect(spec.outputs[0]!.fresh ?? false).toBe(false);
+  expect(spec.steps.some((x) => x.kind === "click" && x.label === "Close")).toBe(true);
+  spec.id = "lamp_price";
+  spec.title = "Lamp price";
+  spec.description = "Price on the synthetic lamp page, after closing its cookie banner.";
+  spec.outputs[0]!.name = "price";
+  const built = buildDraft(spec, 1);
+  expect(built.errors).toEqual([]);
+  const started = Date.now();
+  const tested = await saveAndTest(built.definition!, {});
+  expect(tested.status, tested.message).toBe("success");
+  expect(tested.output).toEqual({ price: "£4.20" });
+  expect(Date.now() - started).toBeLessThan(built.definition!.limits.stepTimeoutMs);
 });
 
 test("layout table without classes: the list holds only the quotes, and a page without quotes stops", async () => {

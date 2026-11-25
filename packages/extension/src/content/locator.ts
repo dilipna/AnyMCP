@@ -29,6 +29,15 @@ export function isEditableRoot(el: Element): el is HTMLElement {
 
 export const norm = (s: string | null | undefined): string => (s ?? "").replace(/\s+/g, " ").trim();
 
+/** The part of the page a value lives in: the parent of the matched elements' common container. */
+export function regionOf(els: Element[]): Element | null {
+  if (!els.length) return null;
+  let c: Element | null = els[0]!;
+  while (c && !els.every((e) => c!.contains(e))) c = c.parentElement;
+  const region = c?.parentElement ?? c;
+  return region && region !== document.documentElement ? region : c;
+}
+
 // ---- shadow-aware DOM helpers -----------------------------------------------
 /** The element's shadow root, if any. Closed roots are only looked up on custom elements (the only common case). */
 export function shadowRootOf(el: Element): ShadowRoot | null {

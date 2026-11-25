@@ -84,6 +84,8 @@ export interface DraftOutput {
   approvalLabel?: string;
   /** Lists found by a pattern with no class: how many matched items looked different from the clicked one. */
   unlike?: number;
+  /** The recorder saw this change after the last action: the tool never returns what was shown before that action. */
+  fresh?: boolean;
 }
 
 export type SignalKind = "success" | "expired" | "error" | "empty";
@@ -301,16 +303,17 @@ export function buildDraft(spec: DraftSpec, version: number): BuildResult {
       errors.push(`Two outputs are named “${name}”.`);
       continue;
     }
+    const fresh = o.fresh ? ({ fresh: true } as const) : {};
     if (o.kind === "text") {
       outProps[name] = o.as === "number" ? { type: "number", description: o.description } : o.as === "link" ? { ...LINK_SCHEMA, description: o.description } : ({ type: "string", description: o.description, maxLength: 2000 } as SchemaSubset);
-      extracts.push({ id: nextId(), op: "extract", into: name, source: { type: "text", locator: loc, as: o.as, ...(o.optional ? { optional: true } : {}) } });
+      extracts.push({ id: nextId(), op: "extract", into: name, source: { type: "text", locator: loc, as: o.as, ...(o.optional ? { optional: true } : {}), ...fresh } });
       if (!o.optional) outRequired.push(name);
     } else if (o.kind === "list") {
       const maxItems = o.maxRows ?? 50;
       if (o.unlike)
         warnings.push(`“${o.name}”: ${o.unlike} of the items it matched look different from the one you clicked (the page gives them no class names to tell them apart). Check that the list holds only what you want: the tool returns every item it matches, and an extra item can look like a real result.`);
       outProps[name] = { type: "array", description: o.description, items: o.as === "number" ? { type: "number" } : o.as === "link" ? LINK_SCHEMA : { type: "string", maxLength: 2000 }, maxItems };
-      extracts.push({ id: nextId(), op: "extract", into: name, source: { type: "list", locator: loc, as: o.as, maxItems } });
+      extracts.push({ id: nextId(), op: "extract", into: name, source: { type: "list", locator: loc, as: o.as, maxItems, ...fresh } });
       outRequired.push(name);
     } else {
       const columns = o.columns ?? {};
@@ -324,7 +327,7 @@ export function buildDraft(spec: DraftSpec, version: number): BuildResult {
       }
       if (Object.keys(cols).length === 0) errors.push(`Table “${o.name}” has no columns selected.`);
       outProps[name] = { type: "array", items: { type: "object", properties: itemProps, additionalProperties: false }, maxItems: o.maxRows ?? 50 };
-      extracts.push({ id: nextId(), op: "extract", into: name, source: { type: "table", locator: loc, columns: cols, maxRows: o.maxRows ?? 50 } });
+      extracts.push({ id: nextId(), op: "extract", into: name, source: { type: "table", locator: loc, columns: cols, maxRows: o.maxRows ?? 50, ...fresh } });
       outRequired.push(name);
     }
   }

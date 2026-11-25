@@ -188,13 +188,13 @@ export class RecordingManager {
       const sig: PickedSignalView = { id, kind: "success", locator: pick.locator, quality: pick.quality, preview: pick.preview };
       rec.signals.push(sig);
     } else if (pick.mode === "list") {
-      rec.outputs.push({ id, name: `list_${rec.outputs.length + 1}`, kind: "list", locator: pick.locator, quality: pick.quality, preview: pick.preview, as: pick.links ? "link" : "string", optional: false, use: "result", maxRows: 50, ...(pick.unlike ? { unlike: pick.unlike } : {}) });
+      rec.outputs.push({ id, name: `list_${rec.outputs.length + 1}`, kind: "list", locator: pick.locator, quality: pick.quality, preview: pick.preview, as: pick.links ? "link" : "string", optional: false, use: "result", maxRows: 50, ...(pick.unlike ? { unlike: pick.unlike } : {}), ...(pick.fresh ? { fresh: true } : {}) });
     } else if (pick.mode === "table") {
       const columns: NonNullable<PickedOutputView["columns"]> = {};
       for (const h of pick.headers ?? []) columns[h] = { header: h, as: "string" };
-      rec.outputs.push({ id, name: `table_${rec.outputs.length + 1}`, kind: "table", locator: pick.locator, quality: pick.quality, preview: pick.preview, as: "string", optional: false, use: "result", columns, maxRows: 50, ...(pick.headers ? {} : {}) });
+      rec.outputs.push({ id, name: `table_${rec.outputs.length + 1}`, kind: "table", locator: pick.locator, quality: pick.quality, preview: pick.preview, as: "string", optional: false, use: "result", columns, maxRows: 50, ...(pick.fresh ? { fresh: true } : {}) });
     } else {
-      rec.outputs.push({ id, name: `value_${rec.outputs.length + 1}`, kind: "text", locator: pick.locator, quality: pick.quality, preview: pick.preview, as: "string", optional: false, use: "result" });
+      rec.outputs.push({ id, name: `value_${rec.outputs.length + 1}`, kind: "text", locator: pick.locator, quality: pick.quality, preview: pick.preview, as: "string", optional: false, use: "result", ...(pick.fresh ? { fresh: true } : {}) });
     }
     await this.save();
   }

@@ -85,14 +85,18 @@ export const ExtractSourceZ = z.discriminatedUnion("type", [
     as: z.enum(["string", "number", "link"]).optional(),
     /** If true, a missing element omits the field instead of stopping the run. Not allowed for required outputs. */
     optional: z.boolean().optional(),
+    /** Recorded as changed by the action before it: content shown before that action is never returned (engine armChange). */
+    fresh: z.literal(true).optional(),
   }),
   z.strictObject({
     type: z.literal("table"),
     locator: LocatorZ,
     columns: z.record(Ident, TableColumnZ),
     maxRows: z.int().min(1).max(200),
+    /** Recorded as changed by the action before it: content shown before that action is never returned (engine armChange). */
+    fresh: z.literal(true).optional(),
   }),
-  z.strictObject({ type: z.literal("count"), locator: LocatorZ }),
+  z.strictObject({ type: z.literal("count"), locator: LocatorZ, fresh: z.literal(true).optional() }),
   /**
    * The text of EVERY visible element the locator matches, in page order (search results, cards, list rows).
    * Unlike `text`, many matches are expected; zero matches stops the run (declare an empty state with `emptyWhen`).
@@ -102,6 +106,8 @@ export const ExtractSourceZ = z.discriminatedUnion("type", [
     locator: LocatorZ,
     as: z.enum(["string", "number", "link"]).optional(),
     maxItems: z.int().min(1).max(200),
+    /** Recorded as changed by the action before it: content shown before that action is never returned (engine armChange). */
+    fresh: z.literal(true).optional(),
   }),
 ]);
 export type ExtractSource = z.infer<typeof ExtractSourceZ>;

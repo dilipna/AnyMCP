@@ -751,13 +751,14 @@ export class Orchestrator {
 
 export type { PingResult };
 
-/** The values read after the action at `index`, up to the next action that follows a read: what that action may change. */
+/** The values recorded as changed by actions (`fresh`) read after the action at `index`, up to the next action that
+ * follows a read: what that action changes. */
 export function readsAfter(steps: Step[], index: number): Locator[] {
   const out: Locator[] = [];
   let sawRead = false;
   for (const st of steps.slice(index + 1)) {
     if (st.op === "extract") {
-      out.push(st.source.locator);
+      if (st.source.fresh) out.push(st.source.locator);
       sawRead = true;
     } else if (sawRead && (st.op === "click" || st.op === "press" || st.op === "fill")) break;
   }
