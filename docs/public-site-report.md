@@ -16,7 +16,8 @@ message sent. About 25 page loads, paced. Raw results: `eval/results/public-site
 (SDK client only): `eval/results/public-sites-2026-11-16T07-28-57.{md,json}` (Edge) and
 `eval/results/public-sites-2026-11-16T07-29-48.{md,json}` (Brave).
 Re-run with `npm run eval:public` (add `-- --with-claude` to include Claude Code; `ANYMCP_E2E_BROWSER=msedge` or
-`=brave` for another installed browser).
+`=brave` for another installed browser; `-- --only=<words>` runs just the pages whose label contains them, and the
+report says so).
 
 **What this shows:** the whole workflow (record → review → test → enable → call from an MCP client) works on these
 pages today, and the results equal an independent reading of the same pages. **What it does not show:** that any
