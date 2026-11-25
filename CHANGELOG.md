@@ -33,12 +33,25 @@ Found by extending the public-site evaluation to four more practice pages (2026-
   the recorder and the engine alike; a column under a wider heading is named with both ("Population 2020"), headings
   that still repeat get " (2)", and `<tfoot>` rows are not records. Tools recorded before keep finding their columns
   (now in the right place); a heading that was offered once for two columns is now offered twice.
+* **After a click that stays on the page, the old content could be returned as the new result.** Filters, tabs and
+  searches in web apps often leave the previous results on screen until the site answers. Reading started at once,
+  found those (the success check was already met) and returned them as a success: on a synthetic page, asking for
+  "Fruit" returned all five items shown before the click. Now, before the first click, Enter or typing of a group,
+  the page notes what each value read after it shows, and a read waits until that value changed, appeared, or its part
+  of the page was redrawn (the same items drawn again count), and that part has been quiet for 0.3 s. If the page
+  does not update within the step timeout, the tool stops ("The page still showed what it showed before the last
+  action") instead of returning what was there before. Reads after such actions take at least 0.3 s longer.
+* **Table cells included hidden text.** Cells were read with all their text, including parts the page hides
+  (`display:none`). Sortable tables often start a cell with a hidden sort key, so a date came back as "2024011515 Jan
+  2024" and an amount column marked as a number returned the hidden key (120050 instead of 1200.5), as a success.
+  Cells and headings are now read as the page shows them, as single values and lists already were.
 * **Numbers were misread, and returned as a success.** An output marked as a number had every space and comma removed
   before the first run of digits was read: "12,50 €" became 1250, "1.234,56 €" 1.234, "0,25" 25, "−5 °C" 5 and
   "10 20" 1020. Numbers are now read as written: a decimal comma, thousands grouped by dots, commas, spaces or
   apostrophes, Indian grouping (12,34,567) and the minus sign "−"; a minus inside a code ("A-12") is not a sign. A
   format that cannot be read unambiguously ("1,2,3") makes the tool report that it could not read a number instead of
-  guessing. "1,250" is still 1250 and "1.234" still 1.234, as in English (known limitation 31).
+  guessing. "1,250" is still 1250 and "1.234" still 1.234, as in English (known limitation 31). Swiss grouping with a
+  typographic apostrophe ("1’234") and a price with no leading zero ("$.99") are read too.
 * **An id the page makes up on every load could be recorded**, so the tool stopped on its first test. The recorder
   already ignored such ids on the containers it anchors to, but not on the picked element itself:
   the-internet.herokuapp.com/challenging_dom gives its buttons a fresh UUID each load, and frameworks number elements
