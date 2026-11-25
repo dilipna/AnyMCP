@@ -18,11 +18,24 @@ Found by extending the public-site evaluation to four more practice pages (2026-
   match count are left as they are. A first version of that rule worked on the synthetic copy but not on the real page,
   whose empty `<td></td>` spacer made the two signals disagree (`public-sites-2026-11-23T20-20-42`); the synthetic
   page now has the same spacer.
+* **A table whose headings are numbers returned one column and called it success.** Column headings became field
+  names by dropping symbols and leading digits, so "2023" and "2024" (or "Price (£)" and "Price ($)") became the same
+  name and overwrote each other: the review listed every column, the tool returned one. On
+  the-internet.herokuapp.com/large (headings 1 to 50) every row came back as `{"col": "1.50"}` with status success
+  (`eval/results/public-sites-2026-11-25T06-03-17`, run on the old code). A heading that starts with a digit now keeps
+  it behind a prefix (`col_2023`), and two headings that would give the same name get `_2`, `_3`. Tools recorded
+  before keep their (wrong) names; re-record a table tool whose headings are numbers.
+* **An id the page makes up on every load could be recorded**, so the tool stopped on its first test. The recorder
+  already ignored such ids on the containers it anchors to, but not on the picked element itself:
+  the-internet.herokuapp.com/challenging_dom gives its buttons a fresh UUID each load, and frameworks number elements
+  (`ember1234`). Ids and class names with three digits in a row or a UUID shape are now never used in a selector.
 * **A picked value shown in a heading, link or button was found by its own text**, so a tool could only ever return
   the value it was recorded with: picking the item name on one product's page recorded "the heading named Quiet
   Harbour", which another product's page does not have (the tool stopped). Found on 2026-11-25 when a new practice
   page recorded "the heading named Hello World!". Picked values are no longer found by their own text; a name from
   `aria-label` and similar still counts, and success checks, which are meant to be fixed text, are unchanged.
+* The public-site evaluation adds the-internet.herokuapp.com/large: a 180 KB page with elements nested 50 deep and a
+  50 x 50 table, read whole (all 2,500 cells).
 * The public-site evaluation adds two pages that need CLICKS while recording, both read-only: pressing Start on
   the-internet.herokuapp.com/dynamic_loading/2 (text drawn 5 s later), and clicking a year on the Scrape This Site
   films page (made an input; the films table is filled by a request without the address changing).

@@ -39,7 +39,7 @@ describe("buildDraft: recording → reviewed tool definition", () => {
     // every column, the tool returned one
     const headers = ["2023", "2024", "Price (£)", "Price ($)", "1st place", "Total"];
     const columns = Object.fromEntries(headers.map((h) => [h, { header: h, as: "string" as const }]));
-    const r = buildDraft(spec({ outputs: [{ id: "o1", name: "figures", kind: "table", locator: { by: "css", selector: "table" }, columns, optional: false, use: "result" }] }), 1);
+    const r = buildDraft(spec({ outputs: [{ id: "o1", name: "figures", kind: "table", locator: { by: "css", selector: "table" }, as: "string", columns, optional: false, use: "result" }] }), 1);
     expect(r.errors).toEqual([]);
     const ex = r.definition!.steps.find((x) => x.op === "extract")!;
     const cols = (ex as { source: { columns: Record<string, { header: string }> } }).source.columns;

@@ -37,6 +37,7 @@ v0.1.1 (2026-11-17, in-product data notice) and v0.1.2 (2026-11-23, the build fo
 | Fixture evaluation (protocol v2) | `npm run eval` | 170/170 correct |
 | Public sandboxes + Claude Code | `npm run eval:public -- --with-claude` | 7/7 SDK runs equal an independent reading; revocation 3/3; Claude Code HTTP ✓, stdio ✓ |
 | Public sandboxes in branded Chrome | `npm run eval:public -- --chrome` | 7/7, revocation 3/3 |
+| Twelve practice pages on five public practice sites, two with clicks, one a 180 KB page with a 50 x 50 table, Playwright Chromium (2026-11-25) | `npm run eval:public` | 25/25 runs equal an independent reading or stop safely; both slow-page checks; revocation 12/12 (`eval/results/public-sites-2026-11-25T06-19-46`, code of 39f4141: source tree 087ca478…). Same day, the code before 39f4141: the large table returned one column of 50 with status success (`public-sites-2026-11-25T06-03-17`) |
 | Eleven practice pages on five public practice sites, two with clicks, Playwright Chromium (2026-11-25) | `npm run eval:public` | 24/24 runs equal an independent reading or stop safely; both slow-page checks; revocation 11/11 (`eval/results/public-sites-2026-11-25T01-50-00`, code of 8cceee9: source tree 99e53c98…) |
 | Nine practice pages on five public practice sites, Playwright Chromium (2026-11-23, after the fixes in CHANGELOG "Unreleased") | `npm run eval:public` | 20/20 runs equal an independent reading or stop safely; slow page stops safely at the default timeout and passes after raising it; revocation 9/9 (`eval/results/public-sites-2026-11-23T20-51-52`, clean tree at 05adf6f) |
 | Five practice pages on four public sandbox sites, Playwright Chromium (2026-11-18; again 2026-11-23 with 0.1.2 at c16b201) | `npm run eval:public` | 11/11 runs equal an independent reading or stop safely; revocation 5/5 (`eval/results/public-sites-2026-11-18T22-32-10`, `public-sites-2026-11-23T06-47-50`) |
@@ -47,6 +48,7 @@ v0.1.1 (2026-11-17, in-product data notice) and v0.1.2 (2026-11-23, the build fo
 | CI, 2026-11-16: macOS 26.7 arm64, Ubuntu 26.04 (Node 24.22, 22.23.4 and 20.19.6), Windows Server 2025 | `.github/workflows/ci.yml` ([run 43929412593](https://github.com/dilipna/AnyMCP/actions/runs/43929412593)) | all green: 160/160 unit, 67/67 browser (Chrome for Testing 158), reproducible package, npm tarball 7/7; the three artifacts byte-identical on all five jobs and locally |
 | CI, 2026-11-23 at 6d0b101 (the v0.1.2 commit): macOS, Ubuntu (Node 24, 22, 20.19), Windows | `.github/workflows/ci.yml` ([run 45128313242](https://github.com/dilipna/AnyMCP/actions/runs/45128313242)) | all green: 169/169 unit, 67/67 browser, reproducible package, npm tarball 7/7; the three artifacts byte-identical on all five jobs and locally |
 | Local checks, Windows 11 (2026-11-23, 0.1.2) | `npm test` / `npm run test:e2e` / `node scripts/clean-install-check.mjs` | 169/169 / 67/67 / PASSED (Windows 11) |
+| Local checks, Windows 11 (2026-11-25, code of 39f4141) | `npm run typecheck` / `npm test` / `npm run test:e2e` / `npm run eval` | clean (after a type fix in one new test) / 172/172 / 74/74 / 170/170, 0 false success, 0 unapproved (`eval/results/fixture-chromium-2026-11-25T06-08-45`) |
 
 ## Not verified (honest list)
 
@@ -54,7 +56,7 @@ v0.1.1 (2026-11-17, in-product data notice) and v0.1.2 (2026-11-23, the build fo
   23 (odd-numbered lines), Chromium browsers other than Chrome, Edge and Brave.
 * Claude Desktop, Cursor and other MCP clients.
 * Chrome's "allow this site" prompt and the docked side panel in a real window. A person runs `docs/manual-release-test.md` (40 minutes) before each store submission to cover them.
-* Any signed-in website, any write on a real website, any site beyond the five practice sites (eleven pages).
+* Any signed-in website, any write on a real website, any site beyond the five practice sites (twelve pages).
 * Long-running stability, many tools, very large pages; screen readers; non-English UI.
 * Security: no external review or penetration test. In-house property-based fuzzing (protocol code and both bridge
   network endpoints) and automated CodeQL analysis only.

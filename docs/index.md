@@ -24,7 +24,7 @@ Start with the [README](https://github.com/dilipna/AnyMCP#readme). Then, by ques
 
 * **Fixture results** (`eval/results/fixture-*`) describe AnyMCP against a *synthetic* site the same author wrote.
   They are a development suite, not a held-out set, and say nothing about real websites.
-* **Public-site results** (`eval/results/public-sites-*`) describe public practice sites (three pages from 2026-11-14, five from 2026-11-18, nine pages on five sites from 2026-11-23, eleven from 2026-11-25), a few inputs each.
+* **Public-site results** (`eval/results/public-sites-*`) describe public practice sites (three pages from 2026-11-14, five from 2026-11-18, nine pages on five sites from 2026-11-23, eleven, then twelve, from 2026-11-25), a few inputs each.
 * **"0 failures"** always means "0 in N runs". It is never a guarantee.
 * **Runs with a real AI app** (Claude Code) are labelled as such; a model's wording varies, so they check that the
   expected values appear, not exact text.

@@ -1,0 +1,262 @@
+{
+  "env": {
+    "anymcpVersion": "0.1.2",
+    "sourceTreeSha256": "f76d307e8c77133df82e70bd05e5526dd3c3dece53237a1ee3f8c355636a41fb",
+    "git": {
+      "head": "852b8ab6366c60e66dfc202d0915a51638f8bbf9",
+      "dirty": true
+    },
+    "browser": "Playwright Chromium 158.0.8127.18",
+    "os": "Windows_NT 10.0.26300 x64",
+    "node": "v24.11.0",
+    "only": "large",
+    "finishedAt": "2026-11-25T06:03:17.632Z",
+    "authorization": "host access pre-granted in the test build (Chrome's prompt cannot be automated); AnyMCP's own per-site grant recorded through the panel"
+  },
+  "results": [
+    {
+      "site": "https://the-internet.herokuapp.com",
+      "label": "The Internet (large and deep page, 50 x 50 table)",
+      "structure": "a large page (about 180 KB, 2,500 table cells, elements nested 50 deep); the table's headers are the numbers 1 to 50; every column kept; no input",
+      "recorded": {
+        "pickedAs": "string",
+        "pickedKind": "table",
+        "locator": {
+          "by": "css",
+          "selector": "#large-table"
+        },
+        "entryPath": "/large",
+        "query": []
+      },
+      "tool": {
+        "id": "large_table",
+        "entry": {
+          "path": "/large"
+        },
+        "steps": [
+          "waitFor",
+          "extract"
+        ],
+        "warnings": []
+      },
+      "test": {
+        "version": 1,
+        "status": "success",
+        "message": "Verified: 1 postcondition(s) observed on the page."
+      },
+      "listedByClient": true,
+      "runs": [
+        {
+          "args": {},
+          "expect": "items",
+          "status": "success",
+          "reason": "ok",
+          "message": "Verified: 1 postcondition(s) observed on the page.",
+          "source": {
+            "origin": "https://the-internet.herokuapp.com",
+            "path": "/large",
+            "capturedAt": "2026-11-25T06:03:15.294Z"
+          },
+          "untrusted": true,
+          "items": 50,
+          "sample": [
+            {
+              "col": "1.50"
+            },
+            {
+              "col": "2.50"
+            }
+          ],
+          "groundTruth": {
+            "equal": false,
+            "gotCount": 50,
+            "wantCount": 50,
+            "mismatches": [
+              {
+                "i": 0,
+                "got": {
+                  "col": "1.50"
+                },
+                "want": {
+                  "col_1": "1.1",
+                  "col_2": "1.2",
+                  "col_3": "1.3",
+                  "col_4": "1.4",
+                  "col_5": "1.5",
+                  "col_6": "1.6",
+                  "col_7": "1.7",
+                  "col_8": "1.8",
+                  "col_9": "1.9",
+                  "col_10": "1.10",
+                  "col_11": "1.11",
+                  "col_12": "1.12",
+                  "col_13": "1.13",
+                  "col_14": "1.14",
+                  "col_15": "1.15",
+                  "col_16": "1.16",
+                  "col_17": "1.17",
+                  "col_18": "1.18",
+                  "col_19": "1.19",
+                  "col_20": "1.20",
+                  "col_21": "1.21",
+                  "col_22": "1.22",
+                  "col_23": "1.23",
+                  "col_24": "1.24",
+                  "col_25": "1.25",
+                  "col_26": "1.26",
+                  "col_27": "1.27",
+                  "col_28": "1.28",
+                  "col_29": "1.29",
+                  "col_30": "1.30",
+                  "col_31": "1.31",
+                  "col_32": "1.32",
+                  "col_33": "1.33",
+                  "col_34": "1.34",
+                  "col_35": "1.35",
+                  "col_36": "1.36",
+                  "col_37": "1.37",
+                  "col_38": "1.38",
+                  "col_39": "1.39",
+                  "col_40": "1.40",
+                  "col_41": "1.41",
+                  "col_42": "1.42",
+                  "col_43": "1.43",
+                  "col_44": "1.44",
+                  "col_45": "1.45",
+                  "col_46": "1.46",
+                  "col_47": "1.47",
+                  "col_48": "1.48",
+                  "col_49": "1.49",
+                  "col_50": "1.50"
+                }
+              },
+              {
+                "i": 1,
+                "got": {
+                  "col": "2.50"
+                },
+                "want": {
+                  "col_1": "2.1",
+                  "col_2": "2.2",
+                  "col_3": "2.3",
+                  "col_4": "2.4",
+                  "col_5": "2.5",
+                  "col_6": "2.6",
+                  "col_7": "2.7",
+                  "col_8": "2.8",
+                  "col_9": "2.9",
+                  "col_10": "2.10",
+                  "col_11": "2.11",
+                  "col_12": "2.12",
+                  "col_13": "2.13",
+                  "col_14": "2.14",
+                  "col_15": "2.15",
+                  "col_16": "2.16",
+                  "col_17": "2.17",
+                  "col_18": "2.18",
+                  "col_19": "2.19",
+                  "col_20": "2.20",
+                  "col_21": "2.21",
+                  "col_22": "2.22",
+                  "col_23": "2.23",
+                  "col_24": "2.24",
+                  "col_25": "2.25",
+                  "col_26": "2.26",
+                  "col_27": "2.27",
+                  "col_28": "2.28",
+                  "col_29": "2.29",
+                  "col_30": "2.30",
+                  "col_31": "2.31",
+                  "col_32": "2.32",
+                  "col_33": "2.33",
+                  "col_34": "2.34",
+                  "col_35": "2.35",
+                  "col_36": "2.36",
+                  "col_37": "2.37",
+                  "col_38": "2.38",
+                  "col_39": "2.39",
+                  "col_40": "2.40",
+                  "col_41": "2.41",
+                  "col_42": "2.42",
+                  "col_43": "2.43",
+                  "col_44": "2.44",
+                  "col_45": "2.45",
+                  "col_46": "2.46",
+                  "col_47": "2.47",
+                  "col_48": "2.48",
+                  "col_49": "2.49",
+                  "col_50": "2.50"
+                }
+              },
+              {
+                "i": 2,
+                "got": {
+                  "col": "3.50"
+                },
+                "want": {
+                  "col_1": "3.1",
+                  "col_2": "3.2",
+                  "col_3": "3.3",
+                  "col_4": "3.4",
+                  "col_5": "3.5",
+                  "col_6": "3.6",
+                  "col_7": "3.7",
+                  "col_8": "3.8",
+                  "col_9": "3.9",
+                  "col_10": "3.10",
+                  "col_11": "3.11",
+                  "col_12": "3.12",
+                  "col_13": "3.13",
+                  "col_14": "3.14",
+                  "col_15": "3.15",
+                  "col_16": "3.16",
+                  "col_17": "3.17",
+                  "col_18": "3.18",
+                  "col_19": "3.19",
+                  "col_20": "3.20",
+                  "col_21": "3.21",
+                  "col_22": "3.22",
+                  "col_23": "3.23",
+                  "col_24": "3.24",
+                  "col_25": "3.25",
+                  "col_26": "3.26",
+                  "col_27": "3.27",
+                  "col_28": "3.28",
+                  "col_29": "3.29",
+                  "col_30": "3.30",
+                  "col_31": "3.31",
+                  "col_32": "3.32",
+                  "col_33": "3.33",
+                  "col_34": "3.34",
+                  "col_35": "3.35",
+                  "col_36": "3.36",
+                  "col_37": "3.37",
+                  "col_38": "3.38",
+                  "col_39": "3.39",
+                  "col_40": "3.40",
+                  "col_41": "3.41",
+                  "col_42": "3.42",
+                  "col_43": "3.43",
+                  "col_44": "3.44",
+                  "col_45": "3.45",
+                  "col_46": "3.46",
+                  "col_47": "3.47",
+                  "col_48": "3.48",
+                  "col_49": "3.49",
+                  "col_50": "3.50"
+                }
+              }
+            ]
+          },
+          "provenance": true,
+          "pass": false
+        }
+      ],
+      "afterRevoke": {
+        "listedByClient": false,
+        "grantKept": false
+      }
+    }
+  ],
+  "claude": "not run (pass --with-claude)"
+}

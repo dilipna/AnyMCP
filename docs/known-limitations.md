@@ -43,11 +43,16 @@ boundaries of what was built and verified.
     read before it is complete. Marking a success check that appears only when the page has finished avoids that.
 14. **Lists are read in page order and bounded** (`maxItems`). Blank items are skipped. If the site paginates, only
     the current page is read (backlog #17). Tables, too, are read from the current page only; there is no "next page"
-    loop (by design: tools have no loops).
+    loop (by design: tools have no loops). Columns are found by their heading: two columns with the same heading are
+    read as one (the first), and the review lists them once. Table tools recorded before 2026-11-25 whose headings are
+    numbers ("2023", "1") return only one of those columns; re-record them (CHANGELOG, Unreleased).
 15. Branded Chrome 137+ cannot load an unpacked extension from the command line; automated tests there use the
     DevTools protocol (`--enable-unsafe-extension-debugging`). Manual *Load unpacked* is unaffected.
-16. **Many real sites offer no semantic handles.** On all eleven public practice pages tested (five sites), the recorder had to use CSS
+16. **Many real sites offer no semantic handles.** On all twelve public practice pages tested (five sites), the recorder had to use CSS
     selectors for the results (flagged "may break if the site changes"). Such tools stop when the markup changes.
+    Ids and class names that look made up (three digits in a row, or a UUID shape) are never used; names a site's
+    build tools generate without such digits (for example `sc-bdVaJa`) cannot be told apart from real ones, are used,
+    and change when the site is rebuilt.
 17. **Some sites refuse automated browsing.** Wikipedia answered HTTP 429 and its robots.txt disallows `/w/`. AnyMCP
     runs in your browser but in a tab it opens itself; respect each site's terms and robots rules.
 18. **Link addresses are returned as found** on the page (absolute, http/https only), with user info and
