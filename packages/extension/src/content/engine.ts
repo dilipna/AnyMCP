@@ -9,6 +9,7 @@
 
 import { isCredentialQueryKey, isSensitiveField, resolveText, type FieldDescriptor } from "anymcp-protocol/light";
 import type { Condition, ExtractSource, Locator, NamedCondition, ReasonCode, Step, ValueRef } from "anymcp-protocol";
+import { parseNumber } from "../shared/number";
 import { columnOf, tableLayout } from "./table";
 import { PRIVATE_AREA, accessibleName, composedClosest, isEditableRoot, computeRole, deepQueryAll, fingerprintElement, isVisible, norm, resolveLocator, visibleText, type Args } from "./locator";
 
@@ -465,12 +466,6 @@ async function doWaitFor(ctx: RunContext, step: Extract<Step, { op: "waitFor" }>
   return hit ?? { ok: false, code: "timeout", detail: `The expected page state did not appear in time (${lastDetail}).` };
 }
 
-function parseNumber(text: string): number | null {
-  const m = /-?\d[\d,]*(\.\d+)?/.exec(text.replace(/\s/g, ""));
-  if (!m) return null;
-  const n = Number(m[0].replace(/,/g, ""));
-  return Number.isFinite(n) ? n : null;
-}
 
 function extractTable(source: Extract<ExtractSource, { type: "table" }>, args: Args): StepResult {
   const r = resolveLocator(source.locator, args);
