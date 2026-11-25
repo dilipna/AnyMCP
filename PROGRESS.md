@@ -29,6 +29,7 @@ serves `docs/` at https://dilipna.github.io/AnyMCP/ (privacy policy: `/privacy-p
 | Typecheck / unit + integration + property tests | `npm run typecheck` / `npm test` | clean / 172 pass (2026-11-25) |
 | Browser suite | `npm run test:e2e` (Chromium 158); `ANYMCP_E2E_BROWSER=chrome` (157.0.8103.52), `=msedge` (Edge 157.0.4341.60), `=brave` (1.99.57) | 67/67 each (2026-11-16) |
 | Fixture evaluation | `npm run eval` | 170/170, 0 false success, 0 unapproved |
+| Public sites (12 pages, 5 sites, 2026-11-25, code of b55f22c: merged cells, numbers) | `npm run eval:public` | 25/25, both slow-page checks, revocation 12/12 (`public-sites-2026-11-25T08-42-14`) |
 | Public sites (12 pages, 5 sites, 2026-11-25, code of 39f4141) | `npm run eval:public` | 25/25, both slow-page checks, revocation 12/12 |
 | Public sites (11 pages, 5 sites, 2026-11-25) | `npm run eval:public` | 24/24, both slow-page checks, revocation 11/11 |
 | Public sites (9 pages, 5 sites, 2026-11-23, after fixes) | `npm run eval:public` | 20/20, slow-page check, revocation 9/9 |

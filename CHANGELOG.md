@@ -25,6 +25,20 @@ Found by extending the public-site evaluation to four more practice pages (2026-
   (`eval/results/public-sites-2026-11-25T06-03-17`, run on the old code). A heading that starts with a digit now keeps
   it behind a prefix (`col_2023`), and two headings that would give the same name get `_2`, `_3`. Tools recorded
   before keep their (wrong) names; re-record a table tool whose headings are numbers.
+* **A table with merged cells put values under the wrong heading, as a success.** Cells were matched to headings by
+  their position among a row's own cells, so after any cell spanning two columns or rows every later value moved
+  one heading over: on a synthetic scores table with "Score" two columns wide, "Rank" returned the second-round score;
+  on a table with two heading rows, a region spanning two rows and a totals row, a town came back as the region and
+  the totals row as a town. A table is now read as the grid it shows (merged cells cover every place they span), by
+  the recorder and the engine alike; a column under a wider heading is named with both ("Population 2020"), headings
+  that still repeat get " (2)", and `<tfoot>` rows are not records. Tools recorded before keep finding their columns
+  (now in the right place); a heading that was offered once for two columns is now offered twice.
+* **Numbers were misread, and returned as a success.** An output marked as a number had every space and comma removed
+  before the first run of digits was read: "12,50 €" became 1250, "1.234,56 €" 1.234, "0,25" 25, "−5 °C" 5 and
+  "10 20" 1020. Numbers are now read as written: a decimal comma, thousands grouped by dots, commas, spaces or
+  apostrophes, Indian grouping (12,34,567) and the minus sign "−"; a minus inside a code ("A-12") is not a sign. A
+  format that cannot be read unambiguously ("1,2,3") makes the tool report that it could not read a number instead of
+  guessing. "1,250" is still 1250 and "1.234" still 1.234, as in English (known limitation 31).
 * **An id the page makes up on every load could be recorded**, so the tool stopped on its first test. The recorder
   already ignored such ids on the containers it anchors to, but not on the picked element itself:
   the-internet.herokuapp.com/challenging_dom gives its buttons a fresh UUID each load, and frameworks number elements

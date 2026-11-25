@@ -43,9 +43,13 @@ boundaries of what was built and verified.
     read before it is complete. Marking a success check that appears only when the page has finished avoids that.
 14. **Lists are read in page order and bounded** (`maxItems`). Blank items are skipped. If the site paginates, only
     the current page is read (backlog #17). Tables, too, are read from the current page only; there is no "next page"
-    loop (by design: tools have no loops). Columns are found by their heading: two columns with the same heading are
-    read as one (the first), and the review lists them once. Table tools recorded before 2026-11-25 whose headings are
-    numbers ("2023", "1") return only one of those columns; re-record them (CHANGELOG, Unreleased).
+    loop (by design: tools have no loops). Columns are found by their heading text, so a tool stops if a heading is
+    renamed. Repeated headings are told apart by order ("Score", "Score (2)"), so a column added before them shifts
+    which one is "(2)". Merged cells are read where they appear on screen (checked on synthetic tables only); a row
+    inside the body that is itself a heading (a section title across the table) is returned as a row. Table tools
+    recorded before 2026-11-25 can return wrong values under some headings: those whose headings are numbers ("2023",
+    "1") return only one such column, and on tables with merged cells values after a merged cell sat under the next
+    heading. Re-record them (CHANGELOG, Unreleased).
 15. Branded Chrome 137+ cannot load an unpacked extension from the command line; automated tests there use the
     DevTools protocol (`--enable-unsafe-extension-debugging`). Manual *Load unpacked* is unaffected.
 16. **Many real sites offer no semantic handles.** On all twelve public practice pages tested (five sites), the recorder had to use CSS
@@ -109,3 +113,9 @@ boundaries of what was built and verified.
     look different from the one clicked, and the review shows a warning before saving. It compares how items are built
     (their child elements), so it also warns about genuine items that differ, for example one with a "new" badge.
     A tool saved despite the warning can return the extra items as results.
+31. **Numbers are read as in English where a format is ambiguous.** An output marked as a number reads the first
+    number in the text. "12,50", "1.234,56", "1 234" and "12,34,567" are read as a person would, but "1,250" is read as
+    1250 and "1.234" as 1.234, so on a site that writes 1,250 for one and a quarter (or 1.234 for one thousand two
+    hundred and thirty-four) the number is wrong; keep such values as text. "3–5 days" gives 3; "1.5k" gives 1.5 (the
+    suffix is not applied). Text it cannot read unambiguously ("1,2,3") stops the tool with "could not read a
+    number" (`packages/extension/test/number.test.ts`).
