@@ -27,6 +27,9 @@ describe("parseNumber: the number a person reads in the text, or nothing", () =>
     ["1 234,50 €", 1234.5],
     ["1 234", 1234],
     ["CHF 1'234.50", 1234.5],
+    ["CHF 1’234.50", 1234.5],
+    ["$.99", 0.99],
+    ["v2.5", 2.5],
     // two numbers next to each other are not one number
     ["10 20", 10],
     ["Rated 4 of 5", 4],
@@ -38,6 +41,7 @@ describe("parseNumber: the number a person reads in the text, or nothing", () =>
     ["−5 °C", -5],
     ["Balance: -12.30", -12.3],
     ["Order A-12", 12],
+    ["-.5", -0.5],
     ["3–5 days", 3],
     // unclear or no number: nothing, so the tool reports it cannot read a number instead of guessing
     ["1,2,3", null],

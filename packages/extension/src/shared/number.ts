@@ -9,6 +9,7 @@
 
 const MINUS = /[\u2212\uFE63\uFF0D]/g; // minus sign, small and full-width hyphen-minus
 const SPACES = /[\u00a0\u2007\u2009\u202f]/g; // no-break, figure, thin and narrow no-break spaces
+const APOSTROPHES = /[’ʼ]/g; // typographic apostrophes, used for grouping in Switzerland ("1’234")
 
 /** Thousands grouping: "1,234,567" (groups of three) or Indian "12,34,567" (twos, then a final three). */
 function grouped(groups: string[]): boolean {
@@ -43,7 +44,7 @@ function digitsValue(token: string): number | null {
 }
 
 export function parseNumber(text: string): number | null {
-  const t = text.replace(MINUS, "-").replace(SPACES, " ");
+  const t = text.replace(MINUS, "-").replace(SPACES, " ").replace(APOSTROPHES, "'");
   const m = /\d+(?:[.,' ]\d+)*/.exec(t);
   if (!m) return null;
   let token = m[0];
@@ -53,9 +54,12 @@ export function parseNumber(text: string): number | null {
     const ok = /^\d{1,3}$/.test(chunks[0]!) && chunks.slice(1, -1).every((c) => /^\d{3}$/.test(c)) && /^\d{3}(?:[.,]\d+)?$/.test(chunks.at(-1)!);
     token = ok ? chunks.join("") : chunks[0]!;
   }
-  const value = digitsValue(token);
+  // ".99" / "$.99": a decimal point with no digit before it
+  const bare = t[m.index - 1] === "." && !/[\p{L}\p{N}]/u.test(t[m.index - 2] ?? "") && /^\d+$/.test(token);
+  const value = bare ? Number(`0.${token}`) : digitsValue(token);
   if (value === null || !Number.isFinite(value)) return null;
-  // a minus right before the digits, not part of a code such as "A-12"
-  const negative = t[m.index - 1] === "-" && !/[\p{L}\p{N}]/u.test(t[m.index - 2] ?? "");
+  // a minus right before the number, not part of a code such as "A-12"
+  const signAt = bare ? m.index - 2 : m.index - 1;
+  const negative = t[signAt] === "-" && !/[\p{L}\p{N}]/u.test(t[signAt - 1] ?? "");
   return negative ? -value : value;
 }
