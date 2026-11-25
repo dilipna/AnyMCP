@@ -120,9 +120,10 @@ const snake = (s: string, fallback: string): string => {
   const t = s
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "")
-    .replace(/^[0-9]+/, "");
-  return (t || fallback).slice(0, 32);
+    .replace(/^_+|_+$/g, "");
+  // a name that starts with a digit ("2024", "1st place") keeps it behind the fallback word: dropping the digits made
+  // "2023" and "2024" the same name
+  return (/^[0-9]/.test(t) ? `${fallback}_${t}` : t || fallback).slice(0, 32);
 };
 
 function uniqueName(base: string, used: Set<string>): string {
@@ -315,8 +316,9 @@ export function buildDraft(spec: DraftSpec, version: number): BuildResult {
       const columns = o.columns ?? {};
       const cols: Record<string, { header: string; as: "string" | "number" }> = {};
       const itemProps: Record<string, SchemaSubset> = {};
+      const usedCols = new Set<string>();
       for (const [k, c] of Object.entries(columns)) {
-        const f = snake(k, "col");
+        const f = uniqueName(snake(k, "col"), usedCols); // "Price (£)" and "Price ($)" are both "price"
         cols[f] = { header: c.header, as: c.as };
         itemProps[f] = c.as === "number" ? { type: "number" } : { type: "string", maxLength: 500 };
       }

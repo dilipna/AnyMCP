@@ -123,6 +123,18 @@ const parseHerokuTable = (html: string) => {
   });
 };
 
+const HEROKU_LARGE = `${HEROKU}/large`;
+/** Every row of the 50 x 50 table, keyed the way a recorded tool names numbered headers ("1" → col_1). */
+const parseLargeTable = (html: string) => {
+  const t = /<table id='large-table'>([\s\S]*?)<\/table>/.exec(html)?.[1] ?? "";
+  const headers = [...t.matchAll(/<th id='header-\d+'>([\s\S]*?)<\/th>/g)].map((m) => norm(decode(m[1]!.replace(/<[^>]*>/g, ""))));
+  const body = /<tbody>([\s\S]*?)<\/tbody>/.exec(t)?.[1] ?? "";
+  return [...body.matchAll(/<tr[^>]*>([\s\S]*?)<\/tr>/g)].map((r) => {
+    const cells = [...r[1]!.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map((x) => norm(decode(x[1]!)));
+    return Object.fromEntries(headers.map((h, i) => [`col_${h}`, cells[i]]));
+  });
+};
+
 const HEROKU_LOADING = `${HEROKU}/dynamic_loading/2`;
 /** The text the page draws after the Start click, as written in its own script. */
 const parseLoading = (html: string) => {
@@ -435,6 +447,28 @@ const SITES: SiteCase[] = [
     parse: (h) => parseHerokuTable(h),
     test: {},
     runs: [{ args: {}, expect: "items", truthUrl: HEROKU_TABLES }],
+  },
+  {
+    origin: HEROKU,
+    label: "The Internet (large and deep page, 50 x 50 table)",
+    structure: "a large page (about 180 KB, 2,500 table cells, elements nested 50 deep); the table's headers are the numbers 1 to 50; every column kept; no input",
+    recordUrl: HEROKU_LARGE,
+    pickMode: "table",
+    pickSelector: "#large-table",
+    successSelector: "h3",
+    edit: (spec) => {
+      spec.id = "large_table";
+      spec.title = "Large table";
+      spec.description = "Returns every row of the 50 x 50 table on the-internet.herokuapp.com/large, all 50 columns. Read-only.";
+      spec.outputs[0]!.name = "rows";
+      spec.outputs[0]!.maxRows = 50;
+    },
+    outputKey: "rows",
+    max: 50,
+    links: false,
+    parse: (h) => parseLargeTable(h),
+    test: {},
+    runs: [{ args: {}, expect: "items", truthUrl: HEROKU_LARGE }],
   },
   {
     origin: HEROKU,

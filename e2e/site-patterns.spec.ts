@@ -114,6 +114,36 @@ test("a value shown in a heading is read from its place, not found by its own te
   await client.close();
 });
 
+test("ids a page makes up on every load are never used to find a value", async () => {
+  // 2026-11-25: the recorder used a picked element's own id whatever it looked like, so a value whose id the page
+  // regenerates on each load (the-internet.herokuapp.com/challenging_dom: UUIDs; frameworks: "ember1234") was found
+  // by an id that no longer exists on the next visit
+  for (const [pick, output, id] of [
+    [".product_main .price_color", "price", "made_id_price"],
+    [".product_main h2", "name", "made_id_name"],
+  ] as const) {
+    const spec = await record("/made-ids/quiet-harbour", ".product_main", "text", pick, "h1");
+    spec.id = id;
+    spec.title = `Shelf ${output} (made-up ids)`;
+    spec.description = `The ${output} of one synthetic shelf item on a page with made-up ids.`;
+    spec.outputs[0]!.name = output;
+    spec.params.push(pathPart("item", "quiet-harbour"));
+    const built = buildDraft(spec, 1);
+    expect(built.errors).toEqual([]);
+    expect(JSON.stringify(built.definition), "a made-up id is in the definition").not.toMatch(/#(ember\d|e[0-9a-f]{7}-)/);
+    const def = built.definition!;
+    const tested = await saveAndTest(def, { item: "quiet-harbour" }); // a fresh load: every id has changed
+    expect(tested.status, tested.message).toBe("success");
+    await enable(def);
+    const client = await s.mcp();
+    const item = SHELF.find((x) => x.slug === "north-light")!;
+    const env = await s.run(client, def.id, { item: item.slug });
+    expect(env.status, env.message).toBe("success");
+    expect(env.output).toEqual({ [output]: output === "price" ? item.price : item.name });
+    await client.close();
+  }
+});
+
 test("layout table without classes: the list holds only the quotes, and a page without quotes stops", async () => {
   const spec = await record("/layout-quotes/light", 'td[style="padding-top: 2em;"]', "list", 'td[style="padding-top: 2em;"]', "h1");
   spec.id = "layout_quotes";

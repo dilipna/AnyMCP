@@ -33,6 +33,23 @@ describe("buildDraft: recording → reviewed tool definition", () => {
     expect(ops.indexOf("waitFor")).toBeLessThan(ops.indexOf("extract"));
   });
 
+  it("every table column keeps its own field, even when headers are numbers or differ only in symbols", () => {
+    // 2026-11-25: column names became field names by dropping symbols and leading digits, so "2023" and "2024" (and
+    // the-internet.herokuapp.com/large's headers 1 to 50) all became "col" and overwrote each other: the review listed
+    // every column, the tool returned one
+    const headers = ["2023", "2024", "Price (£)", "Price ($)", "1st place", "Total"];
+    const columns = Object.fromEntries(headers.map((h) => [h, { header: h, as: "string" as const }]));
+    const r = buildDraft(spec({ outputs: [{ id: "o1", name: "figures", kind: "table", locator: { by: "css", selector: "table" }, columns, optional: false, use: "result" }] }), 1);
+    expect(r.errors).toEqual([]);
+    const ex = r.definition!.steps.find((x) => x.op === "extract")!;
+    const cols = (ex as { source: { columns: Record<string, { header: string }> } }).source.columns;
+    expect(Object.values(cols).map((c) => c.header).sort()).toEqual([...headers].sort());
+    for (const k of Object.keys(cols)) expect(k).toMatch(/^[a-z][a-z0-9_]*$/);
+    const items = (r.definition!.output.properties!.figures as { items: { properties: Record<string, unknown> } }).items.properties;
+    expect(Object.keys(items).sort()).toEqual(Object.keys(cols).sort());
+    expect(cols.col_2023?.header).toBe("2023"); // a number keeps its digits, behind a prefix
+  });
+
   it("the read barrier has no fixed timeout, so the tool's per-step timeout (editable in the tool editor) applies", () => {
     // 2026-11-23: it was fixed at 5000 ms, so raising "Per-step timeout" in the editor did not help a slow page
     const def = buildDraft(spec(), 1).definition!;

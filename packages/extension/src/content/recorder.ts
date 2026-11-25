@@ -102,7 +102,13 @@ export function suggestLocator(el: Element, purpose: "action" | "value" | "stati
 }
 
 const SAFE_IDENT = /^[a-zA-Z_][a-zA-Z0-9_-]{0,40}$/;
-const stableClasses = (e: Element) => [...e.classList].filter((c) => SAFE_IDENT.test(c) && !/\d{3,}/.test(c)).slice(0, 2);
+/**
+ * An id a page makes up on each load or build ("ember1234", "e0779f31-7d18-4a0b-…" on the-internet.herokuapp.com's
+ * challenging_dom page): a selector built on it finds nothing on the next visit.
+ */
+const madeUp = (s: string) => /\d{3,}/.test(s) || /[0-9a-f]{8}-[0-9a-f]{4}/i.test(s);
+const stableId = (e: Element) => !!e.id && SAFE_IDENT.test(e.id) && !madeUp(e.id);
+const stableClasses = (e: Element) => [...e.classList].filter((c) => SAFE_IDENT.test(c) && !madeUp(c)).slice(0, 2);
 /** One selector step for an element: tag + up to two stable-looking classes (+ position, if asked). */
 function cssPart(e: Element, nth: boolean): string {
   let s = e.localName + stableClasses(e).map((c) => `.${c}`).join("");
@@ -218,11 +224,11 @@ export function cssFor(el: Element, anchor = false): string | null {
       return false;
     }
   };
-  if (el.id && SAFE_IDENT.test(el.id) && unique(`#${el.id}`)) return `#${el.id}`;
+  if (stableId(el) && unique(`#${el.id}`)) return `#${el.id}`;
   const anchored = (sel: string): string => {
     let p = el.parentElement;
     for (let up = 0; p && p !== document.body && up < 4; up++, p = p.parentElement) {
-      const part = p.id && SAFE_IDENT.test(p.id) && !/\d{3,}/.test(p.id) ? `#${p.id}` : stableClasses(p).length ? cssPart(p, false) : "";
+      const part = stableId(p) ? `#${p.id}` : stableClasses(p).length ? cssPart(p, false) : "";
       if (part && `${part} ${sel}`.length <= 200 && unique(`${part} ${sel}`)) return `${part} ${sel}`;
     }
     return sel;

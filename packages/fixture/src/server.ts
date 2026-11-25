@@ -7,6 +7,7 @@
 // and read the ground-truth write log, which is how the evaluation counts unapproved writes
 // without trusting AnyMCP's own reporting.
 
+import { randomUUID } from "node:crypto";
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { pathToFileURL } from "node:url";
 
@@ -247,6 +248,8 @@ export const SHELF: readonly ShelfItem[] = [
   { slug: "north-light", name: "North Light", price: "£18.05", related: ["quiet-harbour", "paper-moons"] },
   { slug: "paper-moons", name: "Paper Moons", price: "£9.99", related: ["north-light"] },
 ];
+/** Bumped on every load of a `/made-ids/` page, so the ids it shows differ each time. */
+let madeIdCounter = 1000;
 
 /**
  * Quotes laid out with an HTML table used for layout and no class names (quotes.toscrape.com/tableful): each quote is
@@ -632,6 +635,23 @@ document.getElementById('find').addEventListener('acme-press', async () => {
             `<h1>Shelf</h1>
 <div class="product_main"><h2>${esc(item.name)}</h2><p class="price_color">${esc(item.price)}</p><p class="availability">In stock</p></div>
 ${related.length ? `<section class="related"><h3>You may also like</h3>${related.map((r) => `<article class="product_pod"><h4><a href="/shelf/${r.slug}">${esc(r.name)}</a></h4><p class="price_color">${esc(r.price)}</p></article>`).join("")}</section>` : ""}`,
+          ),
+        );
+      }
+      // the same items, but the page gives elements ids it makes up on every load (a UUID, a framework counter), as
+      // the-internet.herokuapp.com/challenging_dom does: a tool must never find anything by such an id
+      const madeIds = /^\/made-ids\/([a-z0-9-]+)$/.exec(path);
+      if (madeIds && req.method === "GET") {
+        const item = SHELF.find((x) => x.slug === madeIds[1]);
+        if (!item) return send(res, 404, page("Not found", `<h1>Shelf</h1><p>No such item.</p>`));
+        madeIdCounter += 1;
+        return send(
+          res,
+          200,
+          page(
+            item.name,
+            `<h1>Shelf</h1>
+<div class="product_main"><h2 id="ember${madeIdCounter}">${esc(item.name)}</h2><p class="price_color" id="e${randomUUID().slice(1)}">${esc(item.price)}</p><p class="availability">In stock</p></div>`,
           ),
         );
       }
